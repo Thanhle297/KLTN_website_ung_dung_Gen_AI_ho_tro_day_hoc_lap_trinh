@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "question": "Viết chương trình tính tổng 2 số.",
+    "ex": [
+      { "input": "2 3", "output": "5" },
+      { "input": "10 20", "output": "30" }
+    ],
+    "testcase":[
+      {"input": [2,3],"expected":"5" },
+      {"input":[10,20], "expected": "30"}
+    ]
+  },
+  {
+    "id": 2,
+    "question": "Viết chương trình in ra dãy số từ 1 đến n.",
+    "ex": [
+      { "input": "5", "output": "1 2 3 4 5" },
+      { "input": "3", "output": "1 2 3" }
+    ],
+    "testcase":[
+      {"input": [5],"expected":"1 2 3 4 5" },
+      {"input":[3], "expected": "1 2 3"}
+    ]
+  },
+  {
+    "id": 3,
+    "question": "Viết các lệnh in ra màn hình thông tin như sau:\n a) 1 × 3 × 5 × 7 = 105\n b) Bạn Hoa năm nay 16 tuổi.",
+    "ex": [
+      { "input": "a) 1 × 3 × 5 × 7 = 105\nb) Bạn Hoa năm nay 16 tuổi", "output": "a) 1 × 3 × 5 × 7 = 105\nb) Bạn Hoa năm nay 16 tuổi" }
+    ],
+    "testcase":[
+      {"input": [],"expected":"a) 1 × 3 × 5 × 7 = 105\n b) Bạn Hoa năm nay 16 tuổi" }
+    ]
+  }
+]

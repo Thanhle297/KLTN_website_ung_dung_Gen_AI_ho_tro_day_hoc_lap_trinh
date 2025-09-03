@@ -1,0 +1,42 @@
+/* QuestionList.scss */
+.question-list {
+  display: flex;
+  flex-wrap: wrap;
+//   flex-direction: column;
+  gap: 8px; // khoảng cách giữa các button
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+  max-height: 10%;
+  overflow-x: auto; // cho scroll nếu nhiều câu hỏi
+  // Ẩn thanh scroll cho gọn (tùy chọn)
+  &::-webkit-scrollbar {
+    height: 6px; // thanh scroll ngang
+    width: 6px; // thanh scroll dọc
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 3px;
+  }
+
+  button {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #e6f3ff;
+      border-color: #3399ff;
+    }
+
+    &.active {
+      background: #3399ff;
+      color: #fff;
+      border-color: #267acc;
+    }
+  }
+}
