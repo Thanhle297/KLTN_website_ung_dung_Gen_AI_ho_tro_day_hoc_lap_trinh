@@ -16,11 +16,13 @@
     "question": "Viết chương trình in ra dãy số từ 1 đến n.",
     "ex": [
       { "input": "5", "output": "1 2 3 4 5" },
-      { "input": "3", "output": "1 2 3" }
+      { "input": "3", "output": "1 2 3" },
+      {"input":"10", "output": "1 2 3 4 5 6 7 8 9 10"}
     ],
     "testcase":[
       {"input": [5],"expected":"1 2 3 4 5" },
-      {"input":[3], "expected": "1 2 3"}
+      {"input":[3], "expected": "1 2 3"},
+      {"input":[10], "expected": "1 2 3 4 5 6 7 8 9 10"}
     ]
   },
   {
