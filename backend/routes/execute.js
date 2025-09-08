@@ -1,4 +1,4 @@
-//execute.js
+// backend/routes/execute.js
 const express = require("express");
 const axios = require("axios");
 const { callGemini } = require("../services/geminiService");
@@ -26,7 +26,7 @@ router.post("/execute", async (req, res) => {
         .json({ success: false, error: "Missing code or testcases" });
     }
 
-    // Gửi sang Python service
+    // gửi sang Python service
     const pythonPayload = {
       code,
       testcases: testcases.map((tc) => ({
@@ -43,7 +43,7 @@ router.post("/execute", async (req, res) => {
 
     const executionResults = pythonResponse.data.results;
 
-    // Đánh giá kết quả
+    // đánh giá kết quả
     const results = testcases.map((tc, index) => {
       const execution = executionResults[index];
       const sanitizedInput = Array.isArray(tc.input) ? tc.input : [tc.input];
@@ -68,14 +68,17 @@ router.post("/execute", async (req, res) => {
       };
     });
 
-    // Nếu có lỗi thì gọi Gemini
+    // gọi Gemini
     let guide = null;
+    let lineHints = [];
     const hasError = results.some((r) => !r.pass);
+
+    let prompt = "";
 
     if (hasError) {
       const failedCase = results.find((r) => !r.pass);
 
-      const prompt = `
+      prompt = `
 ${question ? "Câu hỏi: " + question : ""}
 Code học sinh:
 \`\`\`python
@@ -86,29 +89,60 @@ Output (thực tế): ${failedCase.actual}
 Expected: ${failedCase.expected}
 
 Bạn là giáo viên Tin học tại Việt Nam. 
-Nhiệm vụ của bạn là phân tích code Python do học sinh nộp và chỉ ra lỗi theo format:
-#<số dòng>: <lỗi> → <hướng dẫn> (chủ đề: <kiến thức liên quan>).
-
-⚠️ Yêu cầu:
-- KHÔNG viết lại toàn bộ code.
-- KHÔNG đưa code đã sửa.
-- Chỉ gợi ý ngắn gọn, rõ ràng để học sinh tự sửa.
+Hãy phân tích code Python và trả về lỗi theo ĐÚNG format sau (mỗi dòng 1 lỗi):
+#<số dòng>: <mô tả lỗi> → <gợi ý sửa> (chủ đề: <kiến thức>)
 `;
+    } else {
+      prompt = `
+${question ? "Câu hỏi: " + question : ""}
+Code học sinh:
+\`\`\`python
+${code}
+\`\`\`
 
-      console.log("🔍 Gemini prompt gửi đi:\n", prompt);
+Bạn là giáo viên Tin học tại Việt Nam nếu code chạy đúng. Hãy kiểm tra xem có thể cải tiến không:
+- Nếu có, gợi ý ngắn gọn (tối ưu, clean code, đổi biến...).
+- Nếu không, trả về "Code đã tốt, không cần cải tiến".
+- Không cần đưa ra lý do.
+`;
+    }
 
-      try {
-        const geminiRes = await callGemini(prompt);
-        guide =
-          geminiRes?.candidates?.[0]?.content?.parts?.[0]?.text ||
-          "Không có hướng dẫn.";
-      } catch (e) {
-        console.error("Gemini guide error:", e.message);
-        guide = "Không thể tạo hướng dẫn từ AI.";
+    try {
+      const geminiRes = await callGemini(prompt);
+      const text =
+        geminiRes?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Không có phản hồi từ AI.";
+
+      if (hasError) {
+        // chỉ parse lineHints, không trả về guide
+        lineHints = text
+          .split("\n")
+          .map((line) => {
+            const match = line.match(/^#(\d+): (.+)$/);
+            if (match) {
+              return { line: parseInt(match[1]), message: match[2] };
+            }
+            return null;
+          })
+          .filter(Boolean);
+        guide = null; // bỏ guide khi có lỗi
+      } else {
+        guide = text; // chỉ có guide khi code đúng
+      }
+    } catch (e) {
+      guide = null;
+      if (hasError) {
+        lineHints = [];
       }
     }
 
-    res.json({ success: true, results, guide });
+    res.json({
+      success: true,
+      results,
+      guide,
+      lineHints,
+      hasGuide: !hasError, // code đúng enable hướng dẫn.
+    });
   } catch (error) {
     console.error("Execution error:", error);
     if (error.code === "ECONNREFUSED") {
@@ -116,12 +150,10 @@ Nhiệm vụ của bạn là phân tích code Python do học sinh nộp và ch�
         .status(503)
         .json({ success: false, error: "Python service không khả dụng" });
     }
-    res
-      .status(500)
-      .json({
-        success: false,
-        error: error.message || "Internal server error",
-      });
+    res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
   }
 });
 
