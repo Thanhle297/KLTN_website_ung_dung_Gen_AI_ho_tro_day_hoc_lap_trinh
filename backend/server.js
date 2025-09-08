@@ -1,4 +1,4 @@
-// // server.js
+// server.js
 // const express = require("express");
 // const axios = require("axios");
 // const cors = require("cors");
@@ -141,13 +141,33 @@ app.use(cors());
 
 // Import routes
 const executeRoutes = require("./routes/execute");
-// const geminiRoutes = require("./routes/gemini");
+const geminiRoutes = require("./routes/gemini");
 
 // Mount routes
 app.use("/api", executeRoutes);
-// app.use("/api/gemini", geminiRoutes);
+app.use("/api/gemini", geminiRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+
+
+// const express = require("express");
+// const cors = require("cors");
+// const executeRoute = require("./routes/execute");
+// const openaiRoute = require("./routes/openai");
+// require("dotenv").config();
+
+// const app = express();
+// app.use(express.json());
+// app.use(cors())
+
+// app.use("/api/execute", executeRoute); // chạy code
+// app.use("/api/openai", openaiRoute);   // sinh hướng dẫn
+
+// app.listen(process.env.PORT || 3001, () => {
+//   console.log(`Server running on port ${process.env.PORT || 3001}`);
+// });
+

@@ -10,7 +10,10 @@
   }
 
   &__run-btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     background: #3182ce;
     color: white;
     padding: 10px 16px;
@@ -25,7 +28,18 @@
     &:hover {
       background: #2b6cb0;
     }
+
+    &:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      font-size: 18px;
+      animation: spin 1s linear infinite;
+    }
   }
+
   .code-editor__result-layout {
     display: flex;
     gap: 20px;
@@ -84,6 +98,7 @@
       border-bottom: 2px solid #ccc;
 
       button {
+        position: relative; // ✅ để chứa chấm đỏ
         padding: 10px 20px;
         border: none;
         background: none;
@@ -98,6 +113,18 @@
         &:hover {
           color: #0056b3;
         }
+
+        // ✅ chấm đỏ thông báo
+        .tab-notification {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 10px;
+          height: 10px;
+          background-color: #dc3545; // đỏ cảnh báo
+          border-radius: 50%;
+          box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+        }
       }
     }
 
@@ -105,6 +132,7 @@
       padding: 15px;
       background: #f9f9f9;
       border: 1px solid #ddd;
+
       .tab-panel {
         table {
           width: 100%;
@@ -164,5 +192,11 @@
         }
       }
     }
+  }
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }

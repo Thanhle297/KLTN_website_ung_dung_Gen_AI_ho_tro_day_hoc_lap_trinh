@@ -1,4 +1,4 @@
-// routes/execute.js
+//execute.js
 const express = require("express");
 const axios = require("axios");
 const { callGemini } = require("../services/geminiService");
@@ -6,17 +6,24 @@ const { callGemini } = require("../services/geminiService");
 const router = express.Router();
 require("dotenv").config();
 
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8001";
+const PYTHON_SERVICE_URL =
+  process.env.PYTHON_SERVICE_URL || "http://localhost:8001";
 
 const normalizeString = (str) =>
-  str.trim().split(/\s+|\n+/).filter((item) => item !== "").join(" ");
+  str
+    .trim()
+    .split(/\s+|\n+/)
+    .filter((item) => item !== "")
+    .join(" ");
 
 router.post("/execute", async (req, res) => {
   const { code, testcases, question } = req.body;
 
   try {
     if (!code || !testcases || testcases.length === 0) {
-      return res.status(400).json({ success: false, error: "Missing code or testcases" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing code or testcases" });
     }
 
     // Gửi sang Python service
@@ -78,8 +85,17 @@ Input: ${failedCase.input}
 Output (thực tế): ${failedCase.actual}
 Expected: ${failedCase.expected}
 
-${process.env.GEMINI_PROMPT}
+Bạn là giáo viên Tin học tại Việt Nam. 
+Nhiệm vụ của bạn là phân tích code Python do học sinh nộp và chỉ ra lỗi theo format:
+#<số dòng>: <lỗi> → <hướng dẫn> (chủ đề: <kiến thức liên quan>).
+
+⚠️ Yêu cầu:
+- KHÔNG viết lại toàn bộ code.
+- KHÔNG đưa code đã sửa.
+- Chỉ gợi ý ngắn gọn, rõ ràng để học sinh tự sửa.
 `;
+
+      console.log("🔍 Gemini prompt gửi đi:\n", prompt);
 
       try {
         const geminiRes = await callGemini(prompt);
@@ -96,9 +112,16 @@ ${process.env.GEMINI_PROMPT}
   } catch (error) {
     console.error("Execution error:", error);
     if (error.code === "ECONNREFUSED") {
-      return res.status(503).json({ success: false, error: "Python service không khả dụng" });
+      return res
+        .status(503)
+        .json({ success: false, error: "Python service không khả dụng" });
     }
-    res.status(500).json({ success: false, error: error.message || "Internal server error" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        error: error.message || "Internal server error",
+      });
   }
 });
 

@@ -22,3 +22,6 @@ async function callGemini(prompt) {
 }
 
 module.exports = { callGemini };
+
+
+
