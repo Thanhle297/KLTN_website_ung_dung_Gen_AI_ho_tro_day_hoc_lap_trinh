@@ -1,7 +1,7 @@
-// backend/routes/execute.js
+// routes/execute.js
 const express = require("express");
 const axios = require("axios");
-const { callGemini } = require("../services/geminiService");
+const { callPromptAI } = require("./callpromt");
 
 const router = express.Router();
 require("dotenv").config();
@@ -43,7 +43,6 @@ router.post("/execute", async (req, res) => {
 
     const executionResults = pythonResponse.data.results;
 
-    // đánh giá kết quả
     const results = testcases.map((tc, index) => {
       const execution = executionResults[index];
       const sanitizedInput = Array.isArray(tc.input) ? tc.input : [tc.input];
@@ -68,87 +67,40 @@ router.post("/execute", async (req, res) => {
       };
     });
 
-    // gọi Gemini
-    let guide = null;
-    let lineHints = [];
     const hasError = results.some((r) => !r.pass);
-
-    let prompt = "";
 
     if (hasError) {
       const failedCase = results.find((r) => !r.pass);
 
-      prompt = `
-${question ? "Câu hỏi: " + question : ""}
-Code học sinh:
-\`\`\`python
-${code}
-\`\`\`
-Input: ${failedCase.input}
-Output (thực tế): ${failedCase.actual}
-Expected: ${failedCase.expected}
+      // gọi AI với prompt cứng
+      const aiRes = await callPromptAI({
+        code,
+        question,
+        error: failedCase.actual,
+        testcase: failedCase,
+      });
 
-Bạn là giáo viên Tin học tại Việt Nam. 
-Hãy phân tích code Python và trả về lỗi theo ĐÚNG format sau (mỗi dòng 1 lỗi):
-#<số dòng>: <mô tả lỗi> → <gợi ý sửa> (chủ đề: <kiến thức>)
-`;
+      return res.json({
+        success: true,
+        results,
+        ai: aiRes, // FE sẽ lấy thẳng dữ liệu này
+        hasGuide: false,
+      });
     } else {
-      prompt = `
-${question ? "Câu hỏi: " + question : ""}
-Code học sinh:
-\`\`\`python
-${code}
-\`\`\`
-
-Bạn là giáo viên Tin học tại Việt Nam nếu code chạy đúng. Hãy kiểm tra xem có thể cải tiến không:
-- Nếu có, gợi ý ngắn gọn (tối ưu, clean code, đổi biến...).
-- Nếu không, trả về "Code đã tốt, không cần cải tiến".
-- Không cần đưa ra lý do.
-`;
+      return res.json({
+        success: true,
+        results,
+        guide: "Chúc mừng, em đã làm rất tốt!",
+        hasGuide: true,
+      });
     }
-
-    try {
-      const geminiRes = await callGemini(prompt);
-      const text =
-        geminiRes?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Không có phản hồi từ AI.";
-
-      if (hasError) {
-        // chỉ parse lineHints, không trả về guide
-        lineHints = text
-          .split("\n")
-          .map((line) => {
-            const match = line.match(/^#(\d+): (.+)$/);
-            if (match) {
-              return { line: parseInt(match[1]), message: match[2] };
-            }
-            return null;
-          })
-          .filter(Boolean);
-        guide = null; // bỏ guide khi có lỗi
-      } else {
-        guide = text; // chỉ có guide khi code đúng
-      }
-    } catch (e) {
-      guide = null;
-      if (hasError) {
-        lineHints = [];
-      }
-    }
-
-    res.json({
-      success: true,
-      results,
-      guide,
-      lineHints,
-      hasGuide: !hasError, // code đúng enable hướng dẫn.
-    });
   } catch (error) {
     console.error("Execution error:", error);
     if (error.code === "ECONNREFUSED") {
-      return res
-        .status(503)
-        .json({ success: false, error: "Python service không khả dụng" });
+      return res.status(503).json({
+        success: false,
+        error: "Python service không khả dụng",
+      });
     }
     res.status(500).json({
       success: false,

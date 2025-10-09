@@ -1,0 +1,98 @@
+.popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 600px;
+  max-height: 80vh;
+  overflow: auto;
+  position: relative;
+  transition: transform 0.2s;
+
+  &.shake {
+    animation: shake 0.4s;
+    border: 2px solid red;
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0px);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0px);
+  }
+}
+
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.popup-body {
+  display: flex;
+  align-items: flex-start;
+}
+
+.character {
+  width: 120px;
+  margin-right: 16px;
+
+  img {
+    width: 100%;
+    border-radius: 50%;
+  }
+}
+
+.content {
+  flex: 1;
+}
+
+.answers {
+  button {
+    margin: 5px;
+    padding: 8px 12px;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f9f9f9;
+
+    &.selected {
+      background: #007bff;
+      color: #fff;
+    }
+  }
+}
+
+.popup-footer{
+  display: flex;
+  justify-content: flex-end; /* đẩy nút sang phải */
+  margin-top: 15px;
+}

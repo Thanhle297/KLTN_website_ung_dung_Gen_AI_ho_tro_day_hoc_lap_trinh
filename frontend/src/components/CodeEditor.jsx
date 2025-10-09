@@ -1,102 +1,17 @@
-// frontend/components/CodeEditor.jsx
+// components/CodeEditor.jsx
 import { useState, useEffect, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
-import {
-  StateField,
-  StateEffect,
-  RangeSetBuilder,
-} from "@codemirror/state";
-import { gutter, GutterMarker } from "@codemirror/view";
 import "../styles/CodeEditor.scss";
-
-// ==== Marker cho lỗi từng dòng ====
-const addWarnings = StateEffect.define();
-
-// Quản lý popup toàn cục
-let activePopups = [];
-
-class LineMarker extends GutterMarker {
-  constructor(message) {
-    super();
-    this.message = message;
-  }
-
-  toDOM() {
-    const span = document.createElement("span");
-    span.style.cursor = this.message ? "pointer" : "default";
-    span.style.color = this.message ? "red" : "inherit";
-    span.textContent = this.message ? "⚠️" : ""; // ❌ không hiển thị số dòng
-
-    if (this.message) {
-      span.onclick = (ev) => {
-        ev.stopPropagation();
-
-        // Xóa tất cả popup cũ
-        activePopups.forEach((p) => p.remove());
-        activePopups = [];
-
-        const popup = document.createElement("div");
-        popup.className = "error-popup"; // sử dụng class CSS
-        popup.textContent = this.message;
-        document.body.appendChild(popup);
-
-        const rect = span.getBoundingClientRect();
-        popup.style.left = rect.right + 5 + "px";
-        popup.style.top = rect.top + "px";
-
-        activePopups.push(popup);
-
-        const removePopup = () => {
-          popup.remove();
-          activePopups = activePopups.filter((p) => p !== popup);
-          document.removeEventListener("click", removePopup);
-        };
-        setTimeout(() => document.addEventListener("click", removePopup), 0);
-      };
-    }
-    return span;
-  }
-}
-
-const lineMarkersField = StateField.define({
-  create() {
-    return new RangeSetBuilder().finish();
-  },
-  update(deco, tr) {
-    let result = deco.map(tr.changes);
-    for (let e of tr.effects) {
-      if (e.is(addWarnings)) {
-        const builder = new RangeSetBuilder();
-        const doc = tr.state.doc;
-
-        for (let i = 1; i <= doc.lines; i++) {
-          const msgObj = e.value.find((w) => w.line === i);
-          const lineInfo = doc.line(i);
-
-          if (msgObj) {
-            builder.add(lineInfo.from, lineInfo.from, new LineMarker(msgObj.message));
-          }
-        }
-        result = builder.finish();
-      }
-    }
-    return result;
-  },
-});
-
-const lineGutter = gutter({
-  class: "cm-lineNumbers",
-  markers: (view) => view.state.field(lineMarkersField),
-});
 
 export default function CodeEditor({
   code,
   question,
   onChangeCode,
   onChangeResult,
+  onExecuteResponse, // callback để Layout nhận dữ liệu AI
 }) {
   const [results, setResults] = useState([]);
   const [guide, setGuide] = useState(null);
@@ -105,7 +20,7 @@ export default function CodeEditor({
   const [localCode, setLocalCode] = useState(code || "");
   const [hasNewGuide, setHasNewGuide] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [hasGuide, setHasGuide] = useState(false); // thêm
+  const [hasGuide, setHasGuide] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -154,7 +69,7 @@ export default function CodeEditor({
       if (data.success) {
         setResults(data.results);
         setGuide(data.guide);
-        setHasGuide(data.hasGuide)
+        setHasGuide(data.hasGuide);
         setHasNewGuide(data.hasGuide);
 
         setSavedStates((prev) => ({
@@ -166,14 +81,9 @@ export default function CodeEditor({
           },
         }));
 
-        if (editorRef.current) {
-          // Xóa popup cũ khi chạy lại code
-          activePopups.forEach((p) => p.remove());
-          activePopups = [];
-
-          editorRef.current.view.dispatch({
-            effects: addWarnings.of(data.lineHints || []),
-          });
+        // nếu BE có trả dữ liệu AI thì bắn thẳng lên Layout
+        if (data.ai) {
+          onExecuteResponse?.(data.ai);
         }
 
         const firstResult = data.results[0];
@@ -197,8 +107,10 @@ export default function CodeEditor({
         ref={editorRef}
         value={localCode}
         height="400px"
-        // basicSetup={{ lineNumbers: false }}
-        extensions={[python(), autocompletion({ override: [] }), lineMarkersField, lineGutter]}
+        extensions={[
+          python(),
+          autocompletion({ override: [] })
+        ]}
         onChange={(value) => {
           handleCodeChange(value);
           setSavedStates((prev) => ({
@@ -230,7 +142,7 @@ export default function CodeEditor({
               setActiveTab("guide");
               setHasNewGuide(false);
             }}
-            disabled ={!hasGuide}
+            disabled={!hasGuide}
           >
             Hướng dẫn
             {hasGuide && hasNewGuide && <span className="tab-notification"></span>}

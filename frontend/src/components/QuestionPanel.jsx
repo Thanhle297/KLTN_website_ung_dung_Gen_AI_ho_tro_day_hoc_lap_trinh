@@ -3,7 +3,7 @@ import "../styles/QuestionPanel.scss";
 export default function QuestionPanel({ current }) {
   return (
     <div className="question-panel">
-      <h2>Câu hỏi</h2>
+      {/* <h2>Câu hỏi</h2> */}
       <pre className="question-text">{current.question}</pre>
 
       <div className="question-panel__io">

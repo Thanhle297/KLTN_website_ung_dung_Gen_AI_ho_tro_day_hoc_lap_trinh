@@ -1,45 +1,103 @@
 .header {
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
   align-items: center;
-  padding: 12px 24px;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 2rem;
+  background: #1976d2;
+  color: white;
 
   &__logo {
-    font-size: 20px;
+    font-size: 1.5rem;
     font-weight: bold;
-    color: #2c3e50;
+    margin-right: 60%;
   }
 
-  &__nav ul {
-    display: flex;
-    gap: 20px;
-    list-style: none;
+  &__nav {
+    margin-right: 5%;
+    ul {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
 
-    li a {
-      text-decoration: none;
-      color: #2c3e50;
-      font-size: 16px;
-      transition: color 0.3s;
+      li a {
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
 
-      &:hover {
-        color: #3498db;
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
   }
-}
 
-/* Responsive: menu xuống dòng khi màn nhỏ */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
+  &__auth {
+    display: flex;
+    align-items: center;
 
-    &__nav ul {
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
+    .login-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+
+      i {
+        margin-right: 5px;
+      }
+
+      &:hover {
+        color: #ffeb3b;
+      }
+    }
+
+    .user-menu {
+      position: relative;
+
+      .avatar {
+        background: #ff9800;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+      }
+
+      .dropdown {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        background: white;
+        color: black;
+        list-style: none;
+        padding: 0.5rem 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        min-width: 180px;
+        z-index: 100;
+
+        li {
+          padding: 0.7rem 1rem;
+
+          a,
+          button {
+            all: unset;
+            cursor: pointer;
+            width: 100%;
+            display: block;
+            color: #333;
+            transition: 0.2s;
+          }
+
+          &:hover {
+            background: #f0f0f0;
+          }
+        }
+      }
     }
   }
 }

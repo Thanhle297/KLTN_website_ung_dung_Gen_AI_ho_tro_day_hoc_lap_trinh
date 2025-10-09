@@ -1,0 +1,28 @@
+﻿.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 0;
+  color: #2d3748;
+  font-size: 16px;
+}
+
+.loading-spinner__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #cbd5f5;
+  border-top-color: #3182ce;
+  animation: loading-spinner-spin 0.8s linear infinite;
+}
+
+.loading-spinner__text {
+  font-weight: 500;
+}
+
+@keyframes loading-spinner-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

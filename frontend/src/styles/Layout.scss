@@ -8,6 +8,7 @@
     padding: 20px;
     border-right: 1px solid #ddd;
     overflow-y: auto;
+    position: relative;
     // Ẩn thanh scroll cho gọn (tùy chọn)
     &::-webkit-scrollbar {
       height: 6px; // thanh scroll ngang
@@ -33,4 +34,22 @@
       border-radius: 3px;
     }
   }
+}
+
+.popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;   // phủ toàn bộ cột trái thôi
+  bottom: 0;
+  z-index: 10;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.layout__left.blur {
+  filter: blur(3px);
+  pointer-events: none;
 }

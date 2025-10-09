@@ -1,10 +1,11 @@
-//geminiService.js
+// geminiService.js
 const axios = require("axios");
 require("dotenv").config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_API_URL =
+  `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 async function callGemini(prompt) {
   try {
@@ -14,6 +15,12 @@ async function callGemini(prompt) {
         contents: [{ parts: [{ text: prompt }] }],
       }
     );
+
+    // 🔹 Log token usage nếu có
+    if (response.data.usageMetadata) {
+      console.log("Gemini token usage:", response.data.usageMetadata);
+    }
+
     return response.data;
   } catch (error) {
     console.error("Gemini API error:", error.response?.data || error.message);
@@ -22,6 +29,3 @@ async function callGemini(prompt) {
 }
 
 module.exports = { callGemini };
-
-
-
