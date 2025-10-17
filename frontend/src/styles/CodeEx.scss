@@ -1,0 +1,20 @@
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+//   margin-bottom: 20px;
+  padding: 10px 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  .left {
+    flex: 1;
+  }
+
+  .right {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 2%;
+  }
+}

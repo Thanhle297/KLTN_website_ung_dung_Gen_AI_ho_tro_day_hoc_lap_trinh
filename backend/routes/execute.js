@@ -17,7 +17,7 @@ const normalizeString = (str) =>
     .join(" ");
 
 router.post("/execute", async (req, res) => {
-  const { code, testcases, question } = req.body;
+  const { code, testcases, question, difficulty } = req.body;
 
   try {
     if (!code || !testcases || testcases.length === 0) {
@@ -26,7 +26,6 @@ router.post("/execute", async (req, res) => {
         .json({ success: false, error: "Missing code or testcases" });
     }
 
-    // gửi sang Python service
     const pythonPayload = {
       code,
       testcases: testcases.map((tc) => ({
@@ -69,31 +68,63 @@ router.post("/execute", async (req, res) => {
 
     const hasError = results.some((r) => !r.pass);
 
+    // --------------------- AI logic ---------------------
     if (hasError) {
       const failedCase = results.find((r) => !r.pass);
 
-      // gọi AI với prompt cứng
+      // Khó (2): không gọi AI
+      if (difficulty === 2) {
+        console.log("🟥 Mức độ hiện tại: KHÓ → Không gọi AI");
+        return res.json({
+          success: true,
+          results,
+          guide: "Sai, nhưng ở chế độ Khó sẽ không có gợi ý từ AI.",
+          hasGuide: false,
+        });
+      }
+
+      // Khá (1): chỉ trả <instruct>
+      if (difficulty === 1) {
+        console.log("🟨 Mức độ hiện tại: KHÁ → Gọi AI (instruct_only)");
+        const aiRes = await callPromptAI({
+          code,
+          question,
+          error: failedCase.actual,
+          testcase: failedCase,
+          mode: "instruct_only",
+        });
+        return res.json({
+          success: true,
+          results,
+          ai: { ...aiRes, mode: "instruct_only" }, // ✅ Thêm mode gửi FE
+          hasGuide: false,
+        });
+      }
+
+      // Dễ (0): đầy đủ quiz + instruct + answer
+      console.log("🟩 Mức độ hiện tại: DỄ → Gọi AI (full)");
       const aiRes = await callPromptAI({
         code,
         question,
         error: failedCase.actual,
         testcase: failedCase,
+        mode: "full",
       });
-
       return res.json({
         success: true,
         results,
-        ai: aiRes, // FE sẽ lấy thẳng dữ liệu này
+        ai: { ...aiRes, mode: "full" }, // ✅ Thêm mode gửi FE
         hasGuide: false,
       });
-    } else {
-      return res.json({
-        success: true,
-        results,
-        guide: "Chúc mừng, em đã làm rất tốt!",
-        hasGuide: true,
-      });
     }
+
+    // Nếu tất cả đúng
+    return res.json({
+      success: true,
+      results,
+      guide: "Chúc mừng, em đã làm rất tốt!",
+      hasGuide: true,
+    });
   } catch (error) {
     console.error("Execution error:", error);
     if (error.code === "ECONNREFUSED") {

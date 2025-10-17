@@ -34,6 +34,12 @@ export default function Login() {
 
   return (
     <div className="login">
+      <section className="login__image">
+        <img
+          src="https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/11/tai-hinh-nen-dep-mien-phi.jpg"
+          alt="Welcome"
+        />
+      </section>
       <section className="login__form">
         <form className="form" onSubmit={handleSubmit}>
           <h2>Đăng nhập hệ thống</h2>
@@ -54,10 +60,6 @@ export default function Login() {
           />
           <button type="submit">Đăng nhập</button>
         </form>
-      </section>
-
-      <section className="login__image">
-        <img src="https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/11/tai-hinh-nen-dep-mien-phi.jpg" alt="Welcome" />
       </section>
     </div>
   );

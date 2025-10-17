@@ -31,8 +31,18 @@ function parseBlocks(text) {
   return { quizzes, instructs, corrects, answers };
 }
 
-async function callPromptAI({ code, question, error, testcase }) {
-  const prompt = `
+async function callPromptAI({
+  code,
+  question,
+  error,
+  testcase,
+  mode = "full",
+}) {
+  let prompt = "";
+
+  // ---------------- FULL PROMPT (DỄ) ----------------
+  if (mode === "full") {
+    prompt = `
 Bạn là một giáo viên Tin học ở Việt Nam. Nhiệm vụ chính của bạn là: 
 1. Nhận code và kết quả thông báo từ ide do học sinh lập trình bằng Python. 
 2. Chấm điểm dựa trên các tiêu chí sau: 
@@ -77,18 +87,48 @@ ${code}
 \`\`\`
 
 Đề bài: ${question || "Không có"}
-
-Testcase:
-Input: ${testcase.input}
-Output (thực tế): ${error}
+Kết quả sai: ${error}
 Expected: ${testcase.expected}
 `;
+  }
+
+  // ---------------- INSTRUCT ONLY (KHÁ) ----------------
+  else if (mode === "instruct_only") {
+    prompt = `
+Bạn là giáo viên Tin học ở Việt Nam. 
+Hãy chỉ trả về hướng dẫn trong **một hoặc nhiều thẻ <instruct>**, 
+và tuyệt đối KHÔNG được tạo ra bất kỳ thẻ <quiz>, <answer>, <correct>, <question>, <ans> nào.
+Nếu trong câu trả lời có chứa các thẻ đó thì hãy **bỏ qua hoàn toàn**, chỉ xuất <instruct>.
+
+Yêu cầu nghiêm ngặt:
+- Mỗi gợi ý nằm trong 1 thẻ <instruct>.
+- Không có phần mở đầu, kết luận hay lời chào.
+- Không giải thích bên ngoài thẻ.
+- Không được tạo câu hỏi trắc nghiệm hay đáp án.
+- Nếu không có gì để gợi ý, chỉ trả về 1 thẻ <instruct> nói rằng: 
+  "<instruct>Hãy thử kiểm tra lại đầu vào và kết quả mong đợi.</instruct>"
+
+Ví dụ hợp lệ:
+<instruct>Hãy xem lại dòng 3, có thể em thiếu dấu hai chấm.</instruct>
+<instruct>Hãy kiểm tra biến n trước khi sử dụng.</instruct>
+
+Dưới đây là dữ liệu cần xử lý:
+
+Code học sinh:
+\`\`\`python
+${code}
+\`\`\`
+
+Đề bài: ${question || "Không có"}
+Kết quả sai: ${error}
+Expected: ${testcase.expected}
+`;
+  }
 
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
     temperature: 0,
-    top_p: 0,
   });
 
   const text =

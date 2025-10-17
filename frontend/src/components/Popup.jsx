@@ -14,33 +14,34 @@ export default function FETestPopup({ data, onClose }) {
     if (!data) return;
 
     const seq = [];
+
+    // Luôn thêm phần hướng dẫn
     data.instructs?.forEach((ins) =>
       seq.push({ type: "instruct", value: ins })
     );
 
-    data.quizzes?.forEach((quiz) => {
-      const qMatch = quiz.match(/<question>([\s\S]*?)<\/question>/);
-      const question = qMatch ? qMatch[1].trim() : "";
+    // 🔹 Chỉ thêm quiz và answer nếu không ở chế độ instruct_only
+    if (data.mode !== "instruct_only") {
+      data.quizzes?.forEach((quiz) => {
+        const qMatch = quiz.match(/<question>([\s\S]*?)<\/question>/);
+        const question = qMatch ? qMatch[1].trim() : "";
 
-      const ansMatches = [...quiz.matchAll(/<ans>([\s\S]*?)<\/ans>/g)];
-      const answers = ansMatches.map((m) => m[1].trim());
+        const ansMatches = [...quiz.matchAll(/<ans>([\s\S]*?)<\/ans>/g)];
+        const answers = ansMatches.map((m) => m[1].trim());
 
-      const correctIndex = answers.findIndex((a) => a.includes("<correct>"));
-      const cleanAnswers = answers.map((a) =>
-        a.replace(/<\/?correct>/g, "")
-      );
+        const correctIndex = answers.findIndex((a) => a.includes("<correct>"));
+        const cleanAnswers = answers.map((a) => a.replace(/<\/?correct>/g, ""));
 
-      seq.push({
-        type: "quiz",
-        question,
-        answers: cleanAnswers,
-        correctIndex,
+        seq.push({
+          type: "quiz",
+          question,
+          answers: cleanAnswers,
+          correctIndex,
+        });
       });
-    });
 
-    data.answers?.forEach((ans) =>
-      seq.push({ type: "answer", value: ans })
-    );
+      data.answers?.forEach((ans) => seq.push({ type: "answer", value: ans }));
+    }
 
     setSequence(seq);
     setCurrentIndex(0);
@@ -69,7 +70,9 @@ export default function FETestPopup({ data, onClose }) {
   return (
     <div className="popup-overlay">
       <div className={`popup ${shake ? "shake" : ""}`}>
-        <button className="popup-close" onClick={onClose}>×</button>
+        <button className="popup-close" onClick={onClose}>
+          <FaTimes />
+        </button>
 
         <div className="popup-body">
           <div className="character">
@@ -77,6 +80,7 @@ export default function FETestPopup({ data, onClose }) {
           </div>
 
           <div className="content">
+            {/* --------- HƯỚNG DẪN --------- */}
             {item.type === "instruct" && (
               <div>
                 <h3>Hướng dẫn</h3>
@@ -91,7 +95,8 @@ export default function FETestPopup({ data, onClose }) {
               </div>
             )}
 
-            {item.type === "quiz" && (
+            {/* --------- CÂU HỎI --------- */}
+            {data.mode !== "instruct_only" && item.type === "quiz" && (
               <div>
                 <h3>Câu hỏi</h3>
                 <p>{item.question}</p>
@@ -109,7 +114,8 @@ export default function FETestPopup({ data, onClose }) {
               </div>
             )}
 
-            {item.type === "answer" && (
+            {/* --------- CHỈNH SỬA --------- */}
+            {data.mode !== "instruct_only" && item.type === "answer" && (
               <div>
                 <h3>Chỉnh sửa đúng</h3>
                 <pre>{item.value}</pre>
@@ -120,9 +126,11 @@ export default function FETestPopup({ data, onClose }) {
 
         <div className="popup-footer">
           {currentIndex < sequence.length - 1 ? (
-            <button onClick={handleNext}><FaForward /></button>
+            <button className="btn-next" onClick={handleNext}>
+              <FaForward />
+            </button>
           ) : (
-            <button onClick={onClose}>Hoàn thành</button>
+            <button className="btn-finish" onClick={onClose}>Hoàn thành</button>
           )}
         </div>
       </div>

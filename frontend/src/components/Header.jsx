@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../IMG/Logo_noback.png"
 import "../styles/Header.scss";
 
 export default function Header() {
@@ -28,12 +29,11 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div className="header__logo">MyLogo</div>
+      <div className="header__logo"><Link to="/">LOGO</Link></div>
       <nav className="header__nav">
         <ul>
           <li><Link to="/">Trang chủ</Link></li>
-          <li><Link to="/about">Giới thiệu</Link></li>
-          <li><Link to="/CodeEx">Dịch vụ</Link></li>
+          <li><Link to="/course">Khóa học</Link></li>
           <li><Link to="/Contact">Liên hệ</Link></li>
         </ul>
       </nav>

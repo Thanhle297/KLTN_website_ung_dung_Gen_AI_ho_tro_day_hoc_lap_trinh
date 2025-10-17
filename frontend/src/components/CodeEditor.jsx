@@ -1,6 +1,7 @@
 // components/CodeEditor.jsx
 import { useState, useEffect, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
+import { EditorView } from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
@@ -11,7 +12,8 @@ export default function CodeEditor({
   question,
   onChangeCode,
   onChangeResult,
-  onExecuteResponse, // callback để Layout nhận dữ liệu AI
+  onExecuteResponse,
+  difficulty, // ✅ nhận thêm prop từ Layout
 }) {
   const [results, setResults] = useState([]);
   const [guide, setGuide] = useState(null);
@@ -47,6 +49,9 @@ export default function CodeEditor({
       onChangeResult("❌ Không có testcase được cung cấp.");
       return;
     }
+
+    
+
     setLoading(true);
     onChangeResult("⏳ Đang chạy code...");
 
@@ -55,6 +60,7 @@ export default function CodeEditor({
       testcases: question.testcase,
       questionId: question.id,
       question: question.title || "",
+      difficulty, 
     };
 
     try {
@@ -81,7 +87,7 @@ export default function CodeEditor({
           },
         }));
 
-        // nếu BE có trả dữ liệu AI thì bắn thẳng lên Layout
+        // 🔹 Nếu có dữ liệu AI, gửi lên Layout
         if (data.ai) {
           onExecuteResponse?.(data.ai);
         }
@@ -109,7 +115,15 @@ export default function CodeEditor({
         height="400px"
         extensions={[
           python(),
-          autocompletion({ override: [] })
+          autocompletion({ override: [] }),
+          EditorView.domEventHandlers({
+            copy: (e) => e.preventDefault(),
+            cut: (e) => e.preventDefault(),
+            paste: (e) => e.preventDefault(),
+            drop: (e) => e.preventDefault(),
+            contextmenu: (e) => e.preventDefault(),
+          }),
+          EditorView.editable.of(true),
         ]}
         onChange={(value) => {
           handleCodeChange(value);
@@ -145,7 +159,9 @@ export default function CodeEditor({
             disabled={!hasGuide}
           >
             Hướng dẫn
-            {hasGuide && hasNewGuide && <span className="tab-notification"></span>}
+            {hasGuide && hasNewGuide && (
+              <span className="tab-notification"></span>
+            )}
           </button>
         </div>
 
@@ -165,9 +181,9 @@ export default function CodeEditor({
                   <tbody>
                     {results.map((r, i) => (
                       <tr key={i}>
-                        <td>{r.input}</td>
-                        <td>{r.expected}</td>
-                        <td>{r.actual}</td>
+                        <td style={{ whiteSpace: "pre-wrap" }}>{r.input}</td>
+                        <td style={{ whiteSpace: "pre-wrap" }}>{r.expected}</td>
+                        <td style={{ whiteSpace: "pre-wrap" }}>{r.actual}</td>
                         <td style={{ color: r.pass ? "green" : "red" }}>
                           {r.pass ? "✔ Đúng" : "❌ Sai"}
                         </td>

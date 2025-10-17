@@ -1,15 +1,17 @@
 /* DifficultySlider.scss */
 .slider-container {
   width: 300px;
-  margin-left: 78%;
-//   margin: 40px auto;
+  // margin-left: 78%;
+  // margin: 20px ;
+  margin-top: 10px;
+  margin-left: 1%;
 }
 
 .slider-track {
   position: relative;
   background: #e5e7eb; // gray-200
   height: 40px;
-//   border-radius: 9999px;
+  border-radius: 9999px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,7 +24,7 @@
   top: 4px;
   width: 33%;
   height: 32px;
-//   border-radius: 9999px;
+  border-radius: 9999px;
   background: #3b82f6; // blue-500
   transition: left 0.3s ease;
   z-index: 1;
@@ -32,7 +34,7 @@
   flex: 1;
   border: none;
   background: transparent;
-//   font-weight: 500;
+  font-weight: 500;
   color: #374151; // gray-700
   z-index: 2;
   cursor: pointer;
