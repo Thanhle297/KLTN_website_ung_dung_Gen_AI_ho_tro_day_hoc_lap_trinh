@@ -8,41 +8,49 @@
     font-size: 26px;
     color: #1a1a1a;
     margin-bottom: 30px;
+    font-weight: 600;
   }
 
+  /* ===========================
+     BÀI LỚN (lesson-item)
+  =========================== */
   .lesson-item {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 20px 30px;
     margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.25s ease all;
     border: 1px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 
     &:hover {
       background: #f1f3fa;
       border-color: #c9d1f1;
     }
 
+    &__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
     &__info {
+      flex: 1;
       h3 {
         font-size: 18px;
         color: #222;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
+        font-weight: 600;
       }
-
       p {
         font-size: 14px;
         color: #555;
+        margin: 0;
       }
-    }
-
-    &__level {
-      color: #0c9a34;
-      font-weight: 600;
     }
 
     &__btn {
@@ -53,11 +61,89 @@
       padding: 8px 16px;
       cursor: pointer;
       font-weight: 500;
-      transition: 0.25s;
+      white-space: nowrap;
+      transition: 0.25s ease;
 
       &:hover {
         background: #20254a;
         color: #fff;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.expanded {
+      border-color: #20254a;
+      background: #f9faff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  /* ===========================
+     DANH SÁCH BÀI CON (sub-lessons)
+     Hiệu ứng trượt nhanh, gọn, mượt
+  =========================== */
+  .sub-lessons {
+    margin-top: 0;
+    padding-left: 20px;
+    border-left: 3px solid #dbe1f7;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease-in-out;
+  }
+
+  .lesson-item.expanded .sub-lessons {
+    margin-top: 10px;
+    max-height: 800px; /* tuỳ độ cao thực tế */
+  }
+
+  /* ===========================
+     TỪNG SUB-LESSON
+  =========================== */
+  .sub-lesson {
+    background: #fff;
+    border-radius: 10px;
+    margin: 10px 0;
+    padding: 15px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e2e6f3;
+    transition: all 0.25s ease;
+
+    &:hover {
+      background: #f5f7ff;
+      border-color: #c8d1f9;
+      transform: translateX(6px);
+    }
+
+    &__info {
+      flex: 1;
+      h4 {
+        font-size: 16px;
+        color: #1c1c1c;
+        margin-bottom: 4px;
+      }
+      p {
+        font-size: 13px;
+        color: #666;
+        margin: 2px 0;
+      }
+    }
+
+    button {
+      background: #20254a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.25s ease;
+
+      &:hover {
+        background: #3a45a1;
+        transform: scale(1.05);
       }
     }
   }

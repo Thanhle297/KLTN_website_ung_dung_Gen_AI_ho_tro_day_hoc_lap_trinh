@@ -1,8 +1,6 @@
 /* DifficultySlider.scss */
 .slider-container {
   width: 300px;
-  // margin-left: 78%;
-  // margin: 20px ;
   margin-top: 10px;
   margin-left: 1%;
 }
@@ -27,7 +25,7 @@
   border-radius: 9999px;
   background: #3b82f6; // blue-500
   transition: left 0.3s ease;
-  z-index: 1;
+  z-index: 0; // ✅ hạ thấp để không che icon
 }
 
 .slider-btn {
@@ -38,9 +36,25 @@
   color: #374151; // gray-700
   z-index: 2;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: transform 0.2s ease;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    z-index: 3; // ✅ icon nổi lên trên thumb
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.4)); // làm sáng icon
+  }
+
+  &:hover {
+    transform: scale(1.1);
+  }
 
   &.active {
     color: #fff;
+    svg {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.6));
+    }
   }
 }

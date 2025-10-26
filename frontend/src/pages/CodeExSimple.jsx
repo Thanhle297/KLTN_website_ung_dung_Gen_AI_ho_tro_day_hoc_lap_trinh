@@ -1,18 +1,15 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import Layout from "../components/Layout";
-import DifficultySlider from "../components/DifficultySlider";
-import SubmitButton from "../components/SubmitButton";
+import LayoutSimple from "../components/LayoutSimple";
+// import DifficultySlider from "../components/DifficultySlider";
+// import SubmitButton from "../components/SubmitButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import useLessonQuestions from "../hook/useLessonQuestions";
 import "../styles/CodeEx.scss";
 
-export default function CodeEx() {
+export default function CodeExSimple() {
   const { lessonId } = useParams();
   const userId = localStorage.getItem("userId");
-  const [difficulty, setDifficulty] = useState(0);
-
-  // ✅ Dùng custom hook
   const {
     lesson,
     questions,
@@ -21,23 +18,16 @@ export default function CodeEx() {
     editorStates,
     setEditorStates,
     loading,
-  } = useLessonQuestions(lessonId, userId);
+  } = useLessonQuestions(lessonId, userId); // ✅ dùng cùng hook với CodeEx
+  const [difficulty, setDifficulty] = useState(0);
 
-  // Nếu đang tải
   if (loading) return <LoadingSpinner label="Đang tải dữ liệu..." />;
-  if (!current) return <p>Không có câu hỏi nào cho bài này.</p>;
-
-  // Hàm cập nhật editor state
-  const updateEditorState = (id, newState) => {
-    setEditorStates((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], ...newState },
-    }));
-  };
+  if (!questions || questions.length === 0 || !current)
+    return <p>Không có câu hỏi nào cho bài này.</p>;
 
   return (
     <>
-      <div className="top-bar">
+      {/* <div className="top-bar">
         <div className="left">
           <DifficultySlider onChange={setDifficulty} />
         </div>
@@ -50,14 +40,19 @@ export default function CodeEx() {
             />
           )}
         </div>
-      </div>
+      </div> */}
 
-      <Layout
+      <LayoutSimple
         questions={questions}
         current={current}
-        editorStates={editorStates}
         setCurrent={setCurrent}
-        updateEditorState={updateEditorState}
+        editorStates={editorStates}
+        updateEditorState={(id, newState) =>
+          setEditorStates((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], ...newState },
+          }))
+        }
         difficulty={difficulty}
         lessonId={lessonId}
         userId={userId}

@@ -31,6 +31,7 @@ router.post("/auth/login", async (req, res) => {
       token,
       fullname: user.fullname,
       role: user.role,
+      userId :user._id.toString(),
     });
   } catch (err) {
     console.error(err);

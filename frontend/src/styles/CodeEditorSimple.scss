@@ -1,0 +1,195 @@
+.code-editor {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+
+  /* =============================
+     CodeMirror
+     ============================= */
+  .cm-editor {
+    border-radius: 8px;
+    border: 1px solid #dfe3ea;
+    font-size: 15px;
+    min-height: 320px;
+    max-height: 400px; // ✅ giới hạn cao nhất cho vùng code
+    overflow: auto;
+  }
+
+  /* =============================
+     Input
+     ============================= */
+  &__input {
+    margin-top: 0.8rem;
+    width: auto;
+    height: 140px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: "Courier New", monospace;
+    padding: 8px;
+    resize: vertical;
+    background: #fefefe;
+    transition: 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+    }
+  }
+
+  /* =============================
+     Run Button
+     ============================= */
+  &__run-btn {
+    margin-top: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    align-self: flex-start;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #0b5ed7;
+    }
+
+    &:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      font-size: 18px;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  /* =============================
+     Tabs Container
+     ============================= */
+  &__tabs {
+    margin-top: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tabs-header {
+    display: flex;
+    gap: 1.2rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 0.5rem;
+
+    button {
+      background: none;
+      border: none;
+      font-weight: 600;
+      font-size: 15px;
+      color: #555;
+      padding: 0.5rem 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+
+      &.active {
+        color: #0d6efd;
+        border-bottom: 3px solid #0d6efd;
+      }
+
+      &:hover {
+        color: #0b5ed7;
+      }
+    }
+  }
+
+  /* =============================
+     Terminal Output
+     ============================= */
+  .terminal {
+    flex: 1;
+    background: #0b0b0b;
+    color: #00ff88;
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    border-radius: 8px;
+    padding: 12px;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    min-height: 180px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+  }
+
+  /* =============================
+     AI Guide Output
+     ============================= */
+  .guide {
+    flex: 1;
+    background: #f8f9fa;
+    color: #333;
+    font-family: "Inter", sans-serif;
+    font-size: 15px;
+    border-radius: 8px;
+    padding: 12px;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    min-height: 180px;
+    line-height: 1.5;
+  }
+
+  /* =============================
+     Animation
+     ============================= */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+.blink-red {
+  animation: blink 1s infinite;
+  border: 1px solid red;
+  color: red !important;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Tuỳ chọn: định nghĩa thêm style cho terminal và guide */
+.terminal-output {
+  background: #0b0b0b;
+  color: #00ff88;
+  font-family: monospace;
+  padding: 10px;
+  min-height: 150px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.ai-guide {
+  white-space: pre-wrap;
+  color: #333;
+  background: #fff5f5;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}

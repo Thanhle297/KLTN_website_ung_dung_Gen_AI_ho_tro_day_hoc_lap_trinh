@@ -1,9 +1,8 @@
-// components/CodeEditor.jsx
 import { useState, useEffect, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { EditorView } from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
-import { autocompletion } from "@codemirror/autocomplete";
+// import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
 import "../styles/CodeEditor.scss";
 
@@ -13,95 +12,117 @@ export default function CodeEditor({
   onChangeCode,
   onChangeResult,
   onExecuteResponse,
-  difficulty, // ✅ nhận thêm prop từ Layout
+  difficulty,
+  userId,
+  lessonId,
 }) {
   const [results, setResults] = useState([]);
   const [guide, setGuide] = useState(null);
-  const [savedStates, setSavedStates] = useState({});
-  const [activeTab, setActiveTab] = useState("results");
   const [localCode, setLocalCode] = useState(code || "");
-  const [hasNewGuide, setHasNewGuide] = useState(false);
+  const [activeTab, setActiveTab] = useState("results");
   const [loading, setLoading] = useState(false);
   const [hasGuide, setHasGuide] = useState(false);
+  const [hasNewGuide, setHasNewGuide] = useState(false);
+  const lastSavedRef = useRef("");
 
   const editorRef = useRef(null);
 
+  // ✅ Load dữ liệu tạm riêng cho câu hỏi này
   useEffect(() => {
-    if (!question || !question.id) return;
-    const questionId = question.id;
-    const savedState = savedStates[questionId] || {
-      code: "",
-      results: [],
-      guide: null,
+    if (!question || !userId) return;
+    const loadTemp = async () => {
+      const res = await fetch(
+        `http://localhost:3001/api/temp/load?userId=${userId}&lessonId=${lessonId}`
+      );
+      const tempData = await res.json();
+      const match = Array.isArray(tempData)
+        ? tempData.find((t) => t.questionId === question.id)
+        : null;
+
+      if (match?.code) {
+        setLocalCode(match.code);
+        setResults(match.results || []);
+        setGuide(match.guide || null);
+      }
     };
-    setLocalCode(savedState.code || code || "");
-    setResults(savedState.results || []);
-    setGuide(savedState.guide || null);
-  }, [question, savedStates, code]);
+    loadTemp();
+  }, [question, userId, lessonId]);
+
+  // Reset code khi đổi câu
+  useEffect(() => {
+    setLocalCode(code || "");
+    setResults([]);
+    setGuide(null);
+  }, [question, code]);
+
+  // ✅ Auto-save theo từng câu hỏi
+  useEffect(() => {
+    if (!userId || !lessonId || !question) return;
+    if (localCode.trim() === lastSavedRef.current.trim()) return;
+
+    const timer = setTimeout(() => {
+      fetch("http://localhost:3001/api/temp/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          lessonId,
+          questionId: question.id,
+          data: { code: localCode, results, guide },
+        }),
+      })
+        .then(() => {
+          lastSavedRef.current = localCode;
+          console.log(`💾 Auto-saved question ${question.id}`);
+        })
+        .catch((err) => console.error("❌ Save failed:", err));
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [localCode, results, guide, userId, lessonId, question]);
 
   const handleCodeChange = (newCode) => {
     setLocalCode(newCode);
     onChangeCode(newCode);
   };
 
+  // ✅ Run code
   const runCode = async () => {
-    if (!question || !question.testcase || !question.id) {
+    if (!question?.testcase) {
       onChangeResult("❌ Không có testcase được cung cấp.");
       return;
     }
 
-    
-
     setLoading(true);
     onChangeResult("⏳ Đang chạy code...");
 
-    const requestData = {
-      code: localCode,
-      testcases: question.testcase,
-      questionId: question.id,
-      question: question.title || "",
-      difficulty, 
-    };
-
     try {
-      const response = await fetch("http://localhost:3001/api/execute", {
+      const res = await fetch("http://localhost:3001/api/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({
+          code: localCode,
+          testcases: question.testcase,
+          questionId: question.id,
+          difficulty,
+        }),
       });
-
-      const data = await response.json();
+      const data = await res.json();
 
       if (data.success) {
         setResults(data.results);
         setGuide(data.guide);
-        setHasGuide(data.hasGuide);
-        setHasNewGuide(data.hasGuide);
-
-        setSavedStates((prev) => ({
-          ...prev,
-          [question.id]: {
-            code: localCode,
-            results: data.results,
-            guide: data.guide,
-          },
-        }));
-
-        // 🔹 Nếu có dữ liệu AI, gửi lên Layout
-        if (data.ai) {
-          onExecuteResponse?.(data.ai);
-        }
-
-        const firstResult = data.results[0];
-        if (firstResult) {
-          onChangeResult(firstResult.actual || "Không có kết quả xuất ra.");
-        }
+        setHasGuide(!!data.guide);
+        setHasNewGuide(!!data.guide);
+        if (data.ai) onExecuteResponse?.(data.ai);
+        onChangeResult(
+          data.results?.[0]?.actual || "Không có kết quả xuất ra."
+        );
       } else {
         onChangeResult(`❌ Lỗi: ${data.error}`);
       }
-    } catch (error) {
-      console.error("=== FRONTEND: Error calling API ===", error);
-      onChangeResult(`❌ Lỗi kết nối: ${error.message}`);
+    } catch (err) {
+      onChangeResult(`❌ Lỗi kết nối: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -115,29 +136,18 @@ export default function CodeEditor({
         height="400px"
         extensions={[
           python(),
-          autocompletion({ override: [] }),
-          EditorView.domEventHandlers({
-            copy: (e) => e.preventDefault(),
-            cut: (e) => e.preventDefault(),
-            paste: (e) => e.preventDefault(),
-            drop: (e) => e.preventDefault(),
-            contextmenu: (e) => e.preventDefault(),
-          }),
-          EditorView.editable.of(true),
+          EditorView.editable.of(true), // vẫn cho gõ
         ]}
-        onChange={(value) => {
-          handleCodeChange(value);
-          setSavedStates((prev) => ({
-            ...prev,
-            [question.id]: { code: value, results: results || [], guide },
-          }));
-        }}
+        onChange={(value) => handleCodeChange(value)}
+        onPaste={(e) => e.preventDefault()}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
       />
 
       <button
-        className="code-editor__run-btn"
         onClick={runCode}
         disabled={loading}
+        className="code-editor__run-btn"
       >
         {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
       </button>
@@ -151,14 +161,14 @@ export default function CodeEditor({
             Kết quả
           </button>
           <button
-            className={`tab-btn ${activeTab === "guide" ? "active" : ""}`}
+            className={activeTab === "guide" ? "active" : ""}
             onClick={() => {
               setActiveTab("guide");
               setHasNewGuide(false);
             }}
             disabled={!hasGuide}
           >
-            Hướng dẫn
+            Hướng dẫn{" "}
             {hasGuide && hasNewGuide && (
               <span className="tab-notification"></span>
             )}
@@ -168,8 +178,8 @@ export default function CodeEditor({
         <div className="tabs-content">
           {activeTab === "results" && (
             <div className="tab-panel">
-              {results.length > 0 ? (
-                <table border="1" style={{ marginTop: "20px", width: "100%" }}>
+              {results.length ? (
+                <table border="1" style={{ width: "100%" }}>
                   <thead>
                     <tr>
                       <th>Input</th>
@@ -196,13 +206,12 @@ export default function CodeEditor({
               )}
             </div>
           )}
-
           {activeTab === "guide" && (
             <div className="tab-panel">
               {guide ? (
-                <p style={{ whiteSpace: "pre-wrap", color: "#444" }}>{guide}</p>
+                <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p>
               ) : (
-                <p>Chưa có hướng dẫn. Hãy chạy code để nhận gợi ý từ AI.</p>
+                <p>Chưa có hướng dẫn.</p>
               )}
             </div>
           )}
