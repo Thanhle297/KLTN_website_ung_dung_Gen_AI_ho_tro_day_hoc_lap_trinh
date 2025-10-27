@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -13,7 +12,7 @@ app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -24,11 +23,12 @@ const questionRoutes = require("./routes/question");
 const authRoutes = require("./routes/auth");
 const tempRoutes = require("./routes/tempSubmission");
 const aiSimpleRoutes = require("./routes/aiSimple");
+const userRoutes = require("./routes/userRoutes"); // ✅ Thêm route người dùng
 
 // ✅ Hàm khởi động server
 async function startServer() {
   try {
-    await connectDB();
+    await connectDB(app);
     console.log("✅ MongoDB connected successfully.");
 
     // Mount routes
@@ -37,7 +37,8 @@ async function startServer() {
     app.use("/api", questionRoutes);
     app.use("/api", authRoutes);
     app.use("/api/temp", tempRoutes);
-    app.use("/api/ai", aiSimpleRoutes); // ✅ Route AI simple
+    app.use("/api/ai", aiSimpleRoutes);
+    app.use("/api/users", userRoutes); // ✅ Mount route người dùng
 
     // Kiểm tra hoạt động server
     app.get("/", (req, res) => {
@@ -48,6 +49,7 @@ async function startServer() {
           "/api/openai",
           "/api/question",
           "/api/temp",
+          "/api/users/me",
         ],
       });
     });

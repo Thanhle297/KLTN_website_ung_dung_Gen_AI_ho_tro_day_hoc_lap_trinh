@@ -25,27 +25,82 @@ router.get("/lessons/:courseId", async (req, res) => {
 });
 
 // Lấy chi tiết 1 bài lớn (kèm subLessons)
+// router.get("/lesson/:lessonId", async (req, res) => {
+//   try {
+//     const db = getDB();
+//     const lesson = await db
+//       .collection("lessons")
+//       .findOne({ lessonId: req.params.lessonId });
+
+//     if (!lesson)
+//       return res.status(404).json({ error: "Không tìm thấy bài học" });
+
+//     // Thêm số lượng câu hỏi cho mỗi subLesson
+//     if (lesson.subLessons && Array.isArray(lesson.subLessons)) {
+//       for (const sub of lesson.subLessons) {
+//         const count = await db
+//           .collection("question")
+//           .countDocuments({ lessonId: sub.lessonId });
+//         sub.questionCount = count;
+//       }
+//     }
+
+//     res.json(lesson);
+//   } catch (err) {
+//     console.error("❌ Lỗi /lesson/:lessonId:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ✅ Lấy chi tiết bài học hoặc subLesson
 router.get("/lesson/:lessonId", async (req, res) => {
   try {
     const db = getDB();
-    const lesson = await db
-      .collection("lessons")
-      .findOne({ lessonId: req.params.lessonId });
+    const { lessonId } = req.params;
 
-    if (!lesson)
-      return res.status(404).json({ error: "Không tìm thấy bài học" });
+    // 1️⃣ Tìm bài học chính
+    const lesson = await db.collection("lessons").findOne({ lessonId });
 
-    // Thêm số lượng câu hỏi cho mỗi subLesson
-    if (lesson.subLessons && Array.isArray(lesson.subLessons)) {
-      for (const sub of lesson.subLessons) {
-        const count = await db
-          .collection("question")
-          .countDocuments({ lessonId: sub.lessonId });
-        sub.questionCount = count;
+    // Nếu là bài chính -> trả về cùng questionCount của subLessons
+    if (lesson) {
+      if (lesson.subLessons && Array.isArray(lesson.subLessons)) {
+        for (const sub of lesson.subLessons) {
+          const count = await db
+            .collection("question")
+            .countDocuments({ lessonId: sub.lessonId });
+          sub.questionCount = count;
+        }
       }
+      return res.json(lesson);
     }
 
-    res.json(lesson);
+    // 2️⃣ Nếu không tìm thấy bài chính -> kiểm tra xem có nằm trong subLessons không
+    const parentLesson = await db
+      .collection("lessons")
+      .findOne({ "subLessons.lessonId": lessonId });
+
+    if (!parentLesson)
+      return res
+        .status(404)
+        .json({ error: "Không tìm thấy bài học hoặc subLesson" });
+
+    // Lấy đúng subLesson cần
+    const subLesson = parentLesson.subLessons.find(
+      (s) => s.lessonId === lessonId
+    );
+
+    // Đếm số lượng câu hỏi trong subLesson
+    const questionCount = await db
+      .collection("question")
+      .countDocuments({ lessonId });
+
+    subLesson.questionCount = questionCount;
+    subLesson.parentLesson = {
+      lessonId: parentLesson.lessonId,
+      title: parentLesson.title,
+    };
+
+    return res.json(subLesson);
   } catch (err) {
     console.error("❌ Lỗi /lesson/:lessonId:", err);
     res.status(500).json({ error: err.message });

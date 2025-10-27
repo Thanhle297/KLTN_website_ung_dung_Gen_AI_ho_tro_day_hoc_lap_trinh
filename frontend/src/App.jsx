@@ -95,6 +95,7 @@ import Login from "./auth/login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
+import Profile from "./pages/Profile";
 
 // ====================
 // Token & inactivity utilities
@@ -253,6 +254,7 @@ function AppContent() {
           }
         />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/profile" element={<Profile/>} />
       </Routes>
     </>
   );

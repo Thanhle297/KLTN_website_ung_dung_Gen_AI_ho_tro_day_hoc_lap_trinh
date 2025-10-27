@@ -14,14 +14,16 @@ router.post("/auth/login", async (req, res) => {
     const db = getDB();
     const user = await db.collection("users").findOne({ username });
 
-    if (!user) return res.status(404).json({ message: "Tài khoản không tồn tại" });
-    if (!user.isActive) return res.status(403).json({ message: "Tài khoản đã bị khóa" });
+    if (!user)
+      return res.status(404).json({ message: "Tài khoản không tồn tại" });
+    if (!user.isActive)
+      return res.status(403).json({ message: "Tài khoản đã bị khóa" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Sai mật khẩu" });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id.toString(), username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: "2h" }
     );
@@ -31,7 +33,7 @@ router.post("/auth/login", async (req, res) => {
       token,
       fullname: user.fullname,
       role: user.role,
-      userId :user._id.toString(),
+      userId: user._id.toString(),
     });
   } catch (err) {
     console.error(err);
