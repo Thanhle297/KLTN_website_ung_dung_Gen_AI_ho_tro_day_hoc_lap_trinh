@@ -4,20 +4,50 @@
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
+  // ==== CodeMirror ====
   .cm-theme {
     font-size: 14px;
     min-height: 300px;
   }
 
+  // ==== Hàng chứa nút hành động ====
+  &__actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  // ==== Nút tải file ====
+  .upload-btn {
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #4338ca;
+    }
+  }
+
+  // ==== Nút chạy code ====
   &__run-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     background: #3182ce;
-    color: white;
+    color: #fff;
     padding: 10px 16px;
-    margin: 10px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -40,10 +70,22 @@
     }
   }
 
-  .code-editor__result-layout {
+  // ==== Layout hiển thị kết quả ====
+  &__result-layout {
     display: flex;
     gap: 20px;
     padding: 20px;
+
+    .result-layout__left {
+      flex: 1;
+
+      p {
+        text-align: center;
+        margin: 0;
+        font-weight: bold;
+        padding-bottom: 10px;
+      }
+    }
 
     .result-layout__right {
       flex: 1;
@@ -66,31 +108,19 @@
           font-weight: bold;
         }
 
-        td {
-          &.pass {
-            color: green;
-          }
-
-          &.fail {
-            color: red;
-          }
+        td.pass {
+          color: green;
         }
-      }
-    }
 
-    .result-layout__left {
-      flex: 1;
-
-      p {
-        text-align: center;
-        margin: 0;
-        font-weight: bold;
-        padding-bottom: 10px;
+        td.fail {
+          color: red;
+        }
       }
     }
   }
 
-  .code-editor__tabs {
+  // ==== Tabs hiển thị kết quả và hướng dẫn ====
+  &__tabs {
     margin-top: 20px;
 
     .tabs-header {
@@ -98,12 +128,13 @@
       border-bottom: 2px solid #ccc;
 
       button {
-        position: relative; // ✅ để chứa chấm đỏ
+        position: relative;
         padding: 10px 20px;
         border: none;
         background: none;
         cursor: pointer;
         font-weight: 500;
+        transition: color 0.2s ease;
 
         &.active {
           border-bottom: 3px solid #007bff;
@@ -114,14 +145,13 @@
           color: #0056b3;
         }
 
-        // ✅ chấm đỏ thông báo
         .tab-notification {
           position: absolute;
           top: 6px;
           right: 6px;
           width: 10px;
           height: 10px;
-          background-color: #dc3545; // đỏ cảnh báo
+          background-color: #dc3545;
           border-radius: 50%;
           box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
         }
@@ -139,7 +169,7 @@
           border-collapse: collapse;
           margin-top: 16px;
           font-size: 14px;
-          background: #ffffff;
+          background: #fff;
           border-radius: 8px;
           overflow: hidden;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -180,11 +210,11 @@
                 text-align: center;
 
                 &.pass {
-                  color: #28a745; // xanh lá
+                  color: #28a745;
                 }
 
                 &.fail {
-                  color: #dc3545; // đỏ
+                  color: #dc3545;
                 }
               }
             }
@@ -195,20 +225,21 @@
   }
 }
 
+// ==== Hiệu ứng quay ====
 @keyframes spin {
   100% {
     transform: rotate(360deg);
   }
 }
 
-// ==== Popup lỗi tách riêng ====
+// ==== Popup lỗi ====
 .error-popup {
   position: absolute;
   background: #fff;
   border: 1px solid #ccc;
   padding: 6px 8px;
   border-radius: 6px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   max-width: 300px;
   z-index: 1000;
   font-size: 14px;

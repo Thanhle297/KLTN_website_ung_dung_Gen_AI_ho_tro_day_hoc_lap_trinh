@@ -106,7 +106,7 @@ export default function CodeEditor({
           question: question.question,
           questionId: question.id,
           difficulty,
-          lessonId
+          lessonId,
         }),
       });
       const data = await res.json();
@@ -129,6 +129,19 @@ export default function CodeEditor({
       setLoading(false);
     }
   };
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const fileContent = event.target.result;
+      setLocalCode(fileContent);
+      onChangeCode(fileContent);
+      console.log("📥 Đã tải file:", file.name);
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="code-editor">
@@ -139,21 +152,33 @@ export default function CodeEditor({
         extensions={[
           python(),
           EditorView.editable.of(true), // vẫn cho gõ
-          autocompletion({ override: [] })
+          autocompletion({ override: [] }),
         ]}
         onChange={(value) => handleCodeChange(value)}
         onPaste={(e) => e.preventDefault()}
         onCopy={(e) => e.preventDefault()}
         onCut={(e) => e.preventDefault()}
       />
+      <div className="code-editor__actions">
+        <input
+          type="file"
+          accept=".py"
+          id="upload-file"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+        <label htmlFor="upload-file" className="upload-btn">
+          📂 Tải file Python
+        </label>
 
-      <button
-        onClick={runCode}
-        disabled={loading}
-        className="code-editor__run-btn"
-      >
-        {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
-      </button>
+        <button
+          onClick={runCode}
+          disabled={loading}
+          className="code-editor__run-btn"
+        >
+          {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
+        </button>
+      </div>
 
       <div className="code-editor__tabs">
         <div className="tabs-header">
