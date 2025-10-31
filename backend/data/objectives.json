@@ -1,0 +1,62 @@
+{
+  "bai16": {
+    "title": "Ngôn ngữ lập trình bậc cao và Python",
+    "keywords": ["print()"]
+  },
+  "bai17": {
+    "title": "Biến và lệnh gán",
+    "keywords": ["+", "-", "*", "/", "//", "%", "**", "="]
+  },
+  "bai18": {
+    "title": "Lệnh vào/ra đơn giản",
+    "keywords": ["int()", "float()", "str()", "type()", "input()", "print()"]
+  },
+  "bai19": {
+    "title": "Câu lệnh rẽ nhánh if",
+    "keywords": ["if", "elif", "else", "<", ">", "==", "!=", "<=", ">="]
+  },
+  "bai20": {
+    "title": "Câu lệnh lặp for",
+    "keywords": ["for", "range()"]
+  },
+  "bai21": {
+    "title": "Câu lệnh lặp while",
+    "keywords": ["while", "break"]
+  },
+  "bai22": {
+    "title": "Kiểu dữ liệu danh sách",
+    "keywords": ["list", "append()", "list[i]"]
+  },
+  "bai23": {
+    "title": "Một số lệnh làm việc với danh sách",
+    "keywords": ["for x in list", "append()", "remove()", "insert()", "clear()", "sort()", "in"]
+  },
+  "bai24": {
+    "title": "Xâu kí tự",
+    "keywords": ["string", "len()", "for ch in str", "range(len(s))"]
+  },
+  "bai25": {
+    "title": "Một số lệnh làm việc với xâu kí tự",
+    "keywords": ["find()", "len()", "split()", "join()", "str[start:end]"]
+  },
+  "bai26": {
+    "title": "Hàm trong Python",
+    "keywords": ["def", "return", "abs()", "len()", "range()", "chr()", "ord()"]
+  },
+  "bai27": {
+    "title": "Tham số của hàm",
+    "keywords": ["def ham(a,b):", "gọi hàm", "return"]
+  },
+  "bai28": {
+    "title": "Phạm vi của biến",
+    "keywords": ["biến cục bộ", "biến toàn cục", "global"]
+  },
+  "bai29": {
+    "title": "Nhận biết lỗi chương trình",
+    "keywords": ["SyntaxError", "TypeError", "NameError", "ZeroDivisionError"]
+  },
+  "bai30": {
+    "title": "Kiểm thử và gỡ lỗi",
+    "keywords": ["debug", "breakpoint"]
+  }
+}

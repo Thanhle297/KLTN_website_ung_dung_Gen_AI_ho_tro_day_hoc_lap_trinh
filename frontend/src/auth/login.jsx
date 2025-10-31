@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.scss";
 
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,7 +14,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://103.90.224.183:3001/api/auth/login", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

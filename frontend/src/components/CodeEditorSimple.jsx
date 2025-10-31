@@ -29,7 +29,7 @@ export default function CodeEditorSimple({
 
     try {
       // ✅ Gọi Python service
-      const resp = await fetch("http://103.90.224.183:8001/run_code_simple", {
+      const resp = await fetch(`${process.env.REACT_APP_API_URL_B}/run_code_simple`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: localCode, input: inputText }),
@@ -48,7 +48,7 @@ export default function CodeEditorSimple({
         onChangeResult(data.error);
 
         // ✅ Gọi AI phân tích lỗi
-        const aiResp = await fetch("http://103.90.224.183:3001/api/ai/simple", {
+        const aiResp = await fetch(`${process.env.REACT_APP_API_URL}/api/ai/simple`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

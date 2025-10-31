@@ -17,7 +17,9 @@ const normalizeString = (str) =>
     .join(" ");
 
 router.post("/execute", async (req, res) => {
-  const { code, testcases, question, difficulty } = req.body;
+  const { code, testcases, question, difficulty,lessonId  } = req.body;
+  console.log("🚀 Nhận từ FE:", { difficulty, lessonId, question });
+
 
   try {
     if (!code || !testcases || testcases.length === 0) {
@@ -92,6 +94,7 @@ router.post("/execute", async (req, res) => {
           error: failedCase.actual,
           testcase: failedCase,
           mode: "instruct_only",
+          lessonId,
         });
         return res.json({
           success: true,
@@ -109,6 +112,7 @@ router.post("/execute", async (req, res) => {
         error: failedCase.actual,
         testcase: failedCase,
         mode: "full",
+        lessonId,
       });
       return res.json({
         success: true,

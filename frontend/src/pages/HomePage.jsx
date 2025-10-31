@@ -23,7 +23,7 @@ export default function HomePage() {
   ];
 
   const { courses, loading } = useCourses(
-    "http://103.90.224.183:3001/api/courses",
+    `${process.env.REACT_APP_API_URL}/api/courses`,
     fallbackCourses
   );
 
