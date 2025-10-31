@@ -20,13 +20,27 @@ export default function LayoutSimple({
   if (!current) return <p>Đang tải câu hỏi...</p>;
   const currentIndex = questions.findIndex((q) => q.id === current.id);
 
-  const handleExecuteResponse = (aiData) => {
-    if (difficulty !== 2 && aiData) setPopupData(aiData);
+  const handleExecuteResponse = (result) => {
+    if (!result) return;
+
+    if (result.success) {
+      // ✅ Nếu đúng: tạo popup "Hoàn thành"
+      setPopupData({
+        mode: "instruct_only",
+        instructs: ["🎉 Code của bạn chạy đúng, chúc mừng bạn đã hoàn thành!"],
+      });
+    } else {
+      // ❌ Nếu sai: hiển thị hướng dẫn từ AI
+      setPopupData({
+        mode: "instruct_only",
+        instructs: result.instructs || ["AI không có hướng dẫn cụ thể."],
+      });
+    }
   };
 
   return (
     <div className="layout">
-      {/* Cột trái: danh sách câu hỏi + nội dung câu hỏi */}
+      {/* Cột trái */}
       <div className="layout__left">
         <div className={`left-content ${popupData ? "blur" : ""}`}>
           <QuestionList questions={questions} setCurrent={setCurrent} />
@@ -38,10 +52,11 @@ export default function LayoutSimple({
         )}
       </div>
 
-      {/* Cột phải: vùng code */}
+      {/* Cột phải */}
       <div className="layout__right">
         <CodeEditorSimple
           code={editorStates[current.id]?.code || ""}
+          input={editorStates[current.id]?.input || ""}
           question={current}
           difficulty={difficulty}
           userId={userId}
@@ -49,8 +64,11 @@ export default function LayoutSimple({
           onChangeCode={(newCode) =>
             updateEditorState(current.id, { code: newCode })
           }
+          onChangeInput={(newInput) =>
+            updateEditorState(current.id, { input: newInput })
+          }
           onChangeResult={(r) => updateEditorState(current.id, { result: r })}
-          onExecuteResponse={handleExecuteResponse}
+          onExecuteResponse={handleExecuteResponse} // ✅ xử lý popup
         />
       </div>
     </div>

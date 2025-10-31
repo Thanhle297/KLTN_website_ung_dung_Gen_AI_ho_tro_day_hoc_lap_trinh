@@ -18,7 +18,7 @@ const normalizeString = (str) =>
 
 router.post("/execute", async (req, res) => {
   const { code, testcases, question, difficulty,lessonId  } = req.body;
-  console.log("🚀 Nhận từ FE:", { difficulty, lessonId, question });
+  // console.log("🚀 Nhận từ FE:", { difficulty, lessonId, question });
 
 
   try {

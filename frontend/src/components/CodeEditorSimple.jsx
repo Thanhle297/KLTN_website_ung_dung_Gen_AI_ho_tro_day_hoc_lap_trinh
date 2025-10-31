@@ -1,53 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
 import "../styles/CodeEditorSimple.scss";
 
+// ...giữ nguyên import
 export default function CodeEditorSimple({
   code,
+  input,
   question,
   onChangeCode,
+  onChangeInput,
   onChangeResult,
   onExecuteResponse,
   difficulty,
 }) {
   const [localCode, setLocalCode] = useState(code || "");
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState(input || "");
   const [output, setOutput] = useState("");
   const [guide, setGuide] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("terminal");
-  const [hasNewGuide, setHasNewGuide] = useState(false); // ✅ nháy đỏ khi có gợi ý mới
+  const [hasNewGuide, setHasNewGuide] = useState(false);
+
+  useEffect(() => {
+    setLocalCode(code || "");
+    setInputText(input || "");
+    setOutput("");
+    setGuide("");
+    setActiveTab("terminal");
+    setHasNewGuide(false);
+  }, [code, input, question?.id]);
 
   const runCode = async () => {
     setLoading(true);
     setOutput("⏳ Đang chạy code...\n");
-    setGuide(""); // reset gợi ý cũ
+    setGuide("");
     setHasNewGuide(false);
 
     try {
-      // ✅ Gọi Python service
       const resp = await fetch(`${process.env.REACT_APP_API_URL_B}/run_code_simple`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: localCode, input: inputText }),
       });
-
       const data = await resp.json();
 
       if (data.success) {
-        // ✅ Code chạy đúng
         setOutput(data.output);
-        onChangeResult(data.output);
-        return; // ❌ Không gọi AI khi đúng
+        onChangeResult?.(data.output);
+        onExecuteResponse?.({ success: true }); // ✅ báo về LayoutSimple là đúng
       } else {
-        // ❌ Code lỗi
         setOutput(`❌ ${data.error}`);
-        onChangeResult(data.error);
+        onChangeResult?.(data.error);
 
-        // ✅ Gọi AI phân tích lỗi
         const aiResp = await fetch(`${process.env.REACT_APP_API_URL}/api/ai/simple`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,10 +69,14 @@ export default function CodeEditorSimple({
 
         const aiData = await aiResp.json();
         const guideText = aiData.guide || aiData.raw || "AI không phản hồi.";
-
         setGuide(guideText);
-        setHasNewGuide(true); // ✅ bật nháy đỏ khi có gợi ý mới
-        onExecuteResponse?.(aiData);
+        setHasNewGuide(true);
+
+        // ✅ báo về LayoutSimple là sai + gửi hướng dẫn
+        onExecuteResponse?.({
+          success: false,
+          instructs: guideText.split("\n").filter((s) => s.trim() !== ""),
+        });
       }
     } catch (err) {
       setOutput(`❌ Lỗi kết nối tới Python service: ${err.message}`);
@@ -82,14 +93,17 @@ export default function CodeEditorSimple({
         extensions={[python(), autocompletion({ override: [] })]}
         onChange={(value) => {
           setLocalCode(value);
-          onChangeCode(value);
+          onChangeCode?.(value);
         }}
       />
 
       <textarea
         placeholder="Nhập input tại đây..."
         value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
+        onChange={(e) => {
+          setInputText(e.target.value);
+          onChangeInput?.(e.target.value);
+        }}
         className="code-editor__input"
       />
 
@@ -116,7 +130,7 @@ export default function CodeEditorSimple({
             }`}
             onClick={() => {
               setActiveTab("guide");
-              setHasNewGuide(false); // tắt nháy khi người dùng xem
+              setHasNewGuide(false);
             }}
           >
             Gợi ý AI
@@ -137,3 +151,4 @@ export default function CodeEditorSimple({
     </div>
   );
 }
+
