@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { FaTimes, FaForward } from "react-icons/fa";
 import character from "../IMG/Picture1.png";
+import correctSound from "../sounds/correct.mp3";
+import wrongSound from "../sounds/wrong.mp3";
 import "../styles/Popup.scss";
 
 export default function FETestPopup({ data, onClose }) {
@@ -20,7 +22,7 @@ export default function FETestPopup({ data, onClose }) {
       seq.push({ type: "instruct", value: ins })
     );
 
-    // 🔹 Chỉ thêm quiz và answer nếu không ở chế độ instruct_only
+    // Nếu không ở chế độ hướng dẫn thì thêm quiz và answer
     if (data.mode !== "instruct_only") {
       data.quizzes?.forEach((quiz) => {
         const qMatch = quiz.match(/<question>([\s\S]*?)<\/question>/);
@@ -47,17 +49,18 @@ export default function FETestPopup({ data, onClose }) {
     setCurrentIndex(0);
   }, [data]);
 
-  if (!data) return null;
-  if (!sequence.length) return null;
+  if (!data || !sequence.length) return null;
 
   const item = sequence[currentIndex];
 
   const handleNext = () => {
     if (item.type === "quiz") {
       if (selected === item.correctIndex) {
+        new Audio(correctSound).play(); // ✅ âm thanh đúng
         setSelected(null);
         setCurrentIndex((i) => Math.min(i + 1, sequence.length - 1));
       } else {
+        new Audio(wrongSound).play(); // ❌ âm thanh sai
         setShake(true);
         setTimeout(() => setShake(false), 400);
       }
@@ -130,7 +133,9 @@ export default function FETestPopup({ data, onClose }) {
               <FaForward />
             </button>
           ) : (
-            <button className="btn-finish" onClick={onClose}>Hoàn thành</button>
+            <button className="btn-finish" onClick={onClose}>
+              Hoàn thành
+            </button>
           )}
         </div>
       </div>

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.scss";
 
-
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +25,9 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("fullname", data.fullname);
       localStorage.setItem("role", data.role);
-      localStorage.setItem("userId",data.userId);
+      localStorage.setItem("userId", data.userId);
 
-      navigate("/");
+      navigate("/course/10");
     } catch (err) {
       setError(err.message);
     }

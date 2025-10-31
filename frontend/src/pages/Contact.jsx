@@ -7,7 +7,7 @@ import {
   FaFacebookF,
   FaGithub,
 } from "react-icons/fa";
-import admin from"../IMG/thanh2.jpg"
+import admin from "../IMG/thanh2.jpg";
 
 export default function Contact() {
   const devs = [
@@ -38,7 +38,8 @@ export default function Contact() {
     <div className="contact-page">
       <h1 className="title">Liên hệ với chúng tôi</h1>
       <p className="subtitle">
-        Hãy gửi cho chúng tôi tin nhắn hoặc liên hệ qua các kênh bên dưới. Chúng tôi luôn sẵn sàng hỗ trợ bạn.
+        Hãy gửi cho chúng tôi tin nhắn hoặc liên hệ qua các kênh bên dưới. Chúng
+        tôi luôn sẵn sàng hỗ trợ bạn.
       </p>
 
       <div className="contact-container">
@@ -63,7 +64,7 @@ export default function Contact() {
         <div className="contact-card">
           <FaFacebookF className="icon" />
           <h3>Facebook</h3>
-          <p>fb.com/eduplatform.vn</p>
+          <p>Thành Lê</p>
         </div>
       </div>
 
@@ -90,7 +91,11 @@ export default function Contact() {
         <h2>Gửi tin nhắn</h2>
         <input type="text" placeholder="Họ và tên" required />
         <input type="email" placeholder="Email của bạn" required />
-        <textarea placeholder="Nội dung tin nhắn..." rows="5" required></textarea>
+        <textarea
+          placeholder="Nội dung tin nhắn..."
+          rows="5"
+          required
+        ></textarea>
         <button type="submit">Gửi</button>
       </form>
     </div>

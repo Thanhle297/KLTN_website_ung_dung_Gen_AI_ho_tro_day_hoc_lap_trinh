@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { EditorView } from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
-// import { autocompletion } from "@codemirror/autocomplete";
+import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
 import "../styles/CodeEditor.scss";
 
@@ -137,6 +137,7 @@ export default function CodeEditor({
         extensions={[
           python(),
           EditorView.editable.of(true), // vẫn cho gõ
+          autocompletion({ override: [] })
         ]}
         onChange={(value) => handleCodeChange(value)}
         onPaste={(e) => e.preventDefault()}
