@@ -12,7 +12,7 @@ export default function SubmitButton({ userId, lessonId, courseId }) {
     setLoading(true);
     try {
       // ✅ Gọi API xóa dữ liệu tạm
-      await fetch("http://localhost:3001/api/temp/clear", {
+      await fetch("http://103.90.224.183:3001/api/temp/clear", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, lessonId }),

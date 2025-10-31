@@ -71,6 +71,7 @@
 
 .content {
   flex: 1;
+  text-align: left;
 }
 
 .answers {
@@ -158,4 +159,27 @@
       box-shadow: none;
     }
   }
+}
+
+
+/* Tăng cỡ chữ cho Hướng dẫn (luồng instruct_only và luồng thường) */
+.popup .content .instruct-block p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Tăng cỡ chữ cho Kết quả trả về (luồng thường: type === "answer") */
+.popup .content pre {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Tuỳ chọn: tăng chữ câu hỏi và đáp án trong quiz (luồng thường) */
+.popup .content > div > p { /* câu hỏi */
+  font-size: 15px;
+}
+.popup .content .answers button { /* đáp án */
+  font-size: 15px;
 }

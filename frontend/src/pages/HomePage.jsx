@@ -23,7 +23,7 @@ export default function HomePage() {
   ];
 
   const { courses, loading } = useCourses(
-    "http://localhost:3001/api/courses",
+    "http://103.90.224.183:3001/api/courses",
     fallbackCourses
   );
 

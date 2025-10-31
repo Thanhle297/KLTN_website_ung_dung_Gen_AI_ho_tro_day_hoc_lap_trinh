@@ -14,18 +14,18 @@ export default function useLessonQuestions(lessonId, userId) {
       try {
         // 1️⃣ Lấy thông tin bài học
         const lessonRes = await fetch(
-          `http://localhost:3001/api/lesson/${lessonId}`
+          `http://103.90.224.183:3001/api/lesson/${lessonId}`
         );
         const lessonData = await lessonRes.json();
         setLesson(lessonData);
 
         // 2️⃣ Lấy câu hỏi + dữ liệu tạm
         const [questionsData, tempData] = await Promise.all([
-          fetch(`http://localhost:3001/api/question?lessonId=${lessonId}`).then(
+          fetch(`http://103.90.224.183:3001/api/question?lessonId=${lessonId}`).then(
             (res) => res.json()
           ),
           fetch(
-            `http://localhost:3001/api/temp/load?userId=${userId}&lessonId=${lessonId}`
+            `http://103.90.224.183:3001/api/temp/load?userId=${userId}&lessonId=${lessonId}`
           ).then((res) => (res.ok ? res.json() : [])),
         ]);
 

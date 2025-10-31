@@ -1,3 +1,4 @@
+// src/pages/Lessons.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/Lessons.scss";
@@ -13,7 +14,7 @@ export default function Lessons() {
 
   // Lấy danh sách bài học
   useEffect(() => {
-    fetch(`http://localhost:3001/api/lessons/${classId}`)
+    fetch(`http://103.90.224.183:3001/api/lessons/${classId}`)
       .then((res) => res.json())
       .then((data) => setLessons(data))
       .catch((err) => console.error("❌ Lỗi tải bài học:", err))
@@ -22,22 +23,19 @@ export default function Lessons() {
 
   // Xử lý mở/đóng
   const handleExpand = async (lessonId) => {
-    // Nếu đang mở -> chạy animation đóng
     if (expanded === lessonId) {
       setClosing(lessonId);
       setExpanded(null);
-      // Sau 600ms (bằng thời gian slideUp), reset closing
       setTimeout(() => setClosing(null), 600);
       return;
     }
 
-    // Nếu chưa mở -> mở mới
     setExpanded(lessonId);
     setClosing(null);
 
     if (!subLessons[lessonId]) {
       try {
-        const res = await fetch(`http://localhost:3001/api/lesson/${lessonId}`);
+        const res = await fetch(`http://103.90.224.183:3001/api/lesson/${lessonId}`);
         const data = await res.json();
         if (data.subLessons) {
           setSubLessons((prev) => ({ ...prev, [lessonId]: data.subLessons }));
@@ -54,72 +52,78 @@ export default function Lessons() {
     <div className="lessons-list">
       <h1 className="lessons-list__title">Danh sách bài học - Lớp {classId}</h1>
 
-      {lessons.map((lesson) => {
-        const isExpanded = expanded === lesson.lessonId;
-        const isClosing = closing === lesson.lessonId;
+      {lessons
+        .filter((lesson) => lesson.display !== false) // ẩn bài nếu display=false
+        .map((lesson) => {
+          const isExpanded = expanded === lesson.lessonId;
+          const isClosing = closing === lesson.lessonId;
 
-        return (
-          <div
-            key={lesson.lessonId}
-            className={`lesson-item ${
-              isExpanded ? "expanded" : isClosing ? "closing" : ""
-            }`}
-          >
-            {/* Hàng trên: tiêu đề và nút */}
-            <div className="lesson-item__top">
-              <div
-                className="lesson-item__info"
-                onClick={() => handleExpand(lesson.lessonId)}
-              >
-                <h3>{lesson.title}</h3>
-                <p>{lesson.description}</p>
+          return (
+            <div
+              key={lesson.lessonId}
+              className={`lesson-item ${
+                isExpanded ? "expanded" : isClosing ? "closing" : ""
+              }`}
+            >
+              {/* Hàng trên: tiêu đề và nút */}
+              <div className="lesson-item__top">
+                <div
+                  className="lesson-item__info"
+                  onClick={() => handleExpand(lesson.lessonId)}
+                >
+                  <h3>{lesson.title}</h3>
+                  <p>{lesson.description}</p>
+                </div>
+
+                <button
+                  className="lesson-item__btn"
+                  onClick={() => handleExpand(lesson.lessonId)}
+                >
+                  {isExpanded ? "Thu gọn" : "Xem chi tiết"}
+                </button>
               </div>
 
-              <button
-                className="lesson-item__btn"
-                onClick={() => handleExpand(lesson.lessonId)}
-              >
-                {isExpanded ? "Thu gọn" : "Xem chi tiết"}
-              </button>
+              {/* Các bài con hiển thị phía dưới */}
+              {(isExpanded || isClosing) && subLessons[lesson.lessonId] && (
+                <div
+                  className={`sub-lessons ${
+                    isExpanded ? "opening" : "closing"
+                  }`}
+                >
+                  {subLessons[lesson.lessonId]
+                    .filter((sub) => sub.display !== false) // ẩn sub nếu display=false
+                    .map((sub, index) => (
+                      <div
+                        key={sub.lessonId}
+                        className="sub-lesson"
+                        style={{ animationDelay: `${0.1 * (index + 1)}s` }}
+                      >
+                        <div className="sub-lesson__info">
+                          <h4>
+                            {sub.displayId ? `${sub.displayId}: ` : ""}
+                            {sub.title}
+                          </h4>
+                          <p>{sub.description}</p>
+                          <p>Số câu hỏi: {sub.questionCount ?? 0}</p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            navigate(
+                              sub.mode === "simple"
+                                ? `/lesson-simple/${sub.lessonId}`
+                                : `/lesson/${sub.lessonId}`
+                            )
+                          }
+                        >
+                          Làm bài
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
-
-            {/* Các bài con hiển thị phía dưới */}
-            {(isExpanded || isClosing) && subLessons[lesson.lessonId] && (
-              <div
-                className={`sub-lessons ${isExpanded ? "opening" : "closing"}`}
-              >
-                {subLessons[lesson.lessonId].map((sub, index) => (
-                  <div
-                    key={sub.lessonId}
-                    className="sub-lesson"
-                    style={{ animationDelay: `${0.1 * (index + 1)}s` }}
-                  >
-                    <div className="sub-lesson__info">
-                      <h4>
-                        {sub.displayId ? `${sub.displayId}: ` : ""}
-                        {sub.title}
-                      </h4>
-                      <p>{sub.description}</p>
-                      <p>Số câu hỏi: {sub.questionCount ?? 0}</p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        navigate(
-                          sub.mode === "simple"
-                            ? `/lesson-simple/${sub.lessonId}`
-                            : `/lesson/${sub.lessonId}`
-                        )
-                      }
-                    >
-                      Làm bài
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 }
