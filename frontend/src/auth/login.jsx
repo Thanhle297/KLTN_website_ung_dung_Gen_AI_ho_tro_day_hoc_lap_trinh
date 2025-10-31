@@ -13,7 +13,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3001/api/auth/login", {
+      const res = await fetch("http://103.90.224.183:3001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

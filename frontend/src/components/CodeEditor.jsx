@@ -32,7 +32,7 @@ export default function CodeEditor({
     if (!question || !userId) return;
     const loadTemp = async () => {
       const res = await fetch(
-        `http://localhost:3001/api/temp/load?userId=${userId}&lessonId=${lessonId}`
+        `http://103.90.224.183:3001/api/temp/load?userId=${userId}&lessonId=${lessonId}`
       );
       const tempData = await res.json();
       const match = Array.isArray(tempData)
@@ -61,7 +61,7 @@ export default function CodeEditor({
     if (localCode.trim() === lastSavedRef.current.trim()) return;
 
     const timer = setTimeout(() => {
-      fetch("http://localhost:3001/api/temp/save", {
+      fetch("http://103.90.224.183:3001/api/temp/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,7 +97,7 @@ export default function CodeEditor({
     onChangeResult("⏳ Đang chạy code...");
 
     try {
-      const res = await fetch("http://localhost:3001/api/execute", {
+      const res = await fetch("http://103.90.224.183:3001/api/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

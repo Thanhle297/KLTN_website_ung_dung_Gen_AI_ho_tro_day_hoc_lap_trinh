@@ -14,7 +14,7 @@ export default function Lessons() {
 
   // Lấy danh sách bài học
   useEffect(() => {
-    fetch(`http://localhost:3001/api/lessons/${classId}`)
+    fetch(`http://103.90.224.183:3001/api/lessons/${classId}`)
       .then((res) => res.json())
       .then((data) => setLessons(data))
       .catch((err) => console.error("❌ Lỗi tải bài học:", err))
@@ -35,7 +35,7 @@ export default function Lessons() {
 
     if (!subLessons[lessonId]) {
       try {
-        const res = await fetch(`http://localhost:3001/api/lesson/${lessonId}`);
+        const res = await fetch(`http://103.90.224.183:3001/api/lesson/${lessonId}`);
         const data = await res.json();
         if (data.subLessons) {
           setSubLessons((prev) => ({ ...prev, [lessonId]: data.subLessons }));

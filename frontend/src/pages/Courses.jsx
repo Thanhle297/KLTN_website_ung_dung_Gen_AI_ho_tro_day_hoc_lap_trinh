@@ -4,7 +4,7 @@ import CourseCard from "../components/CourseCard";
 import "../styles/Courses.scss";
 
 export default function Courses() {
-  const { courses, loading } = useCourses("http://localhost:3001/api/courses");
+  const { courses, loading } = useCourses("http://103.90.224.183:3001/api/courses");
 
   if (loading) return <p>Đang tải khóa học...</p>;
 
