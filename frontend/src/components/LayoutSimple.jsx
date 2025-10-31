@@ -23,17 +23,27 @@ export default function LayoutSimple({
   const handleExecuteResponse = (result) => {
     if (!result) return;
 
-    if (result.success) {
-      // ✅ Nếu đúng: tạo popup "Hoàn thành"
+    const joinedGuide = result.instructs?.join(" ") || "";
+
+    // ✅ Nếu AI xác nhận “đúng và đầy đủ yêu cầu” → Hoàn thành
+    const isCompleted = /đáp ứng đầy đủ yêu cầu/i.test(joinedGuide);
+
+    if (isCompleted) {
       setPopupData({
         mode: "instruct_only",
-        instructs: ["🎉 Code của bạn chạy đúng, chúc mừng bạn đã hoàn thành!"],
+        instructs: [
+          "🎉 Chúc mừng! Bạn đã hoàn thành chính xác tất cả yêu cầu của đề bài.",
+          ...result.instructs,
+        ],
       });
     } else {
-      // ❌ Nếu sai: hiển thị hướng dẫn từ AI
+      // ❌ Nếu chưa hoàn thành hoặc có góp ý từ AI → chỉ hiển thị hướng dẫn
       setPopupData({
         mode: "instruct_only",
-        instructs: result.instructs || ["AI không có hướng dẫn cụ thể."],
+        instructs:
+          result.instructs && result.instructs.length > 0
+            ? result.instructs
+            : ["AI không có hướng dẫn cụ thể."],
       });
     }
   };
@@ -68,7 +78,7 @@ export default function LayoutSimple({
             updateEditorState(current.id, { input: newInput })
           }
           onChangeResult={(r) => updateEditorState(current.id, { result: r })}
-          onExecuteResponse={handleExecuteResponse} // ✅ xử lý popup
+          onExecuteResponse={handleExecuteResponse}
         />
       </div>
     </div>

@@ -5,7 +5,6 @@ import { autocompletion } from "@codemirror/autocomplete";
 import { ImSpinner2 } from "react-icons/im";
 import "../styles/CodeEditorSimple.scss";
 
-// ...giữ nguyên import
 export default function CodeEditorSimple({
   code,
   input,
@@ -24,6 +23,7 @@ export default function CodeEditorSimple({
   const [activeTab, setActiveTab] = useState("terminal");
   const [hasNewGuide, setHasNewGuide] = useState(false);
 
+  // Reset mỗi khi đổi câu
   useEffect(() => {
     setLocalCode(code || "");
     setInputText(input || "");
@@ -40,44 +40,53 @@ export default function CodeEditorSimple({
     setHasNewGuide(false);
 
     try {
-      const resp = await fetch(`${process.env.REACT_APP_API_URL_B}/run_code_simple`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: localCode, input: inputText }),
-      });
+      // 🔹 Gọi Python backend để chạy code
+      const resp = await fetch(
+        `${process.env.REACT_APP_API_URL_B}/run_code_simple`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: localCode, input: inputText }),
+        }
+      );
       const data = await resp.json();
 
-      if (data.success) {
-        setOutput(data.output);
-        onChangeResult?.(data.output);
-        onExecuteResponse?.({ success: true }); // ✅ báo về LayoutSimple là đúng
-      } else {
-        setOutput(`❌ ${data.error}`);
-        onChangeResult?.(data.error);
+      const isSuccess = !!data.success;
+      const resultOutput = data.output || data.error || "Không có output";
 
-        const aiResp = await fetch(`${process.env.REACT_APP_API_URL}/api/ai/simple`, {
+      setOutput(resultOutput);
+      onChangeResult?.(resultOutput);
+
+      // 🔹 Gọi AI LUÔN LUÔN, gửi kèm đề bài (question)
+      const aiResp = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/ai/simple`,
+        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code: localCode,
-            question: question.title || "",
+            question:
+              question?.question || // ✅ đây là nội dung đề thật
+              question?.description ||
+              question?.title ||
+              "Không có đề bài",
             input: inputText,
-            output: data.error || "Không có output",
+            output: resultOutput,
             difficulty,
           }),
-        });
+        }
+      );
 
-        const aiData = await aiResp.json();
-        const guideText = aiData.guide || aiData.raw || "AI không phản hồi.";
-        setGuide(guideText);
-        setHasNewGuide(true);
+      const aiData = await aiResp.json();
+      const guideText = aiData.guide || aiData.raw || "AI không phản hồi.";
+      setGuide(guideText);
+      setHasNewGuide(true);
 
-        // ✅ báo về LayoutSimple là sai + gửi hướng dẫn
-        onExecuteResponse?.({
-          success: false,
-          instructs: guideText.split("\n").filter((s) => s.trim() !== ""),
-        });
-      }
+      // 🔹 Truyền kết quả + hướng dẫn cho LayoutSimple
+      onExecuteResponse?.({
+        success: isSuccess,
+        instructs: guideText.split("\n").filter((s) => s.trim() !== ""),
+      });
     } catch (err) {
       setOutput(`❌ Lỗi kết nối tới Python service: ${err.message}`);
     } finally {
@@ -151,4 +160,3 @@ export default function CodeEditorSimple({
     </div>
   );
 }
-

@@ -5,9 +5,6 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-/**
- * Trích xuất nội dung trong thẻ <instruct> để lấy hướng dẫn AI
- */
 function extractInstructs(text) {
   const instructs = [];
   const regex = /<instruct>([\s\S]*?)<\/instruct>/g;
@@ -18,31 +15,56 @@ function extractInstructs(text) {
   return instructs;
 }
 
-/**
- * Gọi OpenAI API với prompt nhẹ cho CodeExSimple
- */
 async function callPromptSimple({ code, question, input, output }) {
   const prompt = `
 Bạn là giáo viên Tin học Việt Nam.
-Học sinh vừa chạy một đoạn code Python. Hãy:
-1. Phân tích xem kết quả có hợp lý không.
-2. Nếu sai, chỉ ra nguyên nhân có thể.
-3. Đưa ra gợi ý ngắn gọn để sửa, dùng thẻ <instruct> để bao hướng dẫn.
-4. Không viết câu hỏi, không có đáp án, không ghi "đúng/sai" rõ ràng, chỉ hướng dẫn.
-5. Nếu kết quả hợp lý thì ghi:
-<instruct>Code của bạn chạy đúng, không cần chỉnh sửa.</instruct>
+Học sinh vừa làm bài Python theo đề sau:
 
-Code học sinh:
+ĐỀ BÀI:
+${question || "Không có đề"}
+
+MÃ NGUỒN HỌC SINH:
 \`\`\`python
 ${code || "Không có code"}
 \`\`\`
 
-Đề bài: ${question || "Không có đề"}
-Input: ${input || "Không có input"}
-Output: ${output || "Không có output"}
+INPUT: ${input || "Không có input"}
+OUTPUT THỰC TẾ: ${output || "Không có output"}
+
+---
+Hãy đánh giá bài làm theo 3 bước:
+
+1️⃣ **Phân tích yêu cầu của đề bài**:  
+   - Học sinh cần in ra hoặc thực hiện những thông tin, kết quả nào?  
+   - Liệt kê các yêu cầu cụ thể (ví dụ: phải in ra tên, tuổi, nghề nghiệp...).
+
+2️⃣ **Đối chiếu đầu ra**:  
+   - So sánh OUTPUT của học sinh với yêu cầu trên.  
+   - Nếu học sinh chỉ in ra một phần (ví dụ: chỉ có tên mà thiếu tuổi hoặc nghề nghiệp), phải coi là **CHƯA ĐẠT YÊU CẦU**.
+
+3️⃣ **Đưa ra hướng dẫn hoặc nhận xét trong thẻ <instruct>**:
+   - Nếu học sinh **đáp ứng đầy đủ yêu cầu và đầu ra hợp lý** →  
+     <instruct>Code của bạn chạy đúng và đáp ứng đầy đủ yêu cầu. Chúc mừng!</instruct>
+   - Nếu học sinh **thiếu hoặc sai bất kỳ phần nào** →  
+     <instruct>Hãy kiểm tra lại: bạn cần in ra đủ tất cả thông tin theo đề bài. Gợi ý chỉnh sửa: ...</instruct>
+   - Nếu có lỗi logic, cú pháp, hoặc sai cách nhập/xuất →  
+     <instruct>Mô tả lỗi và hướng dẫn cụ thể để sửa.</instruct>
+
+⚠️ Lưu ý:
+- Trả lời **ngắn gọn bằng tiếng Việt**.
+- Chỉ dùng thẻ <instruct> cho mỗi hướng dẫn, không thêm ký hiệu khác.
+- Nếu đề bài có nhiều yêu cầu, phải kiểm tra đủ **từng phần**.
+
+---
+
+Bắt đầu đánh giá.
 `;
 
   try {
+    // 🔍 Log đề bài gửi đi
+    console.log("📘 ĐỀ BÀI GỬI LÊN AI:");
+    console.log(question);
+    console.log("---------------------------------------");
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,
@@ -69,4 +91,5 @@ Output: ${output || "Không có output"}
   }
 }
 
+// ✅ BẮT BUỘC PHẢI CÓ DÒNG NÀY
 module.exports = { callPromptSimple };
