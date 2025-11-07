@@ -2,18 +2,19 @@
 .question-list {
   display: flex;
   flex-wrap: wrap;
-//   flex-direction: column;
-  gap: 8px; // khoảng cách giữa các button
+  gap: 8px;
   padding: 10px;
   background-color: #f9f9f9;
-  border-right: 1px solid #ddd;
-  max-height: 10%;
-  overflow-x: auto; // cho scroll nếu nhiều câu hỏi
-  // Ẩn thanh scroll cho gọn (tùy chọn)
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  max-height: calc(2.8em * 2 + 20px); // khoảng 2 dòng button
+  overflow-y: auto;
+
   &::-webkit-scrollbar {
-    height: 6px; // thanh scroll ngang
-    width: 6px; // thanh scroll dọc
+    width: 6px;
+    height: 6px;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #bbb;
     border-radius: 3px;
