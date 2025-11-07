@@ -22,10 +22,11 @@ export default function LayoutSimple({
 
   const handleExecuteResponse = (result) => {
     if (!result) return;
+    if (result.questionId && result.simpleStatus) {
+      updateEditorState(result.questionId, { status: result.simpleStatus });
+    }
 
     const joinedGuide = result.instructs?.join(" ") || "";
-
-    // ✅ Nếu AI xác nhận “đúng và đầy đủ yêu cầu” → Hoàn thành
     const isCompleted = /đáp ứng đầy đủ yêu cầu/i.test(joinedGuide);
 
     if (isCompleted) {
@@ -37,7 +38,6 @@ export default function LayoutSimple({
         ],
       });
     } else {
-      // ❌ Nếu chưa hoàn thành hoặc có góp ý từ AI → chỉ hiển thị hướng dẫn
       setPopupData({
         mode: "instruct_only",
         instructs:
@@ -53,7 +53,11 @@ export default function LayoutSimple({
       {/* Cột trái */}
       <div className="layout__left">
         <div className={`left-content ${popupData ? "blur" : ""}`}>
-          <QuestionList questions={questions} setCurrent={setCurrent} />
+          <QuestionList
+            questions={questions}
+            setCurrent={setCurrent}
+            editorStates={editorStates}
+          />
           <QuestionPanel current={current} index={currentIndex} />
         </div>
 

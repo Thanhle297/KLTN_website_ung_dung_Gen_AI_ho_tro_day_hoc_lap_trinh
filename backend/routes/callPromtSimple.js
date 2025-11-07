@@ -54,6 +54,7 @@ Hãy đánh giá bài làm theo 3 bước:
 - Trả lời **ngắn gọn bằng tiếng Việt**.
 - Chỉ dùng thẻ <instruct> cho mỗi hướng dẫn, không thêm ký hiệu khác.
 - Nếu đề bài có nhiều yêu cầu, phải kiểm tra đủ **từng phần**.
+- Không hướng dẫn quá chi tiết đến mức gần như cho học sinh toàn bộ đáp án.
 
 ---
 
@@ -62,9 +63,9 @@ Bắt đầu đánh giá.
 
   try {
     // 🔍 Log đề bài gửi đi
-    console.log("📘 ĐỀ BÀI GỬI LÊN AI:");
-    console.log(question);
-    console.log("---------------------------------------");
+    // console.log("📘 ĐỀ BÀI GỬI LÊN AI:");
+    // console.log(question);
+    // console.log("---------------------------------------");
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,

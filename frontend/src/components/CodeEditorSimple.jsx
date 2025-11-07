@@ -83,9 +83,14 @@ export default function CodeEditorSimple({
       setHasNewGuide(true);
 
       // 🔹 Truyền kết quả + hướng dẫn cho LayoutSimple
+      // Trong phần onExecuteResponse
       onExecuteResponse?.({
         success: isSuccess,
         instructs: guideText.split("\n").filter((s) => s.trim() !== ""),
+        simpleStatus: /đáp ứng đầy đủ yêu cầu/i.test(guideText)
+          ? "correct"
+          : "wrong",
+        questionId: question.id,
       });
     } catch (err) {
       setOutput(`❌ Lỗi kết nối tới Python service: ${err.message}`);

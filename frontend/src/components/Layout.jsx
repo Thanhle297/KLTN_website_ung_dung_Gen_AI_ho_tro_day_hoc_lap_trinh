@@ -22,17 +22,25 @@ export default function Layout({
   const currentIndex = questions.findIndex((q) => q.id === current.id);
 
   const handleExecuteResponse = (aiData) => {
-    // 🔹 Chỉ hiển thị popup khi có dữ liệu AI và không phải mức Khó
-    if (difficulty !== 2 && aiData) {
-      setPopupData(aiData);
-    } 
+    if (!aiData) return;
+
+    // ✅ cập nhật trạng thái câu auto
+    if (aiData.questionId && aiData.autoStatus) {
+      updateEditorState(aiData.questionId, { status: aiData.autoStatus });
+    }
+
+    if (difficulty !== 2 && aiData.mode) setPopupData(aiData);
   };
 
   return (
     <div className="layout">
       <div className="layout__left">
         <div className={`left-content ${popupData ? "blur" : ""}`}>
-          <QuestionList questions={questions} setCurrent={setCurrent} />
+          <QuestionList
+            questions={questions}
+            setCurrent={setCurrent}
+            editorStates={editorStates}
+          />
           <QuestionPanel current={current} index={currentIndex} />
         </div>
 

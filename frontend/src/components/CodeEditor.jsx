@@ -48,14 +48,13 @@ export default function CodeEditor({
     loadTemp();
   }, [question, userId, lessonId]);
 
-  // Reset code khi đổi câu
   useEffect(() => {
     setLocalCode(code || "");
     setResults([]);
     setGuide(null);
   }, [question, code]);
 
-  // ✅ Auto-save theo từng câu hỏi
+  // ✅ Auto-save
   useEffect(() => {
     if (!userId || !lessonId || !question) return;
     if (localCode.trim() === lastSavedRef.current.trim()) return;
@@ -86,7 +85,7 @@ export default function CodeEditor({
     onChangeCode(newCode);
   };
 
-  // ✅ Run code
+  // ✅ Run code + cập nhật trạng thái đúng/sai
   const runCode = async () => {
     if (!question?.testcase) {
       onChangeResult("❌ Không có testcase được cung cấp.");
@@ -116,7 +115,14 @@ export default function CodeEditor({
         setGuide(data.guide);
         setHasGuide(!!data.guide);
         setHasNewGuide(!!data.guide);
-        if (data.ai) onExecuteResponse?.(data.ai);
+
+        const isAllPass = data.results.every((r) => r.pass);
+        onExecuteResponse?.({
+          ...data.ai,
+          autoStatus: isAllPass ? "correct" : "wrong",
+          questionId: question.id,
+        });
+
         onChangeResult(
           data.results?.[0]?.actual || "Không có kết quả xuất ra."
         );
@@ -129,6 +135,7 @@ export default function CodeEditor({
       setLoading(false);
     }
   };
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -149,57 +156,23 @@ export default function CodeEditor({
         ref={editorRef}
         value={localCode}
         height="400px"
-        extensions={[
-          python(),
-          EditorView.editable.of(true), // vẫn cho gõ
-          autocompletion({ override: [] }),
-        ]}
+        extensions={[python(), EditorView.editable.of(true), autocompletion({ override: [] })]}
         onChange={(value) => handleCodeChange(value)}
-        onPaste={(e) => e.preventDefault()}
-        onCopy={(e) => e.preventDefault()}
-        onCut={(e) => e.preventDefault()}
       />
-      <div className="code-editor__actions">
-        <input
-          type="file"
-          accept=".py"
-          id="upload-file"
-          style={{ display: "none" }}
-          onChange={handleFileUpload}
-        />
-        <label htmlFor="upload-file" className="upload-btn">
-          📂 Tải file Python
-        </label>
 
-        <button
-          onClick={runCode}
-          disabled={loading}
-          className="code-editor__run-btn"
-        >
+      <div className="code-editor__actions">
+        <input type="file" accept=".py" id="upload-file" style={{ display: "none" }} onChange={handleFileUpload} />
+        <label htmlFor="upload-file" className="upload-btn">📂 Tải file Python</label>
+        <button onClick={runCode} disabled={loading} className="code-editor__run-btn">
           {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
         </button>
       </div>
 
       <div className="code-editor__tabs">
         <div className="tabs-header">
-          <button
-            className={activeTab === "results" ? "active" : ""}
-            onClick={() => setActiveTab("results")}
-          >
-            Kết quả
-          </button>
-          <button
-            className={activeTab === "guide" ? "active" : ""}
-            onClick={() => {
-              setActiveTab("guide");
-              setHasNewGuide(false);
-            }}
-            disabled={!hasGuide}
-          >
-            Hướng dẫn{" "}
-            {hasGuide && hasNewGuide && (
-              <span className="tab-notification"></span>
-            )}
+          <button className={activeTab === "results" ? "active" : ""} onClick={() => setActiveTab("results")}>Kết quả</button>
+          <button className={activeTab === "guide" ? "active" : ""} onClick={() => { setActiveTab("guide"); setHasNewGuide(false); }} disabled={!hasGuide}>
+            Hướng dẫn {hasGuide && hasNewGuide && <span className="tab-notification"></span>}
           </button>
         </div>
 
@@ -208,39 +181,24 @@ export default function CodeEditor({
             <div className="tab-panel">
               {results.length ? (
                 <table border="1" style={{ width: "100%" }}>
-                  <thead>
-                    <tr>
-                      <th>Input</th>
-                      <th>Expected</th>
-                      <th>Output</th>
-                      <th>Kết quả</th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th>Input</th><th>Expected</th><th>Output</th><th>Kết quả</th></tr></thead>
                   <tbody>
                     {results.map((r, i) => (
                       <tr key={i}>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.input}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.expected}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.actual}</td>
-                        <td style={{ color: r.pass ? "green" : "red" }}>
-                          {r.pass ? "✔ Đúng" : "❌ Sai"}
-                        </td>
+                        <td style={{ color: r.pass ? "green" : "red" }}>{r.pass ? "✔ Đúng" : "❌ Sai"}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              ) : (
-                <p>Chưa có kết quả.</p>
-              )}
+              ) : <p>Chưa có kết quả.</p>}
             </div>
           )}
           {activeTab === "guide" && (
             <div className="tab-panel">
-              {guide ? (
-                <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p>
-              ) : (
-                <p>Chưa có hướng dẫn.</p>
-              )}
+              {guide ? <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p> : <p>Chưa có hướng dẫn.</p>}
             </div>
           )}
         </div>

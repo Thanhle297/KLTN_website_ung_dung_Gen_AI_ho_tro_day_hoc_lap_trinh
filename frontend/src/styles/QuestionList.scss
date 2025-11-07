@@ -34,6 +34,18 @@
       border-color: #3399ff;
     }
 
+    &.correct {
+      border-color: #4caf50;
+      color: #4caf50;
+      background: #e8f5e9;
+    }
+
+    &.wrong {
+      border-color: #e53935;
+      color: #e53935;
+      background: #ffebee;
+    }
+
     &.active {
       background: #3399ff;
       color: #fff;
