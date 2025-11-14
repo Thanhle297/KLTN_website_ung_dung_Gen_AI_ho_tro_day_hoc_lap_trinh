@@ -5,14 +5,14 @@ async function createUser() {
   await connectDB();
   const db = getDB();
 
-  const hashed = await bcrypt.hash("giaovien123", 10);
+  const hashed = await bcrypt.hash("admin123", 10);
 
   await db.collection("users").insertOne({
-    username: "giaovien",
+    username: "khanhlinh",
     email: "example@gmail.com",
     password: hashed,
     role: "admin", // hoặc "user"
-    fullname: "Nguyễn Trung Khánh",
+    fullname: "Lê Khánh Linh",
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
