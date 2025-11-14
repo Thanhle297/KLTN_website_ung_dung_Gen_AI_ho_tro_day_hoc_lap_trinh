@@ -12,6 +12,8 @@ export default function CodeEditor({
   onChangeCode,
   onChangeResult,
   onExecuteResponse,
+  updateEditorState, // ✅ thêm prop này để đồng bộ trạng thái
+  editorStates,       // ✅ truyền toàn bộ state từ CodeEx
   difficulty,
   userId,
   lessonId,
@@ -27,34 +29,27 @@ export default function CodeEditor({
 
   const editorRef = useRef(null);
 
-  // ✅ Load dữ liệu tạm riêng cho câu hỏi này
+  // ✅ Load dữ liệu đúng của từng câu khi đổi câu
   useEffect(() => {
-    if (!question || !userId) return;
-    const loadTemp = async () => {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/temp/load?userId=${userId}&lessonId=${lessonId}`
-      );
-      const tempData = await res.json();
-      const match = Array.isArray(tempData)
-        ? tempData.find((t) => t.questionId === question.id)
-        : null;
+    if (!question) return;
 
-      if (match?.code) {
-        setLocalCode(match.code);
-        setResults(match.results || []);
-        setGuide(match.guide || null);
-      }
-    };
-    loadTemp();
-  }, [question, userId, lessonId]);
+    const local = editorStates?.[question.id];
+    if (local) {
+      setLocalCode(local.code || "");
+      setResults(local.results || []);
+      setGuide(local.guide || null);
+      setHasGuide(!!local.guide);
+      setHasNewGuide(local.hasNewGuide || false);
+    } else {
+      setLocalCode("");
+      setResults([]);
+      setGuide(null);
+      setHasGuide(false);
+      setHasNewGuide(false);
+    }
+  }, [question, editorStates]);
 
-  useEffect(() => {
-    setLocalCode(code || "");
-    setResults([]);
-    setGuide(null);
-  }, [question, code]);
-
-  // ✅ Auto-save
+  // ✅ Auto-save dữ liệu code + kết quả + guide
   useEffect(() => {
     if (!userId || !lessonId || !question) return;
     if (localCode.trim() === lastSavedRef.current.trim()) return;
@@ -72,10 +67,9 @@ export default function CodeEditor({
       })
         .then(() => {
           lastSavedRef.current = localCode;
-          console.log(`💾 Auto-saved question ${question.id}`);
         })
         .catch((err) => console.error("❌ Save failed:", err));
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [localCode, results, guide, userId, lessonId, question]);
@@ -83,9 +77,10 @@ export default function CodeEditor({
   const handleCodeChange = (newCode) => {
     setLocalCode(newCode);
     onChangeCode(newCode);
+    updateEditorState(question.id, { code: newCode });
   };
 
-  // ✅ Run code + cập nhật trạng thái đúng/sai
+  // ✅ Run code và lưu kết quả riêng từng câu
   const runCode = async () => {
     if (!question?.testcase) {
       onChangeResult("❌ Không có testcase được cung cấp.");
@@ -108,6 +103,7 @@ export default function CodeEditor({
           lessonId,
         }),
       });
+
       const data = await res.json();
 
       if (data.success) {
@@ -117,6 +113,31 @@ export default function CodeEditor({
         setHasNewGuide(!!data.guide);
 
         const isAllPass = data.results.every((r) => r.pass);
+
+        // ✅ Lưu vào state tổng hợp
+        updateEditorState(question.id, {
+          results: data.results,
+          guide: data.guide,
+          hasNewGuide: !!data.guide,
+          status: isAllPass ? "correct" : "wrong",
+        });
+
+        // ✅ Lưu vào DB
+        await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            lessonId,
+            questionId: question.id,
+            data: {
+              code: localCode,
+              results: data.results,
+              guide: data.guide,
+            },
+          }),
+        });
+
         onExecuteResponse?.({
           ...data.ai,
           autoStatus: isAllPass ? "correct" : "wrong",
@@ -145,7 +166,7 @@ export default function CodeEditor({
       const fileContent = event.target.result;
       setLocalCode(fileContent);
       onChangeCode(fileContent);
-      console.log("📥 Đã tải file:", file.name);
+      updateEditorState(question.id, { code: fileContent });
     };
     reader.readAsText(file);
   };
@@ -161,7 +182,13 @@ export default function CodeEditor({
       />
 
       <div className="code-editor__actions">
-        <input type="file" accept=".py" id="upload-file" style={{ display: "none" }} onChange={handleFileUpload} />
+        <input
+          type="file"
+          accept=".py"
+          id="upload-file"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
         <label htmlFor="upload-file" className="upload-btn">📂 Tải file Python</label>
         <button onClick={runCode} disabled={loading} className="code-editor__run-btn">
           {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
@@ -170,9 +197,24 @@ export default function CodeEditor({
 
       <div className="code-editor__tabs">
         <div className="tabs-header">
-          <button className={activeTab === "results" ? "active" : ""} onClick={() => setActiveTab("results")}>Kết quả</button>
-          <button className={activeTab === "guide" ? "active" : ""} onClick={() => { setActiveTab("guide"); setHasNewGuide(false); }} disabled={!hasGuide}>
-            Hướng dẫn {hasGuide && hasNewGuide && <span className="tab-notification"></span>}
+          <button
+            className={activeTab === "results" ? "active" : ""}
+            onClick={() => setActiveTab("results")}
+          >
+            Kết quả
+          </button>
+
+          <button
+            className={activeTab === "guide" ? "active" : ""}
+            onClick={() => {
+              setActiveTab("guide");
+              setHasNewGuide(false);
+              updateEditorState(question.id, { hasNewGuide: false });
+            }}
+            disabled={!hasGuide}
+          >
+            Hướng dẫn{" "}
+            {hasGuide && hasNewGuide && <span className="tab-notification"></span>}
           </button>
         </div>
 
@@ -181,24 +223,40 @@ export default function CodeEditor({
             <div className="tab-panel">
               {results.length ? (
                 <table border="1" style={{ width: "100%" }}>
-                  <thead><tr><th>Input</th><th>Expected</th><th>Output</th><th>Kết quả</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Input</th>
+                      <th>Expected</th>
+                      <th>Output</th>
+                      <th>Kết quả</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {results.map((r, i) => (
                       <tr key={i}>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.input}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.expected}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.actual}</td>
-                        <td style={{ color: r.pass ? "green" : "red" }}>{r.pass ? "✔ Đúng" : "❌ Sai"}</td>
+                        <td style={{ color: r.pass ? "green" : "red" }}>
+                          {r.pass ? "✔ Đúng" : "❌ Sai"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              ) : <p>Chưa có kết quả.</p>}
+              ) : (
+                <p>Chưa có kết quả.</p>
+              )}
             </div>
           )}
+
           {activeTab === "guide" && (
             <div className="tab-panel">
-              {guide ? <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p> : <p>Chưa có hướng dẫn.</p>}
+              {guide ? (
+                <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p>
+              ) : (
+                <p>Chưa có hướng dẫn.</p>
+              )}
             </div>
           )}
         </div>

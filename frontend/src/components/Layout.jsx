@@ -57,6 +57,8 @@ export default function Layout({
           difficulty={difficulty} // ✅ truyền difficulty sang CodeEditor
           userId={userId}
           lessonId={lessonId}
+          updateEditorState={updateEditorState} // ✅ thêm dòng này
+          editorStates={editorStates} // ✅ thêm dòng này
           onChangeCode={(newCode) =>
             updateEditorState(current.id, { code: newCode })
           }
