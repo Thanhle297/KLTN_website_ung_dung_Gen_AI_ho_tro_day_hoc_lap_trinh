@@ -78,6 +78,14 @@ export default function Header() {
                 <li>
                   <strong>{user.fullname}</strong>
                 </li>
+
+                {/* Nếu là admin → có lối vào Admin Dashboard */}
+                {user.role === "admin" && (
+                  <li>
+                    <Link to="/admin">Trang quản trị</Link>
+                  </li>
+                )}
+
                 <li>
                   <Link to="/profile">Thông tin tài khoản</Link>
                 </li>

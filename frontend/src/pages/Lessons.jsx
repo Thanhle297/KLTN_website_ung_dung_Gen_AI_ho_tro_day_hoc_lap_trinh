@@ -14,7 +14,7 @@ export default function Lessons() {
 
   // Lấy danh sách bài học
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/lessons/${classId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/lessons/course/${classId}`)
       .then((res) => res.json())
       .then((data) => setLessons(data))
       .catch((err) => console.error("❌ Lỗi tải bài học:", err))
@@ -35,7 +35,7 @@ export default function Lessons() {
 
     if (!subLessons[lessonId]) {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/lesson/${lessonId}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}`);
         const data = await res.json();
         if (data.subLessons) {
           setSubLessons((prev) => ({ ...prev, [lessonId]: data.subLessons }));

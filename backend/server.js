@@ -19,11 +19,15 @@ app.use(
 // ✅ Import routes
 const executeRoutes = require("./routes/execute");
 const openaiRoutes = require("./routes/openai");
-const questionRoutes = require("./routes/question");
+const questionRoutes = require("./routes/questionRoutes");
 const authRoutes = require("./routes/auth");
 const tempRoutes = require("./routes/tempSubmission");
 const aiSimpleRoutes = require("./routes/aiSimple");
 const userRoutes = require("./routes/userRoutes"); // ✅ Thêm route người dùng
+const courseRoutes = require("./routes/courseRoutes");
+const lessonRoutes = require("./routes/lessonRoutes");
+const subLessonRoutes = require("./routes/subLessonRoutes");
+const restorePassRoutes = require("./routes/restorepassRoutes");
 
 // ✅ Hàm khởi động server
 async function startServer() {
@@ -34,11 +38,15 @@ async function startServer() {
     // Mount routes
     app.use("/api", executeRoutes);
     app.use("/api/openai", openaiRoutes);
-    app.use("/api", questionRoutes);
+    app.use("/api/questions", questionRoutes);
     app.use("/api", authRoutes);
     app.use("/api/temp", tempRoutes);
     app.use("/api/ai", aiSimpleRoutes);
     app.use("/api/users", userRoutes); // ✅ Mount route người dùng
+    app.use("/api/courses",courseRoutes);
+    app.use("/api/lessons",lessonRoutes);
+    app.use("/api/sublessons",subLessonRoutes);
+    app.use("/api/restore-pass", restorePassRoutes);
 
     // Kiểm tra hoạt động server
     app.get("/", (req, res) => {

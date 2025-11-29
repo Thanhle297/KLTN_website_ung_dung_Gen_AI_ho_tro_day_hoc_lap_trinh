@@ -14,14 +14,14 @@ export default function useLessonQuestions(lessonId, userId) {
       try {
         // 1️⃣ Lấy thông tin bài học
         const lessonRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/lesson/${lessonId}`
+          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}`
         );
         const lessonData = await lessonRes.json();
         setLesson(lessonData);
 
         // 2️⃣ Lấy câu hỏi + dữ liệu tạm
         const [questionsData, tempData] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/api/question?lessonId=${lessonId}`).then(
+          fetch(`${process.env.REACT_APP_API_URL}/api/questions?lessonId=${lessonId}`).then(
             (res) => res.json()
           ),
           fetch(

@@ -85,6 +85,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import {ThemeProvider,createTheme} from '@mui/material/styles'
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import Courses from "./pages/Courses";
@@ -92,10 +93,22 @@ import Lessons from "./pages/Lessons";
 import CodeEx from "./pages/CodeEx";
 import CodeExSimple from "./pages/CodeExSimple";
 import Login from "./auth/login";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
 import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
 import Profile from "./pages/Profile";
+//dashboard admin
+import AdminRoute from "./routes/AdminRoute"
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
+// MUI theme
+
+const theme = createTheme({
+  palette: {
+    primary: { main: "#1976d2" },
+    secondary: { main: "#9c27b0" },
+  },
+});
 
 // ====================
 // Token & inactivity utilities
@@ -145,7 +158,9 @@ function AppContent() {
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
-  const hideHeader = location.pathname === "/login";
+  const hideHeader =
+  location.pathname === "/login" ||
+  location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const handleLogout = () => {
@@ -255,7 +270,19 @@ function AppContent() {
         />
         <Route path="/contact" element={<Contact />} />
         <Route path="/profile" element={<Profile/>} />
+
+        {/* ✅ Admin Dashboard, chỉ admin mới vào được */}
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
       </Routes>
+
+      
     </>
   );
 }
@@ -265,8 +292,10 @@ function AppContent() {
 // ====================
 export default function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ThemeProvider theme={theme}>
+      <Router>
+        <AppContent />
+      </Router>
+    </ThemeProvider>
   );
 }

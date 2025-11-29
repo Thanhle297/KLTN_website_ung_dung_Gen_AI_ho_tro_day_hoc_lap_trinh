@@ -1,4 +1,4 @@
-// routes/lessonRoutes.js
+// routes/question.js
 const express = require("express");
 const { getDB } = require("../config/mongodb");
 const router = express.Router();
