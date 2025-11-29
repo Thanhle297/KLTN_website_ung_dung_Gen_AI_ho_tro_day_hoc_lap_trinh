@@ -9,17 +9,22 @@ require("dotenv").config();
 const PYTHON_SERVICE_URL =
   process.env.PYTHON_SERVICE_URL || "http://localhost:8001";
 
+// const normalizeString = (str) =>
+//   str
+//     .trim()
+//     .split(/\s+|\n+/)
+//     .filter((item) => item !== "")
+//     .join(" ");
+
+// Giữ nguyên xuống dòng để so sánh chính xác
 const normalizeString = (str) =>
   str
-    .trim()
-    .split(/\s+|\n+/)
-    .filter((item) => item !== "")
-    .join(" ");
+    .replace(/\r/g, "") // loại CR
+    .trim(); // không đụng tới \n
 
 router.post("/execute", async (req, res) => {
-  const { code, testcases, question, difficulty,lessonId  } = req.body;
+  const { code, testcases, question, difficulty, lessonId } = req.body;
   // console.log("🚀 Nhận từ FE:", { difficulty, lessonId, question });
-
 
   try {
     if (!code || !testcases || testcases.length === 0) {

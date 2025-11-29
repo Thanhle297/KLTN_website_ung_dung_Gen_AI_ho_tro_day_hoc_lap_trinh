@@ -121,6 +121,9 @@ import traceback
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import builtins   
+
+
 # =====================================================
 # 1. Cấu hình FastAPI
 # =====================================================
@@ -154,16 +157,61 @@ class SimpleCodeRequest(BaseModel):
 # =====================================================
 # 3. Hàm chạy code trong process
 # =====================================================
+# def run_code(code: str, input_data: str):
+#     """
+#     Hàm chạy trong process riêng, trả về output hoặc error
+#     """
+#     old_stdout = sys.stdout
+#     old_stdin = sys.stdin
+#     sys.stdout = buffer = io.StringIO()
+
+#     try:
+#         sys.stdin = io.StringIO(input_data)
+#         exec(code, {})
+#         output = buffer.getvalue()
+#         return {"output": output}
+#     except Exception:
+#         error = traceback.format_exc()
+#         return {"error": error}
+#     finally:
+#         sys.stdout = old_stdout
+#         sys.stdin = old_stdin
+
 def run_code(code: str, input_data: str):
     """
-    Hàm chạy trong process riêng, trả về output hoặc error
+    Chạy code trong process riêng, giả lập console:
+    - Redirect stdin từ input_data
+    - Ghi toàn bộ stdout vào buffer
+    - Override builtins.input để in cả prompt + value
     """
     old_stdout = sys.stdout
     old_stdin = sys.stdin
+    old_input = builtins.input  # ✅ lưu input gốc
+
     sys.stdout = buffer = io.StringIO()
+    sys.stdin = io.StringIO(input_data)
+
+    def fake_input(prompt: str = "") -> str:
+        """
+        Giả lập behavior console:
+        - In prompt + value + xuống dòng, ví dụ:
+          Giá tiền 1 thiệp: 2000
+        """
+        # Đọc 1 dòng từ stdin (đã được truyền sẵn)
+        line = sys.stdin.readline()
+        if line == "":  # hết input
+            raise EOFError("Hết dữ liệu input")
+
+        value = line.rstrip("\n")
+        # In ra prompt + value giống console
+        # (nếu prompt không có khoảng trắng cuối, bạn có thể tự thêm trong đề)
+        print(f"{prompt}{value}")
+        return value
+
+    # Gán input giả
+    builtins.input = fake_input
 
     try:
-        sys.stdin = io.StringIO(input_data)
         exec(code, {})
         output = buffer.getvalue()
         return {"output": output}
@@ -171,8 +219,11 @@ def run_code(code: str, input_data: str):
         error = traceback.format_exc()
         return {"error": error}
     finally:
+        # Khôi phục lại trạng thái ban đầu
         sys.stdout = old_stdout
         sys.stdin = old_stdin
+        builtins.input = old_input
+
 
 # =====================================================
 # 4. API chính: /execute (chấm điểm)
