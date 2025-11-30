@@ -334,6 +334,7 @@ export default function UsersCRUD() {
                 onChange={(e) => handleFormChange("role", e.target.value)}
               >
                 <MenuItem value="user">User</MenuItem>
+                <MenuItem value="teacher">Teacher</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
               </Select>
             </FormControl>
