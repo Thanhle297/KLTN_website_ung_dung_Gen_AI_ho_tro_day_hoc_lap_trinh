@@ -19,6 +19,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Copy .env vào image (vì dockerignore cũ đã ignore nó)
+COPY .env .env
+
 # Copy toàn bộ source và build production
 COPY . .
 RUN npm run build
@@ -31,7 +34,8 @@ FROM nginx:alpine
 
 # Copy bản build vào nginx
 COPY --from=builder /app/build /usr/share/nginx/html
-
+# Copy cấu hình nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expose port 80 cho nginx
 EXPOSE 80
 
