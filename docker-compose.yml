@@ -6,7 +6,7 @@ services:
     env_file:
       - ./python-service/.env
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     restart: unless-stopped
 
   backend:
@@ -14,7 +14,7 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3001:3001"
     depends_on:
       - python-service
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
     env_file:
       - ./frontend/.env
     ports:
-      - "3000:80" # nếu FE build production bằng nginx thì đổi thành "3000:80"
+      - "127.0.0.1:3000:80" # nếu FE build production bằng nginx thì đổi thành "3000:80"
     depends_on:
       - backend
     restart: unless-stopped
