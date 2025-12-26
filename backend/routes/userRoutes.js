@@ -144,4 +144,29 @@ router.delete("/:id", authMiddleware, adminOnly, async (req, res) => {
   res.json({ message: "Xóa user thành công" });
 });
 
+/* ============================================
+   USER TỰ CẬP NHẬT THÔNG TIN
+=============================================== */
+router.put("/me/update", authMiddleware, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+
+    const updateData = {
+      fullname: req.body.fullname,
+      email: req.body.email,
+      updatedAt: new Date(),
+    };
+
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(req.user.id) },
+      { $set: updateData }
+    );
+
+    res.json({ message: "Cập nhật thông tin thành công" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+});
+
+
 module.exports = router;

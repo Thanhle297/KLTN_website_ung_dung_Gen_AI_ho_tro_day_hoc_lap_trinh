@@ -4,9 +4,8 @@ import "../styles/DifficultySlider.scss";
 import { FaRobot } from "react-icons/fa";
 
 export default function DifficultySlider({ onChange }) {
-  // 0 = Tất cả, 1 = 1 phần, 2 = Không
   const [level, setLevel] = useState(0);
-  const colors = ["#4CAF50", "#FFC107", "#F44336"]; // xanh - vàng - đỏ
+  const colors = ["#4CAF50", "#FFC107", "#F44336"];
 
   const handleClick = (i) => {
     setLevel(i);
@@ -19,7 +18,8 @@ export default function DifficultySlider({ onChange }) {
         <div
           className="slider-thumb"
           style={{
-            left: `${level * 33.33}%`,
+            // Di chuyển thumb theo tỷ lệ 100% chiều rộng của chính nó
+            transform: `translateX(${level * 100}%)`,
             backgroundColor: colors[level],
           }}
         />
@@ -30,8 +30,9 @@ export default function DifficultySlider({ onChange }) {
             onClick={() => handleClick(i)}
           >
             <FaRobot
-              size={28}
-              color={level === i ? colors[i] : "#9e9e9e"}
+              size={22}
+              // Icon màu trắng khi được chọn, xám khi chưa chọn
+              color={level === i ? "#FFFFFF" : "#adb5bd"}
               className="robot-icon"
             />
           </button>

@@ -22,6 +22,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
@@ -46,6 +48,7 @@ export default function QuestionsCRUD() {
     question: "",
     ex: [{ input: "", output: "" }],
     testcase: [{ input: [""], expected: "" }],
+    echo_input: false, // NEW FIELD
     topic: "",
     courseId: "10",
   });
@@ -125,6 +128,7 @@ export default function QuestionsCRUD() {
       question: "",
       ex: [{ input: "", output: "" }],
       testcase: [{ input: [""], expected: "" }],
+      echo_input: false,
       topic: "",
       courseId: "10",
     });
@@ -137,6 +141,7 @@ export default function QuestionsCRUD() {
       question: q.question,
       ex: q.ex || [{ input: "", output: "" }],
       testcase: q.testcase || [{ input: [""], expected: "" }],
+      echo_input: q.echo_input ?? false, // LOAD echo_input
       topic: q.topic || "",
       courseId: q.courseId || "10",
     });
@@ -251,6 +256,7 @@ export default function QuestionsCRUD() {
               <TableCell>Câu hỏi</TableCell>
               <TableCell>EX</TableCell>
               <TableCell>Testcase</TableCell>
+              <TableCell>Echo Input</TableCell>
               <TableCell>Topic</TableCell>
               <TableCell align="right">Thao tác</TableCell>
             </TableRow>
@@ -263,6 +269,7 @@ export default function QuestionsCRUD() {
                 <TableCell>{q.question}</TableCell>
                 <TableCell>{q.ex?.length || 0}</TableCell>
                 <TableCell>{q.testcase?.length || 0}</TableCell>
+                <TableCell>{q.echo_input ? "Có" : "Không"}</TableCell>
                 <TableCell>{q.topic}</TableCell>
                 <TableCell align="right">
                   <IconButton onClick={() => openEdit(q)}>
@@ -277,7 +284,7 @@ export default function QuestionsCRUD() {
 
             {questions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   Không có câu hỏi nào
                 </TableCell>
               </TableRow>
@@ -287,12 +294,18 @@ export default function QuestionsCRUD() {
       )}
 
       {/* Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{editing ? "Chỉnh sửa câu hỏi" : "Thêm câu hỏi"}</DialogTitle>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {editing ? "Chỉnh sửa câu hỏi" : "Thêm câu hỏi"}
+        </DialogTitle>
 
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
             {/* CÂU HỎI */}
             <TextField
               label="Câu hỏi"
@@ -300,6 +313,17 @@ export default function QuestionsCRUD() {
               onChange={(e) => changeForm("question", e.target.value)}
               fullWidth
               multiline
+            />
+
+            {/* echo_input SWITCH */}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.echo_input}
+                  onChange={(e) => changeForm("echo_input", e.target.checked)}
+                />
+              }
+              label="In lại input khi chạy (echo_input)"
             />
 
             {/* EXAMPLES */}
@@ -343,23 +367,38 @@ export default function QuestionsCRUD() {
 
             {/* TESTCASE */}
             <Box>
-              <Typography variant="subtitle1">Testcase</Typography>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Testcase (mỗi dòng là một input)
+              </Typography>
 
               {form.testcase.map((item, index) => (
-                <Box key={index} sx={{ display: "flex", gap: 2, mb: 1 }}>
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    mb: 2,
+                    p: 2,
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                  }}
+                >
                   <TextField
-                    label="Input"
-                    value={item.input[0]}
+                    label="Input (nhiều dòng)"
+                    value={(item.input || []).join("\n")}
                     onChange={(e) => {
                       const updated = [...form.testcase];
-                      updated[index].input = [e.target.value];
+                      updated[index].input = e.target.value.split("\n");
                       changeForm("testcase", updated);
                     }}
                     fullWidth
+                    multiline
+                    minRows={3}
                   />
 
                   <TextField
-                    label="Expected"
+                    label="Expected Output"
                     value={item.expected}
                     onChange={(e) => {
                       const updated = [...form.testcase];
@@ -367,11 +406,26 @@ export default function QuestionsCRUD() {
                       changeForm("testcase", updated);
                     }}
                     fullWidth
+                    multiline
                   />
+
+                  <Button
+                    color="error"
+                    onClick={() => {
+                      const updated = form.testcase.filter(
+                        (_, i) => i !== index
+                      );
+                      changeForm("testcase", updated);
+                    }}
+                    sx={{ alignSelf: "flex-end" }}
+                  >
+                    Xóa testcase
+                  </Button>
                 </Box>
               ))}
 
               <Button
+                variant="outlined"
                 onClick={() =>
                   changeForm("testcase", [
                     ...form.testcase,

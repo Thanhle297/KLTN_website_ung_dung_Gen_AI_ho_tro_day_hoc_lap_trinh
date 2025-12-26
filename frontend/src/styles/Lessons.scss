@@ -1,3 +1,6 @@
+/* ==================================================
+   GLOBAL LAYOUT
+================================================== */
 .lessons-list {
   background: #f7f8fa;
   min-height: 100vh;
@@ -11,45 +14,50 @@
     font-weight: 600;
   }
 
-  /* ===========================
-     BÀI LỚN (lesson-item)
-  =========================== */
+  /* ==================================================
+     LESSON ITEM (BÀI LỚN)
+  ================================================== */
   .lesson-item {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 20px 30px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: 0.3s ease;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
 
     &:hover {
       background: #f1f3fa;
       border-color: #c9d1f1;
     }
 
+    &.expanded {
+      border-color: #20254a;
+      background: #f9faff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
     &__top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       gap: 20px;
+      align-items: center;
     }
 
     &__info {
       flex: 1;
+
       h3 {
         font-size: 18px;
         color: #222;
-        margin-bottom: 6px;
         font-weight: 600;
+        margin-bottom: 6px;
       }
+
       p {
         font-size: 14px;
         color: #555;
-        margin: 0;
       }
     }
 
@@ -59,10 +67,9 @@
       color: #20254a;
       border-radius: 8px;
       padding: 8px 16px;
-      cursor: pointer;
       font-weight: 500;
-      white-space: nowrap;
-      transition: 0.25s ease;
+      cursor: pointer;
+      transition: 0.25s;
 
       &:hover {
         background: #20254a;
@@ -70,81 +77,258 @@
         transform: translateY(-1px);
       }
     }
-
-    &.expanded {
-      border-color: #20254a;
-      background: #f9faff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    }
   }
 
-  /* ===========================
-     DANH SÁCH BÀI CON (sub-lessons)
-     Hiệu ứng trượt nhanh, gọn, mượt
-  =========================== */
+  /* ==================================================
+     SUB LESSON LIST
+  ================================================== */
   .sub-lessons {
-    margin-top: 0;
-    padding-left: 20px;
+    margin-top: 10px;
+    padding-left: 18px;
     border-left: 3px solid #dbe1f7;
-    overflow: hidden;
     max-height: 0;
-    transition: max-height 0.4s ease-in-out;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
   }
 
   .lesson-item.expanded .sub-lessons {
-    margin-top: 10px;
-    max-height: 800px; /* tuỳ độ cao thực tế */
+    max-height: 1000px;
+  }
+}
+
+/* ==================================================
+   SUB LESSON CARD
+================================================== */
+.sub-lesson-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 18px 16px;
+  border: 1px solid #e2e6f3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  margin: 12px 0;
+  transition: 0.25s;
+
+  &:hover {
+    background: #f6f8ff;
+    border-color: #c8d1f9;
+    transform: translateX(4px);
+  }
+}
+
+.sub-lesson {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &__info {
+    flex: 1;
+
+    h4 {
+      font-size: 16px;
+      color: #1c1c1c;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #666;
+      margin: 2px 0;
+    }
+  }
+}
+
+/* ==================================================
+   ACTIONS
+================================================== */
+.sub-lesson__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-do {
+  background: #1976d2;
+  color: white;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-status {
+  padding: 8px 10px; // ⬅️ thêm khoảng thở ngang
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  line-height: 1.3; // ⬅️ chữ không bị ép
+
+  &.done {
+    background: #2e7d32;
+    color: white;
   }
 
-  /* ===========================
-     TỪNG SUB-LESSON
-  =========================== */
+  &.pending {
+    background: #ff9800;
+    color: #222;
+  }
+}
+
+/* ==================================================
+   PROGRESS BAR
+================================================== */
+.progress-section {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #f3f6fb;
+  border-radius: 8px;
+}
+
+.progress-bar {
+  height: 10px;
+  width: 100%;
+  background: #d0d7e2;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #42a5f5, #1565c0);
+  transition: width 0.4s ease;
+
+  &.excellent {
+    background: linear-gradient(90deg, #43a047, #66bb6a);
+    box-shadow: 0 0 8px rgba(67, 160, 71, 0.8);
+    animation: glow 2s infinite alternate;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 6px rgba(67, 160, 71, 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(67, 160, 71, 0.9);
+  }
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.rating span,
+.rating .face {
+  font-size: 16px;
+  margin-right: 2px;
+}
+
+.percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0d47a1;
+}
+
+/* ==================================================
+   RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+  .lessons-list {
+    padding: 24px 16px;
+
+    &__title {
+      font-size: 22px;
+    }
+
+    .lesson-item {
+      padding: 16px;
+
+      &__top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      &__btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  }
+
   .sub-lesson {
-    background: #fff;
-    border-radius: 10px;
-    margin: 10px 0;
-    padding: 15px 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #e2e6f3;
-    transition: all 0.25s ease;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-    &:hover {
-      background: #f5f7ff;
-      border-color: #c8d1f9;
-      transform: translateX(6px);
-    }
+  .sub-lesson__actions {
+    width: 100%;
+  }
 
-    &__info {
-      flex: 1;
-      h4 {
-        font-size: 16px;
-        color: #1c1c1c;
-        margin-bottom: 4px;
-      }
-      p {
-        font-size: 13px;
-        color: #666;
-        margin: 2px 0;
-      }
-    }
+  .btn-do,
+  .btn-status {
+    width: 100%;
+  }
 
-    button {
-      background: #20254a;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: 0.25s ease;
+  .progress-label {
+    text-align: left;
+  }
+}
 
-      &:hover {
-        background: #3a45a1;
-        transform: scale(1.05);
-      }
-    }
+/* ===========================
+   RATING ANIMATION
+=========================== */
+
+.rating span {
+  display: inline-block;
+  animation: pop 0.4s ease forwards;
+}
+
+.rating span:nth-child(1) {
+  animation-delay: 0s;
+}
+.rating span:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.rating span:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.face {
+  animation: shake 0.5s ease;
+}
+
+/* Pop effect cho sao */
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Shake cho mặt buồn */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
   }
 }

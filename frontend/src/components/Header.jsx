@@ -8,7 +8,9 @@ export default function Header() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [openMenu, setOpenMenu] = useState(false);
-  const menuRef = useRef(null); // ✅ tham chiếu vùng menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // ✅ state cho mobile menu
+  const menuRef = useRef(null);
+  const mobileMenuRef = useRef(null); // ✅ tham chiếu mobile menu
 
   useEffect(() => {
     const fullname = localStorage.getItem("fullname");
@@ -17,11 +19,19 @@ export default function Header() {
     if (token && fullname) setUser({ fullname, role });
   }, []);
 
-  // ✅ đóng menu khi click ra ngoài
+  // ✅ đóng menu user khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenMenu(false);
+      }
+      // Đóng mobile menu khi click ra ngoài
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target) &&
+        !e.target.closest(".hamburger-btn")
+      ) {
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener("click", handleClickOutside);
@@ -31,6 +41,7 @@ export default function Header() {
   // ✅ đóng menu khi đổi route
   useEffect(() => {
     setOpenMenu(false);
+    setIsMobileMenuOpen(false);
   }, [location]);
 
   const handleLogout = () => {
@@ -49,7 +60,18 @@ export default function Header() {
         </Link>
       </div>
 
-      <nav className="header__nav">
+      {/* Hamburger Button */}
+      <button
+        className="hamburger-btn"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
+      </button>
+
+      <nav
+        className={`header__nav ${isMobileMenuOpen ? "active" : ""}`}
+        ref={mobileMenuRef}
+      >
         <ul>
           <li>
             <Link to="/">Trang chủ</Link>

@@ -6,8 +6,11 @@
 # import sys
 # import io
 # import traceback
-# import time 
+# import time
 # from concurrent.futures import ProcessPoolExecutor, as_completed
+
+# import builtins   
+
 
 # # =====================================================
 # # 1. Cấu hình FastAPI
@@ -34,19 +37,69 @@
 #     code: str
 #     testcases: List[TestCase]
 
+# # ✅ Model mới cho IDE / run_code_simple
+# class SimpleCodeRequest(BaseModel):
+#     code: str
+#     input: str = ""
+
 # # =====================================================
 # # 3. Hàm chạy code trong process
 # # =====================================================
+# # def run_code(code: str, input_data: str):
+# #     """
+# #     Hàm chạy trong process riêng, trả về output hoặc error
+# #     """
+# #     old_stdout = sys.stdout
+# #     old_stdin = sys.stdin
+# #     sys.stdout = buffer = io.StringIO()
+
+# #     try:
+# #         sys.stdin = io.StringIO(input_data)
+# #         exec(code, {})
+# #         output = buffer.getvalue()
+# #         return {"output": output}
+# #     except Exception:
+# #         error = traceback.format_exc()
+# #         return {"error": error}
+# #     finally:
+# #         sys.stdout = old_stdout
+# #         sys.stdin = old_stdin
+
 # def run_code(code: str, input_data: str):
 #     """
-#     Hàm chạy trong process riêng, trả về output hoặc error
+#     Chạy code trong process riêng, giả lập console:
+#     - Redirect stdin từ input_data
+#     - Ghi toàn bộ stdout vào buffer
+#     - Override builtins.input để in cả prompt + value
 #     """
 #     old_stdout = sys.stdout
 #     old_stdin = sys.stdin
+#     old_input = builtins.input  # ✅ lưu input gốc
+
 #     sys.stdout = buffer = io.StringIO()
+#     sys.stdin = io.StringIO(input_data)
+
+#     def fake_input(prompt: str = "") -> str:
+#         """
+#         Giả lập behavior console:
+#         - In prompt + value + xuống dòng, ví dụ:
+#           Giá tiền 1 thiệp: 2000
+#         """
+#         # Đọc 1 dòng từ stdin (đã được truyền sẵn)
+#         line = sys.stdin.readline()
+#         if line == "":  # hết input
+#             raise EOFError("Hết dữ liệu input")
+
+#         value = line.rstrip("\n")
+#         # In ra prompt + value giống console
+#         # (nếu prompt không có khoảng trắng cuối, bạn có thể tự thêm trong đề)
+#         print(f"{prompt}{value}")
+#         return value
+
+#     # Gán input giả
+#     builtins.input = fake_input
 
 #     try:
-#         sys.stdin = io.StringIO(input_data)
 #         exec(code, {})
 #         output = buffer.getvalue()
 #         return {"output": output}
@@ -54,11 +107,14 @@
 #         error = traceback.format_exc()
 #         return {"error": error}
 #     finally:
+#         # Khôi phục lại trạng thái ban đầu
 #         sys.stdout = old_stdout
 #         sys.stdin = old_stdin
+#         builtins.input = old_input
+
 
 # # =====================================================
-# # 4. API chính: /execute
+# # 4. API chính: /execute (chấm điểm)
 # # =====================================================
 # @app.post("/execute")
 # def execute_code(request: CodeRequest):
@@ -95,6 +151,29 @@
 #     return {"results": results}
 
 # # =====================================================
+# # 5. API mới: /run_code_simple (IDE chạy code + input)
+# # =====================================================
+# @app.post("/run_code_simple")
+# def run_code_simple(request: SimpleCodeRequest):
+#     """
+#     API đơn giản cho IDE — chỉ chạy code + input, không có expected
+#     """
+#     try:
+#         num_workers = 1
+#         timeout = 5
+
+#         with ProcessPoolExecutor(max_workers=num_workers) as executor:
+#             future = executor.submit(run_code, request.code, request.input)
+#             result = future.result(timeout=timeout)
+
+#         if "error" in result:
+#             return {"success": False, "error": result["error"]}
+#         return {"success": True, "output": result["output"] or "(Không có kết quả)"}
+
+#     except Exception as e:
+#         return {"success": False, "error": f"Lỗi khi chạy code: {str(e)}"}
+
+# # =====================================================
 # # Health check
 # # =====================================================
 # @app.get("/health")
@@ -102,7 +181,7 @@
 #     return {"status": "healthy"}
 
 # # =====================================================
-# # 5. Chạy uvicorn server
+# # 6. Chạy uvicorn server
 # # =====================================================
 # if __name__ == "__main__":
 #     import uvicorn
@@ -120,16 +199,13 @@ import io
 import traceback
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-
-import builtins   
-
+import builtins
 
 # =====================================================
 # 1. Cấu hình FastAPI
 # =====================================================
 app = FastAPI()
 
-# Cho phép CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -148,8 +224,8 @@ class TestCase(BaseModel):
 class CodeRequest(BaseModel):
     code: str
     testcases: List[TestCase]
+    echo_input: bool = False   # ✔ echo_input toàn câu hỏi
 
-# ✅ Model mới cho IDE / run_code_simple
 class SimpleCodeRequest(BaseModel):
     code: str
     input: str = ""
@@ -157,99 +233,79 @@ class SimpleCodeRequest(BaseModel):
 # =====================================================
 # 3. Hàm chạy code trong process
 # =====================================================
-# def run_code(code: str, input_data: str):
-#     """
-#     Hàm chạy trong process riêng, trả về output hoặc error
-#     """
-#     old_stdout = sys.stdout
-#     old_stdin = sys.stdin
-#     sys.stdout = buffer = io.StringIO()
-
-#     try:
-#         sys.stdin = io.StringIO(input_data)
-#         exec(code, {})
-#         output = buffer.getvalue()
-#         return {"output": output}
-#     except Exception:
-#         error = traceback.format_exc()
-#         return {"error": error}
-#     finally:
-#         sys.stdout = old_stdout
-#         sys.stdin = old_stdin
-
-def run_code(code: str, input_data: str):
+def run_code(code: str, input_data: str, echo_input: bool):
     """
-    Chạy code trong process riêng, giả lập console:
+    Chạy code Python trong process riêng biệt.
+    Hỗ trợ:
     - Redirect stdin từ input_data
-    - Ghi toàn bộ stdout vào buffer
-    - Override builtins.input để in cả prompt + value
+    - Ghi stdout vào buffer
+    - Giả lập input() với echo_input theo từng câu hỏi
     """
+
     old_stdout = sys.stdout
     old_stdin = sys.stdin
-    old_input = builtins.input  # ✅ lưu input gốc
+    old_input = builtins.input
 
     sys.stdout = buffer = io.StringIO()
     sys.stdin = io.StringIO(input_data)
 
     def fake_input(prompt: str = "") -> str:
-        """
-        Giả lập behavior console:
-        - In prompt + value + xuống dòng, ví dụ:
-          Giá tiền 1 thiệp: 2000
-        """
-        # Đọc 1 dòng từ stdin (đã được truyền sẵn)
         line = sys.stdin.readline()
-        if line == "":  # hết input
+        if line == "":
             raise EOFError("Hết dữ liệu input")
 
         value = line.rstrip("\n")
-        # In ra prompt + value giống console
-        # (nếu prompt không có khoảng trắng cuối, bạn có thể tự thêm trong đề)
-        print(f"{prompt}{value}")
+
+        # ✔ Nếu echo_input = True → in prompt + value giống console
+        if echo_input:
+            print(f"{prompt}{value}")
+
         return value
 
-    # Gán input giả
     builtins.input = fake_input
 
     try:
         exec(code, {})
-        output = buffer.getvalue()
-        return {"output": output}
+        return {"output": buffer.getvalue()}
     except Exception:
-        error = traceback.format_exc()
-        return {"error": error}
+        return {"error": traceback.format_exc()}
     finally:
-        # Khôi phục lại trạng thái ban đầu
         sys.stdout = old_stdout
         sys.stdin = old_stdin
         builtins.input = old_input
 
-
 # =====================================================
-# 4. API chính: /execute (chấm điểm)
+# 4. API execute (chấm điểm)
 # =====================================================
 @app.post("/execute")
 def execute_code(request: CodeRequest):
+
     start_time = time.perf_counter()
 
     results = []
-    num_workers = multiprocessing.cpu_count()  # số core khả dụng trên VPS/máy
-    timeout = 5  # timeout mỗi test case
+    num_workers = multiprocessing.cpu_count()
+    timeout = 5
 
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         future_to_tc = {
-            executor.submit(run_code, request.code, tc.input): tc for tc in request.testcases
+            executor.submit(run_code, request.code, tc.input, request.echo_input): tc
+            for tc in request.testcases
         }
 
         for future in as_completed(future_to_tc, timeout=timeout * len(request.testcases)):
             tc = future_to_tc[future]
+
             try:
                 result = future.result(timeout=timeout)
+
                 if "output" in result:
                     result["passed"] = (result["output"].strip() == tc.expected.strip())
+
                 result["input"] = tc.input
                 result["expected"] = tc.expected
+
                 results.append(result)
+
             except Exception as e:
                 results.append({
                     "input": tc.input,
@@ -258,28 +314,23 @@ def execute_code(request: CodeRequest):
                 })
 
     elapsed = time.perf_counter() - start_time
-    print(f"[INFO] /execute xử lý {len(request.testcases)} testcases trong {elapsed:.3f}s")
+    print(f"[INFO] /execute xử lý {len(results)} testcases trong {elapsed:.3f}s")
 
     return {"results": results}
 
 # =====================================================
-# 5. API mới: /run_code_simple (IDE chạy code + input)
+# 5. API IDE: run_code_simple
 # =====================================================
 @app.post("/run_code_simple")
 def run_code_simple(request: SimpleCodeRequest):
-    """
-    API đơn giản cho IDE — chỉ chạy code + input, không có expected
-    """
     try:
-        num_workers = 1
-        timeout = 5
-
-        with ProcessPoolExecutor(max_workers=num_workers) as executor:
-            future = executor.submit(run_code, request.code, request.input)
-            result = future.result(timeout=timeout)
+        with ProcessPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(run_code, request.code, request.input, True)
+            result = future.result(timeout=5)
 
         if "error" in result:
             return {"success": False, "error": result["error"]}
+
         return {"success": True, "output": result["output"] or "(Không có kết quả)"}
 
     except Exception as e:
@@ -293,7 +344,7 @@ async def health_check():
     return {"status": "healthy"}
 
 # =====================================================
-# 6. Chạy uvicorn server
+# Run server
 # =====================================================
 if __name__ == "__main__":
     import uvicorn

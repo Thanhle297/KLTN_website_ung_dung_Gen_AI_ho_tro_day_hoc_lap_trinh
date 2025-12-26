@@ -1,28 +1,40 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 import "../styles/SubmitButton.scss";
 import { useNavigate } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
 
-export default function SubmitButton({ userId, lessonId, courseId }) {
+export default function SubmitButton({
+  userId,
+  lessonId,
+  courseId,
+  editorStates,
+}) {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    if (!userId || !lessonId) return;
     setLoading(true);
     try {
-      // ✅ Gọi API xóa dữ liệu tạm
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, lessonId, courseId, editorStates }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/clear`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, lessonId }),
       });
 
-      // ✅ Sau khi xóa thành công -> chuyển hướng về trang bài học
       navigate(`/course/${courseId}`);
     } catch (error) {
-      console.error("❌ Lỗi khi nộp bài:", error);
-      alert("Có lỗi khi nộp bài. Vui lòng thử lại.");
+      console.error("❌ Lỗi:", error);
     } finally {
       setLoading(false);
       setShowPopup(false);
@@ -40,26 +52,41 @@ export default function SubmitButton({ userId, lessonId, courseId }) {
         {loading ? "Đang xử lý..." : "Nộp bài"}
       </button>
 
-      {/* Popup xác nhận */}
-      {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <h3>Xác nhận nộp bài?</h3>
-            <p>
-              Bạn có chắc muốn nộp bài không? Sau khi nộp sẽ không thể chỉnh
-              sửa.
-            </p>
-            <div className="actions">
-              <button onClick={handleSubmit} className="confirm">
-                Có
-              </button>
-              <button onClick={() => setShowPopup(false)} className="cancel">
-                Không
-              </button>
+      {/* Portal đảm bảo popup nằm ngoài mọi thẻ div cha bị giới hạn chiều cao */}
+      {showPopup &&
+        ReactDOM.createPortal(
+          <div className="modern-popup-root">
+            <div
+              className="popup-overlay"
+              onClick={() => setShowPopup(false)}
+            />
+            <div className="popup-card">
+              <div className="popup-header">
+                <h3>Xác nhận nộp bài?</h3>
+                <p>
+                  Hệ thống sẽ ghi nhận kết quả cuối cùng. Bạn không thể chỉnh
+                  sửa sau khi nộp.
+                </p>
+              </div>
+              <div className="popup-actions">
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="btn-secondary"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Đang nộp..." : "Xác nhận nộp"}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

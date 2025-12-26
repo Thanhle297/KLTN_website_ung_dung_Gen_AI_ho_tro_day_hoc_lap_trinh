@@ -32,7 +32,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-
+import ScrollToTop from "../../components/ScrollToTop";
 import UsersCRUD from "./UsersCRUD";
 import CoursesCRUD from "./CoursesCRUD";
 import LessonsCRUD from "./LessonsCRUD";
@@ -111,6 +111,7 @@ export default function AdminDashboard() {
 
   return (
     <Box sx={{ display: "flex" }}>
+      <ScrollToTop />
       {/* Header */}
       <AppBar
         position="fixed"
@@ -132,12 +133,17 @@ export default function AdminDashboard() {
             >
               <MenuIcon />
             </IconButton>
-            <DashboardIcon
-              color="primary"
-              sx={{ display: { xs: "none", sm: "block" } }}
+            <Box
+              component="img"
+              src="/Logo_noback.png" // đường dẫn logo của bạn
+              alt="Logo"
+              sx={{
+                height: 50,
+                display: { xs: "none", sm: "block" },
+              }}
             />
             <Typography variant="h5" noWrap fontWeight="bold" color="primary">
-              Admin Dashboard
+              Thanh Technology Education
             </Typography>
           </Box>
 

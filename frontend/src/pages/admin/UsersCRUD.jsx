@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  TableContainer,
   Table,
   TableHead,
   TableRow,
@@ -27,6 +28,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Edit, Delete, Key, Search } from "@mui/icons-material";
+import AdminPageCard from "../../components/admin/AdminPageCard";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 
@@ -227,181 +229,194 @@ export default function UsersCRUD() {
         </Box>
       </Box>
 
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Fullname</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Kích hoạt</TableCell>
-              <TableCell align="right">Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredUsers.map((u) => (
-              <TableRow key={u._id}>
-                <TableCell>{u.fullname}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>{u.username}</TableCell>
-                <TableCell>{u.role}</TableCell>
-                <TableCell>{u.isActive ? "Hoạt động" : "Khóa"}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    onClick={() => openChangePass(u)}
-                    title="Đổi mật khẩu"
-                    color="warning"
-                  >
-                    <Key />
-                  </IconButton>
-                  <IconButton onClick={() => openEditDialog(u)} title="Sửa">
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(u)}
-                    title="Xóa"
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+      <AdminPageCard>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer sx={{ maxHeight: "60vh" }}>
+            <Table stickyHeader>
+              <TableHead
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "#fff",
+                  zIndex: 5,
+                }}
+              >
+                <TableRow>
+                  <TableCell>Fullname</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Kích hoạt</TableCell>
+                  <TableCell align="right">Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredUsers.map((u) => (
+                  <TableRow key={u._id}>
+                    <TableCell>{u.fullname}</TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{u.username}</TableCell>
+                    <TableCell>{u.role}</TableCell>
+                    <TableCell>{u.isActive ? "Hoạt động" : "Khóa"}</TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        onClick={() => openChangePass(u)}
+                        title="Đổi mật khẩu"
+                        color="warning"
+                      >
+                        <Key />
+                      </IconButton>
+                      <IconButton onClick={() => openEditDialog(u)} title="Sửa">
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(u)}
+                        title="Xóa"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-            {filteredUsers.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} align="center">
-                  Không có user nào
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      )}
+                {filteredUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      Không có user nào
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
-      {/* Dialog thêm / sửa */}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {editingUser ? "Chỉnh sửa User" : "Thêm User"}
-        </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              label="Email"
-              value={form.email}
-              onChange={(e) => handleFormChange("email", e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Username"
-              value={form.username}
-              onChange={(e) => handleFormChange("username", e.target.value)}
-              fullWidth
-            />
-
-            {!editingUser && (
+        {/* Dialog thêm / sửa */}
+        <Dialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {editingUser ? "Chỉnh sửa User" : "Thêm User"}
+          </DialogTitle>
+          <DialogContent dividers>
+            <Box
+              sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}
+            >
               <TextField
-                label="Password"
-                type="password"
-                value={form.password}
-                onChange={(e) => handleFormChange("password", e.target.value)}
+                label="Email"
+                value={form.email}
+                onChange={(e) => handleFormChange("email", e.target.value)}
                 fullWidth
               />
-            )}
+              <TextField
+                label="Username"
+                value={form.username}
+                onChange={(e) => handleFormChange("username", e.target.value)}
+                fullWidth
+              />
 
-            <TextField
-              label="Họ tên"
-              value={form.fullname}
-              fullWidth
-              onChange={(e) => handleFormChange("fullname", e.target.value)}
-            />
-
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                label="Role"
-                value={form.role}
-                onChange={(e) => handleFormChange("role", e.target.value)}
-              >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="teacher">Teacher</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={(e) =>
-                    handleFormChange("isActive", e.target.checked)
-                  }
+              {!editingUser && (
+                <TextField
+                  label="Password"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => handleFormChange("password", e.target.value)}
+                  fullWidth
                 />
-              }
-              label="Kích hoạt"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleSave}>
-            Lưu
-          </Button>
-        </DialogActions>
-      </Dialog>
+              )}
 
-      {/* Dialog Đổi mật khẩu */}
-      <Dialog
-        open={openPassDialog}
-        onClose={() => setOpenPassDialog(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Đổi mật khẩu User</DialogTitle>
-        <DialogContent dividers>
-          <TextField
-            label="Mật khẩu mới"
-            type="password"
-            value={passForm.newPassword}
-            onChange={(e) =>
-              setPassForm({ ...passForm, newPassword: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenPassDialog(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleChangePass}>
-            Lưu
-          </Button>
-        </DialogActions>
-      </Dialog>
+              <TextField
+                label="Họ tên"
+                value={form.fullname}
+                fullWidth
+                onChange={(e) => handleFormChange("fullname", e.target.value)}
+              />
 
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnack}
-          severity={snack.severity}
-          variant="filled"
+              <FormControl fullWidth>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  label="Role"
+                  value={form.role}
+                  onChange={(e) => handleFormChange("role", e.target.value)}
+                >
+                  <MenuItem value="user">User</MenuItem>
+                  <MenuItem value="teacher">Teacher</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={form.isActive}
+                    onChange={(e) =>
+                      handleFormChange("isActive", e.target.checked)
+                    }
+                  />
+                }
+                label="Kích hoạt"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
+            <Button variant="contained" onClick={handleSave}>
+              Lưu
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog Đổi mật khẩu */}
+        <Dialog
+          open={openPassDialog}
+          onClose={() => setOpenPassDialog(false)}
+          maxWidth="xs"
+          fullWidth
         >
-          {snack.message}
-        </Alert>
-      </Snackbar>
+          <DialogTitle>Đổi mật khẩu User</DialogTitle>
+          <DialogContent dividers>
+            <TextField
+              label="Mật khẩu mới"
+              type="password"
+              value={passForm.newPassword}
+              onChange={(e) =>
+                setPassForm({ ...passForm, newPassword: e.target.value })
+              }
+              fullWidth
+              sx={{ mt: 1 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenPassDialog(false)}>Hủy</Button>
+            <Button variant="contained" onClick={handleChangePass}>
+              Lưu
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={3000}
+          onClose={handleCloseSnack}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseSnack}
+            severity={snack.severity}
+            variant="filled"
+          >
+            {snack.message}
+          </Alert>
+        </Snackbar>
+      </AdminPageCard>
     </Box>
   );
 }

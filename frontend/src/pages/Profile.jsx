@@ -21,7 +21,7 @@ export default function Profile() {
   };
 
   const handleSave = async () => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/users/${user._id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/users/me/update`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

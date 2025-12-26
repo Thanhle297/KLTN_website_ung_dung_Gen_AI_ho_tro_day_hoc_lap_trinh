@@ -47,6 +47,7 @@ export default function CodeEx() {
               userId={userId}
               lessonId={lessonId}
               courseId={lesson.courseId}
+              editorStates={editorStates}
             />
           )}
         </div>

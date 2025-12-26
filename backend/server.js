@@ -28,6 +28,8 @@ const courseRoutes = require("./routes/courseRoutes");
 const lessonRoutes = require("./routes/lessonRoutes");
 const subLessonRoutes = require("./routes/subLessonRoutes");
 const restorePassRoutes = require("./routes/restorepassRoutes");
+const submitRoutes = require("./routes/submitRoutes");
+const progressRoutes = require("./routes/progressRoutes");
 
 // ✅ Hàm khởi động server
 async function startServer() {
@@ -43,10 +45,12 @@ async function startServer() {
     app.use("/api/temp", tempRoutes);
     app.use("/api/ai", aiSimpleRoutes);
     app.use("/api/users", userRoutes); // ✅ Mount route người dùng
-    app.use("/api/courses",courseRoutes);
-    app.use("/api/lessons",lessonRoutes);
-    app.use("/api/sublessons",subLessonRoutes);
+    app.use("/api/courses", courseRoutes);
+    app.use("/api/lessons", lessonRoutes);
+    app.use("/api/sublessons", subLessonRoutes);
     app.use("/api/restore-pass", restorePassRoutes);
+    app.use("/api/submit", submitRoutes);
+    app.use("/api/progress", progressRoutes);
 
     // Kiểm tra hoạt động server
     app.get("/", (req, res) => {
@@ -58,6 +62,8 @@ async function startServer() {
           "/api/question",
           "/api/temp",
           "/api/users/me",
+          "/api/submit",
+          "/api/progress",
         ],
       });
     });

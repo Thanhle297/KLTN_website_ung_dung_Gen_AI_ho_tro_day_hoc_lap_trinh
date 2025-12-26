@@ -1,100 +1,171 @@
+// ============================================================
+// BẢNG MÀU DEEP OCEAN BLUE (MODERN & HIGH CONTRAST)
+// ============================================================
+$primary-main: #2563eb; // Xanh dương chủ đạo (Royal Blue)
+$primary-dark: #1e40af; // Xanh dương đậm cho hover
+$success-active: #059669; // Xanh lá đậm cho nút xác nhận
+$danger-text: #dc2626; // Đỏ cho hành động hủy
+$text-title: #0f172a; // Đen Slate (rất đậm) cho tiêu đề
+$text-body: #334155; // Xám Slate đậm cho nội dung
+$bg-card: #ffffff;
+$overlay-dark: rgba(2, 6, 17, 0.8); // Nền tối sâu để popup "nổi" hẳn lên
+$overlay: rgba(0, 0, 0, 0.45); // Nền mờ vừa phải
+$bg-white: #ffffff;
+$primary-blue: #2563eb;
+$text-title: #1e293b; // Màu xanh đen Slate đậm nhưng không quá gắt
+$text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
+
+// ============================================================
+// NÚT BẤM CHÍNH (SUBMIT BUTTON)
+// ============================================================
 .submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 12px;
+  padding: 12px 28px;
   font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #007bff, #0056d2);
+  font-weight: 700;
+  color: #ffffff;
+  background: $primary-main;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
 
   .icon {
     font-size: 18px;
-    transition: transform 0.25s ease;
+    transition: transform 0.3s ease;
   }
 
-  &:hover {
-    background: linear-gradient(135deg, #3399ff, #0066ff);
+  &:hover:not(.disabled) {
+    background: $primary-dark;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.35);
+    box-shadow: 0 10px 20px rgba(30, 64, 175, 0.4);
 
     .icon {
-      transform: translateX(4px);
+      transform: rotate(-15deg) scale(1.1);
     }
   }
 
-  &:active {
-    transform: scale(0.97);
-    box-shadow: none;
-  }
-
   &.disabled {
-    background: #ccc;
-    color: #666;
+    background: #e2e8f0;
+    color: #94a3b8;
     cursor: not-allowed;
     box-shadow: none;
   }
 }
 
-.popup-overlay {
+// ============================================================
+// POPUP SYSTEM (DÙNG VỚI REACT PORTAL)
+// ============================================================
+
+.modern-popup-root {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px; // Đảm bảo không dính mép màn hình trên mobile
 }
 
-.popup {
-  background: white;
-  border-radius: 10px;
-  padding: 20px 30px;
-  width: 350px;
+.popup-overlay {
+  position: absolute;
+  inset: 0;
+  background: $overlay;
+  backdrop-filter: blur(4px); // Giảm độ mờ xuống một chút cho nhẹ mắt
+  animation: fadeIn 0.2s ease-out;
+}
+
+.popup-card {
+  position: relative;
+  background: $bg-white;
+  width: 100%;
+  max-width: 360px; // ⬇️ Giảm chiều rộng (từ 440px xuống 360px)
+  padding: 32px 24px; // ⬇️ Giảm padding cho thanh thoát
+  border-radius: 20px; // Bo góc vừa phải
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 10001;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .popup-header {
+    margin-bottom: 24px;
+
+    h3 {
+      font-size: 19px; // ⬇️ Giảm cỡ chữ tiêu đề
+      font-weight: 700; // ⬇️ Giảm độ đậm (từ 800 xuống 700)
+      color: $text-title;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      font-size: 14px; // ⬇️ Giảm cỡ chữ nội dung
+      font-weight: 400; // ⬇️ Chữ thường (không để 500)
+      color: $text-body;
+      line-height: 1.5;
+      padding: 0 10px; // Tạo khoảng cách hai bên cho text
+    }
+  }
+
+  .popup-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      flex: 1;
+      padding: 10px 16px; // ⬇️ Nút nhỏ gọn hơn
+      font-size: 14px; // ⬇️ Chữ trên nút nhỏ lại
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.btn-primary {
+        background: $primary-blue;
+        color: white;
+        &:hover {
+          background: darken($primary-blue, 5%);
+          transform: translateY(-1px);
+        }
+      }
+
+      &.btn-secondary {
+        background: #f8fafc;
+        color: #475569;
+        border-color: #e2e8f0;
+        &:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+      }
+    }
+  }
 }
 
-.popup h3 {
-  margin-bottom: 10px;
-  color: #222;
+// Animations mượt mà
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-
-.popup p {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 20px;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
-
-.popup .actions {
-  display: flex;
-  justify-content: space-between;
-}
-
-.popup .confirm {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.popup .cancel {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
