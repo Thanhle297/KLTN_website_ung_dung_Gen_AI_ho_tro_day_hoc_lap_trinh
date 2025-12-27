@@ -279,44 +279,53 @@ def run_code(code: str, input_data: str, echo_input: bool):
 # =====================================================
 @app.post("/execute")
 def execute_code(request: CodeRequest):
-
     start_time = time.perf_counter()
 
-    results = []
+    n = len(request.testcases)
+    results = [None] * n
     num_workers = multiprocessing.cpu_count()
     timeout = 5
 
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         future_to_tc = {
-            executor.submit(run_code, request.code, tc.input, request.echo_input): tc
-            for tc in request.testcases
+            executor.submit(run_code, request.code, tc.input, request.echo_input): (i, tc)
+            for i, tc in enumerate(request.testcases)
         }
 
-        for future in as_completed(future_to_tc, timeout=timeout * len(request.testcases)):
-            tc = future_to_tc[future]
+        try:
+            for future in as_completed(future_to_tc, timeout=timeout * n):
+                index, tc = future_to_tc[future]
+                try:
+                    result = future.result(timeout=timeout)
 
-            try:
-                result = future.result(timeout=timeout)
+                    if "output" in result:
+                        result["passed"] = (result["output"].strip() == tc.expected.strip())
 
-                if "output" in result:
-                    result["passed"] = (result["output"].strip() == tc.expected.strip())
+                    result["input"] = tc.input
+                    result["expected"] = tc.expected
+                    results[index] = result
 
-                result["input"] = tc.input
-                result["expected"] = tc.expected
+                except Exception as e:
+                    results[index] = {
+                        "input": tc.input,
+                        "expected": tc.expected,
+                        "error": f"Lỗi/Timeout: {str(e)}"
+                    }
 
-                results.append(result)
-
-            except Exception as e:
-                results.append({
-                    "input": tc.input,
-                    "expected": tc.expected,
-                    "error": f"Lỗi/Timeout: {str(e)}"
-                })
+        except Exception as e:
+            for i, tc in enumerate(request.testcases):
+                if results[i] is None:
+                    results[i] = {
+                        "input": tc.input,
+                        "expected": tc.expected,
+                        "error": f"Lỗi/Timeout tổng: {str(e)}"
+                    }
 
     elapsed = time.perf_counter() - start_time
-    print(f"[INFO] /execute xử lý {len(results)} testcases trong {elapsed:.3f}s")
+    print(f"[INFO] /execute xử lý {n} testcases trong {elapsed:.3f}s")
 
     return {"results": results}
+
 
 # =====================================================
 # 5. API IDE: run_code_simple
@@ -325,7 +334,7 @@ def execute_code(request: CodeRequest):
 def run_code_simple(request: SimpleCodeRequest):
     try:
         with ProcessPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(run_code, request.code, request.input, True)
+            future = executor.submit(run_code, request.code, request.input, False)
             result = future.result(timeout=5)
 
         if "error" in result:

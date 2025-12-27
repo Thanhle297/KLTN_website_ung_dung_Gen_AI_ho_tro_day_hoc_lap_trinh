@@ -520,7 +520,7 @@ export default function CodeEditor({
                   </thead>
                   <tbody>
                     {results.map((r, i) => (
-                      <tr key={i}>
+                      <tr key={`${question.id}_${i}`}>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.input}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.expected}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.actual}</td>
