@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -22,11 +22,18 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Switch,
+  FormControlLabel,
+  Tooltip,
+  TableContainer,
+  Paper,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import AdminPageCard from "../../components/admin/AdminPageCard";
+
+const DEFAULT_COURSE_ID = "10";
 
 export default function LessonsCRUD() {
   const api = useAdminAPI();
@@ -34,18 +41,21 @@ export default function LessonsCRUD() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [courses, setCourses] = useState([]); // <<< NEW
+  const [courses, setCourses] = useState([]);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState(null);
 
+  const [filterDisplay, setFilterDisplay] = useState("all"); // all | true | false
+
   const [form, setForm] = useState({
     lessonId: "",
-    courseId: "",
+    courseId: DEFAULT_COURSE_ID,
     title: "",
     description: "",
     order: 1,
     mode: "group", // group, auto, simple
+    display: true, // ✅ ẩn/hiện
   });
 
   const [snack, setSnack] = useState({
@@ -63,9 +73,8 @@ export default function LessonsCRUD() {
   const loadLessons = async () => {
     try {
       setLoading(true);
-
-      const res = await api.getLessonsByCourse("10"); // TẠM
-      setLessons(res.data);
+      const res = await api.getLessonsByCourse(DEFAULT_COURSE_ID);
+      setLessons(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       showMessage("Lỗi tải bài học", "error");
     } finally {
@@ -77,7 +86,7 @@ export default function LessonsCRUD() {
   const loadCourses = async () => {
     try {
       const res = await api.getCourses();
-      setCourses(res.data);
+      setCourses(Array.isArray(res.data) ? res.data : []);
     } catch {
       showMessage("Không thể tải danh sách khóa học", "error");
     }
@@ -87,32 +96,44 @@ export default function LessonsCRUD() {
     loadLessons();
   }, []);
 
+  /* ============================ FILTERED LIST ============================ */
+  const filteredLessons = useMemo(() => {
+    return lessons
+      .filter((l) => {
+        if (filterDisplay === "all") return true;
+        return String(!!l.display) === filterDisplay;
+      })
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [lessons, filterDisplay]);
+
   /* ============================ FORM HANDLER ============================ */
-  const openCreate = () => {
+  const openCreate = async () => {
     setEditing(null);
     setForm({
       lessonId: "",
-      courseId: "",
+      courseId: DEFAULT_COURSE_ID,
       title: "",
       description: "",
       order: 1,
       mode: "group",
+      display: true,
     });
-    loadCourses(); // <<< NEW
+    await loadCourses();
     setOpenDialog(true);
   };
 
-  const openEdit = (item) => {
+  const openEdit = async (item) => {
     setEditing(item);
     setForm({
       lessonId: item.lessonId || "",
-      courseId: item.courseId || "",
+      courseId: item.courseId || DEFAULT_COURSE_ID,
       title: item.title || "",
       description: item.description || "",
-      order: item.order || 1,
+      order: item.order ?? 1,
       mode: item.mode || "group",
+      display: item.display ?? true,
     });
-    loadCourses(); // <<< NEW
+    await loadCourses();
     setOpenDialog(true);
   };
 
@@ -136,7 +157,7 @@ export default function LessonsCRUD() {
       }
 
       setOpenDialog(false);
-      loadLessons();
+      await loadLessons();
     } catch {
       showMessage("Lỗi lưu bài học", "error");
     }
@@ -149,9 +170,23 @@ export default function LessonsCRUD() {
     try {
       await api.deleteLesson(item.lessonId);
       showMessage("Xóa thành công");
-      loadLessons();
+      await loadLessons();
     } catch {
       showMessage("Lỗi xóa bài học", "error");
+    }
+  };
+
+  /* ============================ TOGGLE DISPLAY (TABLE) ============================ */
+  const handleToggleDisplay = async (item, next) => {
+    try {
+      await api.updateLesson(item.lessonId, {
+        ...item,
+        display: next,
+      });
+      showMessage(next ? "Đã hiển thị bài học" : "Đã ẩn bài học");
+      await loadLessons();
+    } catch {
+      showMessage("Lỗi cập nhật trạng thái hiển thị", "error");
     }
   };
 
@@ -159,11 +194,33 @@ export default function LessonsCRUD() {
   return (
     <AdminPageCard>
       <Box>
-        <Stack direction="row" justifyContent="space-between" mb={2}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
+          gap={1.5}
+          mb={2}
+        >
           <Typography variant="h5">Quản lý Bài học</Typography>
-          <Button variant="contained" onClick={openCreate}>
-            Thêm bài học
-          </Button>
+
+          <Stack direction="row" gap={1} justifyContent="flex-end">
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Hiển thị</InputLabel>
+              <Select
+                label="Hiển thị"
+                value={filterDisplay}
+                onChange={(e) => setFilterDisplay(e.target.value)}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="true">Đang hiển thị</MenuItem>
+                <MenuItem value="false">Đang ẩn</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button variant="contained" onClick={openCreate}>
+              Thêm bài học
+            </Button>
+          </Stack>
         </Stack>
 
         {loading ? (
@@ -171,49 +228,71 @@ export default function LessonsCRUD() {
             <CircularProgress />
           </Box>
         ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Lesson ID</TableCell>
-                <TableCell>Course ID</TableCell>
-                <TableCell>Tiêu đề</TableCell>
-                <TableCell>Thứ tự</TableCell>
-                <TableCell>Chế độ</TableCell>
-                <TableCell align="right">Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {lessons.map((item) => (
-                <TableRow key={item.lessonId}>
-                  <TableCell>{item.lessonId}</TableCell>
-                  <TableCell>{item.courseId}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.order}</TableCell>
-                  <TableCell>{item.mode}</TableCell>
-                  <TableCell align="right">
-                    <IconButton onClick={() => openEdit(item)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDelete(item)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {lessons.length === 0 && (
+          <TableContainer component={Paper} variant="outlined">
+            <Table>
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    Không có bài học nào
+                  <TableCell>Lesson ID</TableCell>
+                  <TableCell>Course ID</TableCell>
+                  <TableCell>Tiêu đề</TableCell>
+                  <TableCell width={90}>Thứ tự</TableCell>
+                  <TableCell width={110}>Chế độ</TableCell>
+                  <TableCell width={110} align="center">
+                    Hiển thị
+                  </TableCell>
+                  <TableCell width={140} align="right">
+                    Thao tác
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHead>
+
+              <TableBody>
+                {filteredLessons.map((item) => (
+                  <TableRow key={item.lessonId} hover>
+                    <TableCell>{item.lessonId}</TableCell>
+                    <TableCell>{item.courseId}</TableCell>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell>{item.order}</TableCell>
+                    <TableCell>{item.mode}</TableCell>
+
+                    <TableCell align="center">
+                      <Tooltip
+                        title={item.display ? "Ẩn bài học" : "Hiện bài học"}
+                      >
+                        <Switch
+                          checked={!!item.display}
+                          onChange={(e) =>
+                            handleToggleDisplay(item, e.target.checked)
+                          }
+                          color="success"
+                        />
+                      </Tooltip>
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <IconButton onClick={() => openEdit(item)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(item)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {filteredLessons.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      Không có bài học nào
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
 
         {/* Dialog */}
@@ -244,7 +323,6 @@ export default function LessonsCRUD() {
                 disabled={!!editing}
               />
 
-              {/* ===================== COURSE SELECT ===================== */}
               <FormControl fullWidth>
                 <InputLabel>Khóa học</InputLabel>
                 <Select
@@ -280,8 +358,12 @@ export default function LessonsCRUD() {
                 label="Thứ tự"
                 type="number"
                 value={form.order}
-                onChange={(e) => changeForm("order", Number(e.target.value))}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  changeForm("order", v === "" ? "" : Number(v));
+                }}
                 fullWidth
+                inputProps={{ min: 1 }}
               />
 
               <FormControl fullWidth>
@@ -296,6 +378,21 @@ export default function LessonsCRUD() {
                   <MenuItem value="simple">simple</MenuItem>
                 </Select>
               </FormControl>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={!!form.display}
+                    onChange={(e) => changeForm("display", e.target.checked)}
+                    color="success"
+                  />
+                }
+                label={
+                  <Typography fontWeight={500}>
+                    {form.display ? "Hiển thị bài học" : "Ẩn bài học"}
+                  </Typography>
+                }
+              />
             </Box>
           </DialogContent>
 
@@ -312,10 +409,7 @@ export default function LessonsCRUD() {
           open={snack.open}
           autoHideDuration={3000}
           onClose={closeSnack}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         >
           <Alert
             severity={snack.severity}

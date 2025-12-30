@@ -143,7 +143,7 @@ def execute_code(request: CodeRequest):
 def run_code_simple(request: SimpleCodeRequest):
     try:
         with ProcessPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(run_code, request.code, request.input, False)
+            future = executor.submit(run_code, request.code, request.input, True)
             result = future.result(timeout=5)
 
         if "error" in result:
