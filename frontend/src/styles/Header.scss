@@ -1,98 +1,145 @@
+// Header.scss
+
+// Variables cho dễ quản lý màu sắc và chuyển động
+$primary-color: #1976d2;
+$secondary-color: #1565c0;
+$accent-color: #ffeb3b;
+$text-light: #ffffff;
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 2rem;
-  background: #1976d2;
-  color: white;
-  position: relative;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 0.6rem 5%; // Sử dụng % để responsive tốt hơn
+  background: $primary-color;
+  color: $text-light;
+  position: sticky; // Giữ header luôn ở trên cùng khi cuộn
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: $transition-smooth;
 
   &__logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    // Removed large margin-right to allow flexbox to handle spacing
+    display: flex;
+    align-items: center;
     margin-right: auto;
 
     a {
+      display: flex;
+      align-items: center;
       text-decoration: none;
-      color: #f0f0f0;
     }
 
     img {
-      height: 60px; // Slightly reduced for better proportion
+      height: 55px;
       width: auto;
       object-fit: contain;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
       @media (max-width: 768px) {
-        height: 50px;
+        height: 45px;
       }
     }
   }
 
-  // Hamburger button - hidden on desktop, visible on mobile
+  // Hamburger Button (Đã sửa logic hiển thị)
   .hamburger-btn {
     display: none;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-right: 1rem;
+    order: 2; // Đứng giữa logo và auth trên mobile
 
     @media (max-width: 768px) {
       display: block;
-      order: 3; // Places it after auth on right or adjust as needed
+      margin-right: 1rem;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   }
 
   &__nav {
     // Desktop styles
-    margin-right: 2rem;
+    margin-right: 2.5rem;
 
     ul {
       display: flex;
-      gap: 1.5rem;
+      gap: 2rem;
       list-style: none;
       margin: 0;
       padding: 0;
 
       li a {
-        font-size: 1.1rem;
-        color: white;
+        font-size: 1rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
-        transition: 0.3s;
+        transition: $transition-smooth;
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          width: 0;
+          height: 2px;
+          bottom: -5px;
+          left: 0;
+          background-color: $accent-color;
+          transition: width 0.3s ease;
+        }
 
         &:hover {
-          text-decoration: underline;
+          color: white;
+          &::after {
+            width: 100%;
+          }
         }
       }
     }
 
-    // Mobile styles
+    // Mobile styles (Sửa theo state 'active' trong JSX)
     @media (max-width: 768px) {
       position: absolute;
       top: 100%;
       left: 0;
       width: 100%;
-      background: #1565c0; // Slightly darker than header
+      background: $secondary-color;
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.3s ease-in-out;
+      transition: max-height 0.4s ease-in-out, padding 0.3s ease;
       z-index: 99;
       margin-right: 0;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 
       &.active {
-        max-height: 200px; // Adjust based on content
-        padding-bottom: 1rem;
+        max-height: 300px; // Tăng lên để đủ chỗ cho menu
+        padding-bottom: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       ul {
-        display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1rem;
-        padding-top: 1rem;
+        gap: 1.2rem;
+        padding-top: 1.5rem;
+
+        li a {
+          font-size: 1.2rem;
+          &::after {
+            display: none;
+          } // Tắt gạch chân trên mobile
+        }
       }
     }
   }
@@ -100,21 +147,25 @@
   &__auth {
     display: flex;
     align-items: center;
-    // Ensure auth stays visible and accessible
+    order: 3; // Luôn nằm cuối cùng bên phải
 
     .login-btn {
-      background: transparent;
+      background: white;
       border: none;
-      color: white;
-      font-size: 1.2rem;
+      color: $primary-color;
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px; // Bo tròn hiện đại
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-
-      i {
-        margin-right: 5px;
-      }
+      transition: $transition-smooth;
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
       &:hover {
-        color: #ffeb3b;
+        background: $accent-color;
+        transform: translateY(-2px);
       }
     }
 
@@ -125,47 +176,87 @@
         background: #ff9800;
         width: 40px;
         height: 40px;
-        border-radius: 50%;
+        border-radius: 12px; // Đổi từ tròn sang bo góc nhẹ cho hiện đại hơn
         display: flex;
         justify-content: center;
         align-items: center;
         font-weight: bold;
         cursor: pointer;
         color: white;
+        transition: $transition-smooth;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          transform: rotate(5deg) scale(1.05);
+        }
       }
 
       .dropdown {
         position: absolute;
-        top: 50px;
+        top: 55px;
         right: 0;
         background: white;
-        color: black;
+        color: #333;
         list-style: none;
-        padding: 0.5rem 0;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        min-width: 180px;
+        padding: 0.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
         z-index: 101;
+        animation: slideDown 0.3s ease;
 
         li {
-          padding: 0.7rem 1rem;
+          padding: 0; // Để thẻ a/button chiếm trọn diện tích
+
+          strong {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: $primary-color;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+          }
 
           a,
           button {
             all: unset;
             cursor: pointer;
             width: 100%;
-            display: block;
-            color: #333;
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            color: #444;
             transition: 0.2s;
-            box-sizing: border-box; // Fix for hidden text possibly
+            box-sizing: border-box;
+            border-radius: 8px;
+
+            &:hover {
+              background: #f5f5f5;
+              color: $primary-color;
+              padding-left: 1.2rem; // Hiệu ứng dịch chuyển nhẹ khi hover
+            }
           }
 
-          &:hover {
-            background: #f0f0f0;
+          button {
+            color: #d32f2f; // Màu đỏ cho nút đăng xuất
+            &:hover {
+              background: #ffebee;
+              color: #d32f2f;
+            }
           }
         }
       }
     }
+  }
+}
+
+// Animation cho dropdown
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

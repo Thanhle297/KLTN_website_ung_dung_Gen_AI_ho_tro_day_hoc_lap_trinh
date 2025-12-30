@@ -1,3 +1,129 @@
+// import React, { useState, useEffect, useRef } from "react";
+// import { Link, useNavigate, useLocation } from "react-router-dom";
+// import logo from "../IMG/Logo_noback.png";
+// import "../styles/Header.scss";
+
+// export default function Header() {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const [user, setUser] = useState(null);
+//   const [openMenu, setOpenMenu] = useState(false);
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // ✅ state cho mobile menu
+//   const menuRef = useRef(null);
+//   const mobileMenuRef = useRef(null); // ✅ tham chiếu mobile menu
+
+//   useEffect(() => {
+//     const fullname = localStorage.getItem("fullname");
+//     const role = localStorage.getItem("role");
+//     const token = localStorage.getItem("token");
+//     if (token && fullname) setUser({ fullname, role });
+//   }, []);
+
+//   // ✅ đóng menu user khi click ra ngoài
+//   useEffect(() => {
+//     const handleClickOutside = (e) => {
+//       if (menuRef.current && !menuRef.current.contains(e.target)) {
+//         setOpenMenu(false);
+//       }
+//       // Đóng mobile menu khi click ra ngoài
+//       if (
+//         mobileMenuRef.current &&
+//         !mobileMenuRef.current.contains(e.target) &&
+//         !e.target.closest(".hamburger-btn")
+//       ) {
+//         setIsMobileMenuOpen(false);
+//       }
+//     };
+//     document.addEventListener("click", handleClickOutside);
+//     return () => document.removeEventListener("click", handleClickOutside);
+//   }, []);
+
+//   // ✅ đóng menu khi đổi route
+//   useEffect(() => {
+//     setOpenMenu(false);
+//     setIsMobileMenuOpen(false);
+//   }, [location]);
+
+//   const handleLogout = () => {
+//     localStorage.removeItem("token");
+//     localStorage.removeItem("fullname");
+//     localStorage.removeItem("role");
+//     setUser(null);
+//     navigate("/login");
+//   };
+
+//   return (
+//     <header className="header">
+//       <div className="header__logo">
+//         <Link to="/">
+//           <img src={logo} alt="Logo" className="logo-img" />
+//         </Link>
+//       </div>
+
+//       {/* Hamburger Button */}
+//       <button
+//         className="hamburger-btn"
+//         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+//       >
+//         <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
+//       </button>
+
+//       <nav
+//         className={`header__nav ${isMobileMenuOpen ? "active" : ""}`}
+//         ref={mobileMenuRef}
+//       >
+//         <ul>
+//           <li>
+//             <Link to="/">Trang chủ</Link>
+//           </li>
+//           <li>
+//             <Link to="/course">Khóa học</Link>
+//           </li>
+//           <li>
+//             <Link to="/Contact">Liên hệ</Link>
+//           </li>
+//         </ul>
+//       </nav>
+
+//       <div className="header__auth" ref={menuRef}>
+//         {!user ? (
+//           <button className="login-btn" onClick={() => navigate("/login")}>
+//             <i className="fas fa-sign-in-alt"></i>
+//           </button>
+//         ) : (
+//           <div className="user-menu">
+//             <div className="avatar" onClick={() => setOpenMenu(!openMenu)}>
+//               {user.fullname.charAt(0).toUpperCase()}
+//             </div>
+//             {openMenu && (
+//               <ul className="dropdown">
+//                 <li>
+//                   <strong>{user.fullname}</strong>
+//                 </li>
+
+//                 {/* Nếu là admin → có lối vào Admin Dashboard */}
+//                 {user.role === "admin" && (
+//                   <li>
+//                     <Link to="/admin">Trang quản trị</Link>
+//                   </li>
+//                 )}
+
+//                 <li>
+//                   <Link to="/profile">Thông tin tài khoản</Link>
+//                 </li>
+//                 <li>
+//                   <button onClick={handleLogout}>Đăng xuất</button>
+//                 </li>
+//               </ul>
+//             )}
+//           </div>
+//         )}
+//       </div>
+//     </header>
+//   );
+// }
+
+// Header.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../IMG/Logo_noback.png";
@@ -8,9 +134,9 @@ export default function Header() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [openMenu, setOpenMenu] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // ✅ state cho mobile menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
-  const mobileMenuRef = useRef(null); // ✅ tham chiếu mobile menu
+  const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     const fullname = localStorage.getItem("fullname");
@@ -19,13 +145,11 @@ export default function Header() {
     if (token && fullname) setUser({ fullname, role });
   }, []);
 
-  // ✅ đóng menu user khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenMenu(false);
       }
-      // Đóng mobile menu khi click ra ngoài
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(e.target) &&
@@ -34,20 +158,17 @@ export default function Header() {
         setIsMobileMenuOpen(false);
       }
     };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ đóng menu khi đổi route
   useEffect(() => {
-    setOpenMenu(false);
     setIsMobileMenuOpen(false);
+    setOpenMenu(false);
   }, [location]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("fullname");
-    localStorage.removeItem("role");
+    localStorage.clear();
     setUser(null);
     navigate("/login");
   };
@@ -56,17 +177,9 @@ export default function Header() {
     <header className="header">
       <div className="header__logo">
         <Link to="/">
-          <img src={logo} alt="Logo" className="logo-img" />
+          <img src={logo} alt="Logo" />
         </Link>
       </div>
-
-      {/* Hamburger Button */}
-      <button
-        className="hamburger-btn"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
-      </button>
 
       <nav
         className={`header__nav ${isMobileMenuOpen ? "active" : ""}`}
@@ -88,7 +201,7 @@ export default function Header() {
       <div className="header__auth" ref={menuRef}>
         {!user ? (
           <button className="login-btn" onClick={() => navigate("/login")}>
-            <i className="fas fa-sign-in-alt"></i>
+            Đăng nhập
           </button>
         ) : (
           <div className="user-menu">
@@ -97,27 +210,39 @@ export default function Header() {
             </div>
             {openMenu && (
               <ul className="dropdown">
-                <li>
+                <div className="user-info">
+                  <span>Xin chào,</span>
                   <strong>{user.fullname}</strong>
-                </li>
+                </div>
 
-                {/* Nếu là admin → có lối vào Admin Dashboard */}
                 {user.role === "admin" && (
                   <li>
-                    <Link to="/admin">Trang quản trị</Link>
+                    <Link to="/admin">
+                      <i className="fas fa-user-shield"></i> Quản trị
+                    </Link>
                   </li>
                 )}
-
                 <li>
-                  <Link to="/profile">Thông tin tài khoản</Link>
+                  <Link to="/profile">
+                    <i className="fas fa-user-circle"></i> Tài khoản
+                  </Link>
                 </li>
                 <li>
-                  <button onClick={handleLogout}>Đăng xuất</button>
+                  <button onClick={handleLogout} className="logout-item">
+                    <i className="fas fa-sign-out-alt"></i> Đăng xuất
+                  </button>
                 </li>
               </ul>
             )}
           </div>
         )}
+
+        <button
+          className="hamburger-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
+        </button>
       </div>
     </header>
   );

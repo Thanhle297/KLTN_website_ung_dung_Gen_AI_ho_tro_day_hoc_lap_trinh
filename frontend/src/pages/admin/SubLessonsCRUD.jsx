@@ -46,6 +46,7 @@ export default function SubLessonsCRUD() {
     description: "",
     mode: "auto",
     display: true,
+    requiredProgress: 70,
   });
 
   const [snack, setSnack] = useState({
@@ -102,6 +103,7 @@ export default function SubLessonsCRUD() {
       description: "",
       mode: "auto",
       display: true,
+      requiredProgress: 70,
     });
     setOpenDialog(true);
   };
@@ -115,6 +117,7 @@ export default function SubLessonsCRUD() {
       description: item.description,
       mode: item.mode,
       display: item.display,
+      requiredProgress: item.requiredProgress ?? 70,
     });
     setOpenDialog(true);
   };
@@ -203,6 +206,7 @@ export default function SubLessonsCRUD() {
               <TableCell>Mô tả</TableCell>
               <TableCell>Chế độ</TableCell>
               <TableCell>Hiển thị</TableCell>
+              <TableCell>Điểm đạt %</TableCell>
               <TableCell align="right">Thao tác</TableCell>
             </TableRow>
           </TableHead>
@@ -215,6 +219,9 @@ export default function SubLessonsCRUD() {
                 <TableCell>{s.description}</TableCell>
                 <TableCell>{s.mode}</TableCell>
                 <TableCell>{s.display ? "Có" : "Không"}</TableCell>
+                <TableCell align="center">
+                  {s.requiredProgress ?? 70}%
+                </TableCell>
                 <TableCell align="right">
                   <IconButton onClick={() => openEdit(s)}>
                     <Edit />
@@ -227,7 +234,7 @@ export default function SubLessonsCRUD() {
             ))}
             {subLessons.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={8} align="center">
                   Không có subLesson nào
                 </TableCell>
               </TableRow>
@@ -304,6 +311,17 @@ export default function SubLessonsCRUD() {
                 <MenuItem value="false">Không</MenuItem>
               </Select>
             </FormControl>
+            <TextField
+              label="Mức đạt yêu cầu (%)"
+              type="number"
+              value={form.requiredProgress}
+              onChange={(e) =>
+                changeForm("requiredProgress", Number(e.target.value))
+              }
+              helperText="Ví dụ: 60, 70, 80, 100"
+              inputProps={{ min: 0, max: 100 }}
+              fullWidth
+            />
           </Box>
         </DialogContent>
 
