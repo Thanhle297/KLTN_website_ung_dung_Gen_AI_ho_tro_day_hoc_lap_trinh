@@ -39,7 +39,7 @@ import LessonsCRUD from "./LessonsCRUD";
 import SubLessonsCRUD from "./SubLessonsCRUD";
 import QuestionsCRUD from "./QuestionsCRUD";
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -76,21 +76,33 @@ export default function AdminDashboard() {
               selected={isSelected}
               onClick={() => isMobile && setSidebarOpen(false)}
               sx={{
-                borderRadius: 2,
-                mb: 1,
+                borderRadius: 3,
+                mb: 1.5,
+                py: 1.5,
+                transition: "all 0.3s ease",
                 "&.Mui-selected": {
-                  backgroundColor: "primary.main",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "white",
-                  "&:hover": { backgroundColor: "primary.dark" },
+                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                    transform: "translateX(4px)",
+                  },
                   "& .MuiListItemIcon-root": { color: "white" },
                 },
-                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                "&:hover": {
+                  backgroundColor: "rgba(102, 126, 234, 0.08)",
+                  transform: "translateX(4px)",
+                },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 40,
-                  color: isSelected ? "white" : "text.secondary",
+                  color: isSelected ? "white" : "#667eea",
+                  transition: "all 0.3s ease",
                 }}
               >
                 {item.icon}
@@ -98,7 +110,7 @@ export default function AdminDashboard() {
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
-                  fontWeight: isSelected ? 600 : 400,
+                  fontWeight: isSelected ? 700 : 500,
                   fontSize: "0.95rem",
                 }}
               />
@@ -117,9 +129,9 @@ export default function AdminDashboard() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "#fff",
-          color: "#333",
-          boxShadow: "0px 1px 10px rgba(0,0,0,0.05)",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -129,20 +141,37 @@ export default function AdminDashboard() {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
+              sx={{
+                mr: 2,
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  transform: "scale(1.1)",
+                },
+                transition: "all 0.2s ease",
+              }}
             >
               <MenuIcon />
             </IconButton>
             <Box
               component="img"
-              src="/Logo_noback.png" // đường dẫn logo của bạn
+              src="/Logo_noback.png"
               alt="Logo"
               sx={{
                 height: 50,
                 display: { xs: "none", sm: "block" },
+                // filter: "brightness(0) invert(1)",
               }}
             />
-            <Typography variant="h5" noWrap fontWeight="bold" color="primary">
+            <Typography
+              variant="h5"
+              noWrap
+              fontWeight="700"
+              sx={{
+                color: "white",
+                textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              }}
+            >
               Thanh Technology Education
             </Typography>
           </Box>
@@ -153,18 +182,33 @@ export default function AdminDashboard() {
               onClick={() => navigate("/")}
               sx={{
                 textTransform: "none",
-                fontWeight: 500,
-                color: "text.secondary",
+                fontWeight: 600,
+                color: "white",
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                backdropFilter: "blur(10px)",
+                px: 2.5,
+                py: 1,
+                borderRadius: 2,
                 "&:hover": {
-                  color: "primary.main",
-                  backgroundColor: "rgba(25, 118, 210, 0.04)",
+                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
                 },
-                display: "flex",
+                transition: "all 0.3s ease",
               }}
             >
               Về trang chủ
             </Button>
-            <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
+            <Avatar
+              sx={{
+                bgcolor: "white",
+                color: "#667eea",
+                width: 40,
+                height: 40,
+                fontWeight: 700,
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+              }}
+            >
               A
             </Avatar>
           </Box>
@@ -183,7 +227,8 @@ export default function AdminDashboard() {
             sx={{
               "& .MuiDrawer-paper": {
                 width: drawerWidth,
-                backgroundColor: "#f8f9fa",
+                background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)",
+                borderRight: "1px solid rgba(102, 126, 234, 0.1)",
               },
             }}
           >
@@ -198,7 +243,8 @@ export default function AdminDashboard() {
             sx={{
               "& .MuiDrawer-paper": {
                 width: drawerWidth,
-                backgroundColor: "#f8f9fa",
+                background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)",
+                borderRight: "1px solid rgba(102, 126, 234, 0.1)",
               },
             }}
           >
@@ -213,8 +259,8 @@ export default function AdminDashboard() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          backgroundColor: "#f4f6f8",
+          // p: 1,
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
           minHeight: "100vh",
           ml: sidebarOpen && !isMobile ? `${drawerWidth}px` : 0,
           transition: "margin-left 0.3s ease",

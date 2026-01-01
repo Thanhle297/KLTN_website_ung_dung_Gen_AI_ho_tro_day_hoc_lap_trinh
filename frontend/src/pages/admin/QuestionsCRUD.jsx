@@ -24,6 +24,8 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
+  Paper,
+  TableContainer,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
@@ -195,102 +197,305 @@ export default function QuestionsCRUD() {
 
   /* ================= RENDER UI ================= */
   return (
-    <Box>
-      <Typography variant="h5" mb={2}>
-        Quản lý Câu hỏi
-      </Typography>
-
-      {/* Chọn Lesson */}
-      <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Chọn Bài</InputLabel>
-        <Select
-          label="Chọn Bài"
-          value={selectedLesson}
-          onChange={(e) => setSelectedLesson(e.target.value)}
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        p: 3,
+      }}
+    >
+      {/* Header Section */}
+      <Box
+        sx={{
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(10px)",
+          borderRadius: 4,
+          p: 3,
+          mb: 3,
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            mb: 3,
+          }}
         >
-          {lessons.map((l) => (
-            <MenuItem key={l.lessonId} value={l.lessonId}>
-              {l.lessonId} — {l.title}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+          ❓ Quản lý Câu hỏi
+        </Typography>
 
-      {/* Chọn SubLesson */}
-      {selectedLesson && (
+        {/* Chọn Lesson */}
         <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Chọn SubLesson</InputLabel>
+          <InputLabel>Chọn Bài</InputLabel>
           <Select
-            label="Chọn SubLesson"
-            value={selectedSubLesson}
-            onChange={(e) => setSelectedSubLesson(e.target.value)}
+            label="Chọn Bài"
+            value={selectedLesson}
+            onChange={(e) => setSelectedLesson(e.target.value)}
+            sx={{
+              borderRadius: 2,
+              backgroundColor: "white",
+            }}
           >
-            {subLessons.map((s) => (
-              <MenuItem key={s.lessonId} value={s.lessonId}>
-                {s.lessonId} — {s.displayId}
+            {lessons.map((l) => (
+              <MenuItem key={l.lessonId} value={l.lessonId}>
+                {l.lessonId} — {l.title}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-      )}
 
-      {selectedSubLesson && (
-        <Stack direction="row" justifyContent="flex-end" mb={2}>
-          <Button variant="contained" onClick={openCreate}>
-            Thêm câu hỏi
-          </Button>
-        </Stack>
-      )}
+        {/* Chọn SubLesson */}
+        {selectedLesson && (
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>Chọn SubLesson</InputLabel>
+            <Select
+              label="Chọn SubLesson"
+              value={selectedSubLesson}
+              onChange={(e) => setSelectedSubLesson(e.target.value)}
+              sx={{
+                borderRadius: 2,
+                backgroundColor: "white",
+              }}
+            >
+              {subLessons.map((s) => (
+                <MenuItem key={s.lessonId} value={s.lessonId}>
+                  {s.lessonId} — {s.displayId}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
+        {selectedSubLesson && (
+          <Stack direction="row" justifyContent="flex-end">
+            <Button
+              variant="contained"
+              onClick={openCreate}
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                px: 3,
+                py: 1.5,
+                borderRadius: 3,
+                textTransform: "none",
+                fontWeight: 600,
+                boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(102, 126, 234, 0.6)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              Thêm câu hỏi
+            </Button>
+          </Stack>
+        )}
+      </Box>
 
       {!selectedSubLesson ? (
-        <Typography>Hãy chọn SubLesson để xem câu hỏi</Typography>
+        <Paper
+          sx={{
+            borderRadius: 4,
+            p: 8,
+            textAlign: "center",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            📚 Hãy chọn SubLesson để xem câu hỏi
+          </Typography>
+        </Paper>
       ) : loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+          }}
+        >
+          <CircularProgress
+            size={60}
+            sx={{
+              color: "white",
+            }}
+          />
         </Box>
       ) : (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Câu hỏi</TableCell>
-              <TableCell>EX</TableCell>
-              <TableCell>Testcase</TableCell>
-              <TableCell>Echo Input</TableCell>
-              <TableCell>Topic</TableCell>
-              <TableCell align="right">Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
+        <Paper
+          sx={{
+            borderRadius: 4,
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow
+                  sx={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  }}
+                >
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                      py: 2,
+                    }}
+                  >
+                    ID
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Câu hỏi
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    EX
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Testcase
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Echo Input
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Topic
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Thao tác
+                  </TableCell>
+                </TableRow>
+              </TableHead>
 
-          <TableBody>
-            {questions.map((q) => (
-              <TableRow key={q.id}>
-                <TableCell>{q.id}</TableCell>
-                <TableCell>{q.question}</TableCell>
-                <TableCell>{q.ex?.length || 0}</TableCell>
-                <TableCell>{q.testcase?.length || 0}</TableCell>
-                <TableCell>{q.echo_input ? "Có" : "Không"}</TableCell>
-                <TableCell>{q.topic}</TableCell>
-                <TableCell align="right">
-                  <IconButton onClick={() => openEdit(q)}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(q)}>
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+              <TableBody>
+                {questions.map((q) => (
+                  <TableRow
+                    key={q.id}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#f7fafc",
+                        transform: "scale(1.01)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                      },
+                      transition: "all 0.2s ease",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 600 }}>{q.id}</TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>{q.question}</TableCell>
+                    <TableCell>{q.ex?.length || 0}</TableCell>
+                    <TableCell>{q.testcase?.length || 0}</TableCell>
+                    <TableCell>{q.echo_input ? "Có" : "Không"}</TableCell>
+                    <TableCell sx={{ color: "#4a5568" }}>{q.topic}</TableCell>
+                    <TableCell align="right">
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="flex-end"
+                      >
+                        <IconButton
+                          onClick={() => openEdit(q)}
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                            color: "white",
+                            width: 36,
+                            height: 36,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                          size="small"
+                        >
+                          <Edit sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDelete(q)}
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                            color: "white",
+                            width: 36,
+                            height: 36,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                          size="small"
+                        >
+                          <Delete sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-            {questions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  Không có câu hỏi nào
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                {questions.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                      <Typography variant="h6" color="text.secondary">
+                        😔 Không có câu hỏi nào
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
       )}
 
       {/* Dialog */}
@@ -299,9 +504,23 @@ export default function QuestionsCRUD() {
         onClose={() => setOpenDialog(false)}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            background: "rgba(255, 255, 255, 0.98)",
+            backdropFilter: "blur(10px)",
+          },
+        }}
       >
-        <DialogTitle>
-          {editing ? "Chỉnh sửa câu hỏi" : "Thêm câu hỏi"}
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "1.5rem",
+          }}
+        >
+          {editing ? "✏️ Chỉnh sửa câu hỏi" : "➕ Thêm câu hỏi"}
         </DialogTitle>
 
         <DialogContent dividers>
@@ -341,6 +560,8 @@ export default function QuestionsCRUD() {
                       changeForm("ex", updated);
                     }}
                     fullWidth
+                    multiline
+                    minRows={2}
                   />
 
                   <TextField
@@ -352,6 +573,8 @@ export default function QuestionsCRUD() {
                       changeForm("ex", updated);
                     }}
                     fullWidth
+                    multiline
+                    minRows={2}
                   />
                 </Box>
               ))}

@@ -46,16 +46,29 @@ router.post("/", async (req, res) => {
 
 /* ------------ UPDATE ------------ */
 router.put("/:id", async (req, res) => {
-  await getDB()
-    .collection("question")
-    .updateOne({ id: Number(req.params.id) }, { $set: req.body });
+  try {
+    const data = { ...req.body };
+    delete data._id; // 🔒 chặn tuyệt đối việc update _id
 
-  res.json({ message: "Question updated" });
+    const result = await getDB()
+      .collection("question")
+      .updateOne({ id: Number(req.params.id) }, { $set: data });
+
+    res.json({
+      message: "Question updated",
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* ------------ DELETE ------------ */
 router.delete("/:id", async (req, res) => {
-  await getDB().collection("question").deleteOne({ id: Number(req.params.id) });
+  await getDB()
+    .collection("question")
+    .deleteOne({ id: Number(req.params.id) });
   res.json({ message: "Question deleted" });
 });
 

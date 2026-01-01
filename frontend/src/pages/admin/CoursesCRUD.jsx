@@ -131,40 +131,138 @@ export default function CoursesCRUD() {
 
   /* ==================== RENDER ==================== */
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        p: 3,
+      }}
+    >
+      {/* Header Section */}
+      <Box
+        sx={{
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(10px)",
+          borderRadius: 4,
+          p: 3,
+          mb: 3,
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        }}
+      >
         <Stack
-          direction="row"
+          direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
-          alignItems="center"
-          mb={3}
+          alignItems={{ xs: "stretch", sm: "center" }}
+          spacing={2}
         >
-          <Typography variant="h5" fontWeight="bold" color="primary">
-            Quản lý Khóa học
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            📚 Quản lý Khóa học
           </Typography>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={openCreate}
-            sx={{ borderRadius: 20, textTransform: "none", px: 3 }}
+            sx={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              px: 3,
+              py: 1.5,
+              borderRadius: 3,
+              textTransform: "none",
+              fontWeight: 600,
+              boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 6px 20px rgba(102, 126, 234, 0.6)",
+              },
+              transition: "all 0.3s ease",
+            }}
           >
             Thêm khóa học
           </Button>
         </Stack>
+      </Box>
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 3, p: 5 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
+      {/* Courses Table */}
+      {loading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+          }}
+        >
+          <CircularProgress
+            size={60}
+            sx={{
+              color: "white",
+            }}
+          />
+        </Box>
+      ) : (
+        <Paper
+          sx={{
+            borderRadius: 4,
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                  <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Tiêu đề</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Mô tả</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                <TableRow
+                  sx={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  }}
+                >
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                      py: 2,
+                    }}
+                  >
+                    ID
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Tiêu đề
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Mô tả
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
                     Thao tác
                   </TableCell>
                 </TableRow>
@@ -172,8 +270,19 @@ export default function CoursesCRUD() {
 
               <TableBody>
                 {courses.map((c) => (
-                  <TableRow key={c.courseId} hover>
-                    <TableCell>{c.courseId}</TableCell>
+                  <TableRow
+                    key={c.courseId}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#f7fafc",
+                        transform: "scale(1.01)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                      },
+                      transition: "all 0.2s ease",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 600 }}>{c.courseId}</TableCell>
                     <TableCell sx={{ fontWeight: 500 }}>{c.title}</TableCell>
                     <TableCell
                       sx={{
@@ -181,35 +290,65 @@ export default function CoursesCRUD() {
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        color: "#4a5568",
                       }}
                     >
                       {c.description}
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton
-                        color="primary"
-                        onClick={() => openEdit(c)}
-                        size="small"
-                        sx={{ mr: 1 }}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="flex-end"
                       >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(c)}
-                        size="small"
-                      >
-                        <Delete />
-                      </IconButton>
+                        <IconButton
+                          onClick={() => openEdit(c)}
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                            color: "white",
+                            width: 36,
+                            height: 36,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                          size="small"
+                        >
+                          <Edit sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDelete(c)}
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                            color: "white",
+                            width: 36,
+                            height: 36,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                          size="small"
+                        >
+                          <Delete sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
 
                 {courses.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
-                      <Typography color="text.secondary">
-                        Không có khóa học nào
+                    <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
+                      <Typography variant="h6" color="text.secondary">
+                        😔 Không có khóa học nào
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -217,8 +356,8 @@ export default function CoursesCRUD() {
               </TableBody>
             </Table>
           </TableContainer>
-        )}
-      </Paper>
+        </Paper>
+      )}
 
       {/* Dialog */}
       <Dialog
@@ -227,27 +366,48 @@ export default function CoursesCRUD() {
         fullWidth
         maxWidth="sm"
         PaperProps={{
-          sx: { borderRadius: 3 },
+          sx: {
+            borderRadius: 4,
+            background: "rgba(255, 255, 255, 0.98)",
+            backdropFilter: "blur(10px)",
+          },
         }}
       >
-        <DialogTitle>
-          {editing ? "Chỉnh sửa khóa học" : "Thêm khóa học"}
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "1.5rem",
+          }}
+        >
+          {editing ? "✏️ Chỉnh sửa khóa học" : "➕ Thêm khóa học"}
         </DialogTitle>
 
-        <DialogContent dividers>
-          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ mt: 3 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
             <TextField
               label="Course ID"
               value={form.courseId}
               onChange={(e) => handleChange("courseId", e.target.value)}
               fullWidth
               disabled={!!editing}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
             <TextField
               label="Tiêu đề"
               value={form.title}
               onChange={(e) => handleChange("title", e.target.value)}
               fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
             <TextField
               label="Mô tả"
@@ -256,18 +416,38 @@ export default function CoursesCRUD() {
               fullWidth
               multiline
               minRows={2}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpenDialog(false)} sx={{ borderRadius: 2 }}>
+        <DialogActions sx={{ p: 3, pt: 2 }}>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
             Hủy
           </Button>
           <Button
             onClick={handleSave}
             variant="contained"
-            sx={{ borderRadius: 2 }}
+            sx={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+              "&:hover": {
+                background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+              },
+            }}
           >
             Lưu
           </Button>

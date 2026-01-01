@@ -77,11 +77,23 @@ router.post("/", async (req, res) => {
 
 /* -------- UPDATE -------- */
 router.put("/:lessonId", async (req, res) => {
-  await getDB().collection("lessons").updateOne(
-    { lessonId: req.params.lessonId },
-    { $set: req.body }
-  );
-  res.json({ message: "Lesson updated" });
+  try {
+    const data = { ...req.body };
+    delete data._id;               // 🔒 chặn update _id tuyệt đối
+
+    const result = await getDB().collection("lessons").updateOne(
+      { lessonId: req.params.lessonId },
+      { $set: data }
+    );
+
+    res.json({
+      message: "Lesson updated",
+      matched: result.matchedCount,
+      modified: result.modifiedCount
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* -------- DELETE -------- */
