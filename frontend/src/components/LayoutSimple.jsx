@@ -69,19 +69,15 @@ export default function LayoutSimple({
       {/* Cột phải */}
       <div className="layout__right">
         <CodeEditorSimple
-          code={editorStates[current.id]?.code || ""}
-          input={editorStates[current.id]?.input || ""}
           question={current}
+          editorStates={editorStates}
+          updateEditorState={updateEditorState}
           difficulty={difficulty}
-          userId={userId}
           lessonId={lessonId}
-          onChangeCode={(newCode) =>
-            updateEditorState(current.id, { code: newCode })
-          }
-          onChangeInput={(newInput) =>
-            updateEditorState(current.id, { input: newInput })
-          }
-          onChangeResult={(r) => updateEditorState(current.id, { result: r })}
+          userId={userId}
+          onChangeCode={(v) => updateEditorState(current.id, { code: v })}
+          onChangeInput={(v) => updateEditorState(current.id, { input: v })}
+          onChangeResult={(v) => updateEditorState(current.id, { result: v })}
           onExecuteResponse={handleExecuteResponse}
         />
       </div>

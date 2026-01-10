@@ -3,68 +3,105 @@ const express = require("express");
 const router = express.Router();
 const { getDB } = require("../config/mongodb");
 
+// Utils
+function isNonEmptyString(v) {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
 // ✅ Lưu tạm theo từng câu hỏi
+// Body: { userId, lessonId, questionId, data: { code, results, guide, status, hasNewGuide } }
 router.post("/save", async (req, res) => {
   try {
     const db = getDB();
-    const { userId, lessonId, questionId, data } = req.body;
-    if (!userId || !lessonId || !questionId)
-      return res
-        .status(400)
-        .json({ success: false, message: "Thiếu userId, lessonId hoặc questionId" });
+    const { userId, lessonId, questionId, data } = req.body || {};
+
+    if (!isNonEmptyString(userId) || !isNonEmptyString(lessonId) || !isNonEmptyString(questionId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu userId, lessonId hoặc questionId",
+      });
+    }
+
+    // Normalize data (để tránh lưu bậy)
+    const payload = {
+      code: typeof data?.code === "string" ? data.code : "",
+      results: Array.isArray(data?.results) ? data.results : [],
+      guide: typeof data?.guide === "string" ? data.guide : (data?.guide ?? null),
+      status:
+        data?.status === "correct" || data?.status === "wrong" ? data.status : null,
+      hasNewGuide: !!data?.hasNewGuide,
+    };
 
     await db.collection("temp_submissions").updateOne(
       { userId, lessonId, questionId },
-      { $set: { data, updatedAt: new Date() } },
+      { $set: { userId, lessonId, questionId, data: payload, updatedAt: new Date() } },
       { upsert: true }
     );
 
-    res.json({ success: true, message: "Đã lưu tạm cho câu hỏi" });
+    return res.json({ success: true, message: "Đã lưu tạm cho câu hỏi" });
   } catch (err) {
     console.error("❌ Lỗi khi lưu tạm:", err);
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // ✅ Tải lại toàn bộ dữ liệu tạm của bài học
+// Query: ?userId=&lessonId=
+// Response: { [questionId]: { code, results, guide, status, hasNewGuide } }
 router.get("/load", async (req, res) => {
   try {
     const db = getDB();
-    const { userId, lessonId } = req.query;
-    if (!userId || !lessonId)
-      return res
-        .status(400)
-        .json({ success: false, message: "Thiếu userId hoặc lessonId" });
+    const { userId, lessonId } = req.query || {};
+
+    if (!isNonEmptyString(userId) || !isNonEmptyString(lessonId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu userId hoặc lessonId",
+      });
+    }
 
     const docs = await db
       .collection("temp_submissions")
       .find({ userId, lessonId })
       .toArray();
 
-    const result = docs.map((d) => ({
-      questionId: d.questionId,
-      code: d.data?.code || "",
-      results: d.data?.results || [],
-      guide: d.data?.guide || null,
-    }));
+    const result = {};
+    for (const d of docs) {
+      result[d.questionId] = {
+        code: d.data?.code || "",
+        results: Array.isArray(d.data?.results) ? d.data.results : [],
+        guide: d.data?.guide ?? null,
+        status: d.data?.status ?? null,
+        hasNewGuide: !!d.data?.hasNewGuide,
+      };
+    }
 
-    res.json(result);
+    return res.json(result);
   } catch (err) {
     console.error("❌ Lỗi khi tải dữ liệu tạm:", err);
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // ✅ Xóa toàn bộ dữ liệu tạm của bài học
+// Body: { userId, lessonId }
 router.delete("/clear", async (req, res) => {
   try {
     const db = getDB();
-    const { userId, lessonId } = req.body;
+    const { userId, lessonId } = req.body || {};
+
+    if (!isNonEmptyString(userId) || !isNonEmptyString(lessonId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu userId hoặc lessonId",
+      });
+    }
+
     await db.collection("temp_submissions").deleteMany({ userId, lessonId });
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (err) {
     console.error("❌ Lỗi khi xóa dữ liệu tạm:", err);
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

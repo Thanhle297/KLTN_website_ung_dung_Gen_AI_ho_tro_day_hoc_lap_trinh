@@ -1,66 +1,106 @@
-import { useEffect, useState } from "react";
+// useLessonQuestions.js
+import { useEffect, useMemo, useState, useCallback } from "react";
+
+function safeJson(res) {
+  return res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`));
+}
 
 export default function useLessonQuestions(lessonId, userId) {
   const [lesson, setLesson] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(null);
+
+  // editorStates: { [questionId]: { code, results, guide, status, hasNewGuide } }
   const [editorStates, setEditorStates] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const apiBase = useMemo(() => process.env.REACT_APP_API_URL, []);
+
+  const updateEditorState = useCallback((questionId, patch) => {
+    if (!questionId) return;
+    setEditorStates((prev) => ({
+      ...prev,
+      [questionId]: {
+        ...(prev[questionId] || {
+          code: "",
+          results: [],
+          guide: null,
+          status: null,
+          hasNewGuide: false,
+        }),
+        ...patch,
+      },
+    }));
+  }, []);
 
   useEffect(() => {
     if (!lessonId || !userId) return;
 
-    async function loadData() {
-      try {
-        // 1️⃣ Lấy thông tin bài học
-        const lessonRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}`
-        );
-        const lessonData = await lessonRes.json();
-        setLesson(lessonData);
+    const controller = new AbortController();
 
-        // 2️⃣ Lấy câu hỏi + dữ liệu tạm
-        const [questionsData, tempData] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/api/questions?lessonId=${lessonId}`).then(
-            (res) => res.json()
-          ),
+    async function loadAll() {
+      setLoading(true);
+      try {
+        // 1) Load lesson + questions + temp in parallel
+        const [lessonData, questionsData, tempData] = await Promise.all([
+          fetch(`${apiBase}/api/lessons/detail/${lessonId}`, {
+            signal: controller.signal,
+          }).then(safeJson),
+          fetch(`${apiBase}/api/questions?lessonId=${lessonId}`, {
+            signal: controller.signal,
+          }).then(safeJson),
           fetch(
-            `${process.env.REACT_APP_API_URL}/api/temp/load?userId=${userId}&lessonId=${lessonId}`
-          ).then((res) => (res.ok ? res.json() : [])),
+            `${apiBase}/api/temp/load?userId=${userId}&lessonId=${lessonId}`,
+            { signal: controller.signal }
+          )
+            .then((res) => (res.ok ? res.json() : {}))
+            .catch(() => ({})),
         ]);
 
-        setQuestions(questionsData);
+        setLesson(lessonData);
+        setQuestions(Array.isArray(questionsData) ? questionsData : []);
 
-        const tempMap = Array.isArray(tempData)
-          ? Object.fromEntries(tempData.map((t) => [t.questionId, t.code]))
-          : {};
+        const qList = Array.isArray(questionsData) ? questionsData : [];
+        const tempMap =
+          tempData && typeof tempData === "object" ? tempData : {};
 
-        if (questionsData.length > 0) {
-          setCurrent(questionsData[0]);
-          setEditorStates(
-            Object.fromEntries(
-              questionsData.map((q) => [
-                q.id,
-                { code: tempMap[q.id] || q.defaultCode || "", result: "" },
-              ])
-            )
-          );
+        // 2) Build editorStates merged: temp ưu tiên, fallback defaultCode
+        const mergedStates = {};
+        for (const q of qList) {
+          const qid = q?.id;
+          if (!qid) continue;
+
+          const temp = tempMap[qid];
+          mergedStates[qid] = {
+            code: (temp?.code ?? q?.defaultCode ?? "").toString(),
+            results: Array.isArray(temp?.results) ? temp.results : [],
+            guide: temp?.guide ?? null,
+            status: temp?.status ?? null,
+            hasNewGuide: !!temp?.hasNewGuide,
+          };
         }
+        setEditorStates(mergedStates);
 
-        // ✅ Bổ sung courseId nếu thiếu
-        if (!lessonData.courseId && questionsData.length > 0) {
-          const inferredCourseId = questionsData[0].courseId || null;
+        // 3) Set current question
+        if (qList.length > 0) setCurrent(qList[0]);
+
+        // 4) If lesson missing courseId, infer from first question (optional)
+        if (lessonData && !lessonData.courseId && qList.length > 0) {
+          const inferredCourseId = qList[0]?.courseId || null;
           setLesson({ ...lessonData, courseId: inferredCourseId });
         }
       } catch (err) {
-        console.error("❌ Lỗi load dữ liệu bài học hoặc câu hỏi:", err);
+        if (err?.name !== "AbortError") {
+          console.error("❌ Lỗi load bài học/câu hỏi/temp:", err);
+        }
       } finally {
         setLoading(false);
       }
     }
 
-    loadData();
-  }, [lessonId, userId]);
+    loadAll();
+    return () => controller.abort();
+  }, [apiBase, lessonId, userId]);
 
   return {
     lesson,
@@ -69,6 +109,7 @@ export default function useLessonQuestions(lessonId, userId) {
     setCurrent,
     editorStates,
     setEditorStates,
+    updateEditorState,
     loading,
   };
 }

@@ -36,7 +36,7 @@ export default function CodeExSimple() {
             <SubmitButton
               userId={userId}
               lessonId={lessonId}
-              courseId={lesson.courseId}
+              courseId={lesson?.courseId}
               editorStates={editorStates}
             />
           )}
@@ -48,11 +48,8 @@ export default function CodeExSimple() {
         current={current}
         setCurrent={setCurrent}
         editorStates={editorStates}
-        updateEditorState={(id, newState) =>
-          setEditorStates((prev) => ({
-            ...prev,
-            [id]: { ...prev[id], ...newState },
-          }))
+        updateEditorState={(id, s) =>
+          setEditorStates((prev) => ({ ...prev, [id]: { ...prev[id], ...s } }))
         }
         difficulty={difficulty}
         lessonId={lessonId}
