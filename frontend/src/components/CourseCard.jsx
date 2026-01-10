@@ -9,7 +9,10 @@ export default function CourseCard({ course }) {
   return (
     <div className="course-card">
       <div className="course-card__image">
-        <img src={course.image || course.img} alt={course.title || course.name} />
+        <img
+          src={course.image || course.img}
+          alt={course.title || course.name}
+        />
         {course.tag && <span className="course-card__tag">{course.tag}</span>}
       </div>
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/Contact.scss";
 import {
   FaPhoneAlt,
@@ -6,98 +6,261 @@ import {
   FaMapMarkerAlt,
   FaFacebookF,
   FaGithub,
+  FaPaperPlane,
+  FaLinkedinIn,
 } from "react-icons/fa";
+import { IoSparkles } from "react-icons/io5";
 import admin from "../IMG/thanh2.jpg";
 
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const devs = [
     {
       name: "Lê Quang Thành",
-      role: "Frontend ",
+      role: "Full Stack Developer",
+      description: "Frontend & Backend",
       img: admin,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/thanhle297",
+      linkedin: "#",
     },
     {
       name: "Lê Quang Thành",
-      role: "Backend ",
+      role: "Backend Engineer",
+      description: "API & Database",
       img: admin,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/Thanhle297",
+      linkedin: "#",
     },
     {
       name: "Lê Quang Thành",
-      role: "UI/UX ",
+      role: "UI/UX Designer",
+      description: "Design & Experience",
       img: admin,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/Thanhle297",
+      linkedin: "#",
     },
   ];
 
+  const contactInfo = [
+    {
+      icon: FaPhoneAlt,
+      title: "Điện thoại",
+      content: "+84 987020297",
+      link: "tel:+84987020297",
+      color: "#10b981",
+    },
+    {
+      icon: FaEnvelope,
+      title: "Email",
+      content: "thanhle01112004@gmail.com",
+      link: "mailto:thanhle01112004@gmail.com",
+      color: "#3b82f6",
+    },
+    {
+      icon: FaMapMarkerAlt,
+      title: "Địa chỉ",
+      content: "136 Xuân Thủy, Cầu Giấy, Hà Nội",
+      link: "https://maps.google.com",
+      color: "#ef4444",
+    },
+    {
+      icon: FaFacebookF,
+      title: "Facebook",
+      content: "Thành Lê",
+      link: "https://www.facebook.com/thanh.le.964218/",
+      color: "#1877f2",
+    },
+  ];
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      console.log("Form submitted:", formData);
+      setIsSubmitting(false);
+      setFormData({ name: "", email: "", message: "" });
+      alert("Tin nhắn đã được gửi thành công!");
+    }, 1500);
+  };
+
   return (
     <div className="contact-page">
-      <h1 className="title">Liên hệ với chúng tôi</h1>
-      <p className="subtitle">
-        Hãy gửi cho chúng tôi tin nhắn hoặc liên hệ qua các kênh bên dưới. Chúng
-        tôi luôn sẵn sàng hỗ trợ bạn.
-      </p>
-
-      <div className="contact-container">
-        <div className="contact-card">
-          <FaPhoneAlt className="icon" />
-          <h3>Điện thoại</h3>
-          <p>+84 987020297</p>
-        </div>
-
-        <div className="contact-card">
-          <FaEnvelope className="icon" />
-          <h3>Email</h3>
-          <p>thanhle01112004@gmail.com</p>
-        </div>
-
-        <div className="contact-card">
-          <FaMapMarkerAlt className="icon" />
-          <h3>Địa chỉ</h3>
-          <p>136 Xuân Thủy, Cầu Giấy, Hà Nội</p>
-        </div>
-
-        <div className="contact-card">
-          <FaFacebookF className="icon" />
-          <h3>Facebook</h3>
-          <p>Thành Lê</p>
-        </div>
+      {/* Animated Background */}
+      <div className="animated-background">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
       </div>
 
-      <h2 className="dev-section-title">Nhóm phát triển</h2>
-      <div className="dev-container">
-        {devs.map((dev, i) => (
-          <div className="dev-card" key={i}>
-            <img src={dev.img} alt={dev.name} />
-            <h3>{dev.name}</h3>
-            <p>{dev.role}</p>
-            <div className="socials">
-              <a href={dev.facebook} target="_blank" rel="noreferrer">
-                <FaFacebookF />
-              </a>
-              <a href={dev.github} target="_blank" rel="noreferrer">
-                <FaGithub />
-              </a>
+      {/* Header Section */}
+      <div className="contact-header">
+        <div className="header-icon">
+          <IoSparkles />
+        </div>
+        <h1 className="title">
+          Liên hệ với <span className="gradient-text">chúng tôi</span>
+        </h1>
+        <p className="subtitle">
+          Hãy gửi cho chúng tôi tin nhắn hoặc liên hệ qua các kênh bên dưới.
+          <br />
+          Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7.
+        </p>
+      </div>
+
+      {/* Contact Info Cards */}
+      <div className="contact-container">
+        {contactInfo.map((item, index) => (
+          <a
+            href={item.link}
+            className="contact-card"
+            key={index}
+            style={{ "--card-color": item.color }}
+            target={item.link.startsWith("http") ? "_blank" : "_self"}
+            rel="noreferrer"
+          >
+            <div className="card-glow"></div>
+            <div className="icon-wrapper">
+              <item.icon className="icon" />
             </div>
-          </div>
+            <h3>{item.title}</h3>
+            <p>{item.content}</p>
+          </a>
         ))}
       </div>
 
-      <form className="contact-form">
-        <h2>Gửi tin nhắn</h2>
-        <input type="text" placeholder="Họ và tên" required />
-        <input type="email" placeholder="Email của bạn" required />
-        <textarea
-          placeholder="Nội dung tin nhắn..."
-          rows="5"
-          required
-        ></textarea>
-        <button type="submit">Gửi</button>
-      </form>
+      {/* Team Section */}
+      <div className="team-section">
+        <h2 className="dev-section-title">
+          <span className="gradient-text">Nhóm phát triển</span>
+        </h2>
+        <p className="team-subtitle">Đội ngũ tài năng đằng sau dự án</p>
+
+        <div className="dev-container">
+          {devs.map((dev, i) => (
+            <div className="dev-card" key={i}>
+              <div className="dev-card-inner">
+                <div className="dev-image-wrapper">
+                  <img src={dev.img} alt={dev.name} />
+                  <div className="image-overlay"></div>
+                </div>
+                <div className="dev-info">
+                  <h3>{dev.name}</h3>
+                  <p className="dev-role">{dev.role}</p>
+                  <p className="dev-description">{dev.description}</p>
+                  <div className="socials">
+                    <a
+                      href={dev.facebook}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Facebook"
+                    >
+                      <FaFacebookF />
+                    </a>
+                    <a
+                      href={dev.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="GitHub"
+                    >
+                      <FaGithub />
+                    </a>
+                    <a
+                      href={dev.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="LinkedIn"
+                    >
+                      <FaLinkedinIn />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Contact Form */}
+      <div className="form-section">
+        <form className="contact-form" onSubmit={handleSubmit}>
+          <div className="form-header">
+            <h2>Gửi tin nhắn cho chúng tôi</h2>
+            <p>Chúng tôi sẽ phản hồi trong vòng 24 giờ</p>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Họ và tên</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Nhập họ và tên của bạn"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="example@email.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="message">Nội dung tin nhắn</label>
+            <textarea
+              id="message"
+              name="message"
+              placeholder="Nhập nội dung tin nhắn của bạn..."
+              rows="5"
+              value={formData.message}
+              onChange={handleChange}
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" className="submit-btn" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <span className="spinner"></span>
+                Đang gửi...
+              </>
+            ) : (
+              <>
+                <FaPaperPlane />
+                Gửi tin nhắn
+              </>
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

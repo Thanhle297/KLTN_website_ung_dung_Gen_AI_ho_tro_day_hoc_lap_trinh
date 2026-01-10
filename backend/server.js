@@ -44,7 +44,7 @@ async function startServer() {
     app.use("/api", authRoutes);
     app.use("/api/temp", tempRoutes);
     app.use("/api/ai", aiSimpleRoutes);
-    app.use("/api/users", userRoutes); // ✅ Mount route người dùng
+    app.use("/api/users", userRoutes); 
     app.use("/api/courses", courseRoutes);
     app.use("/api/lessons", lessonRoutes);
     app.use("/api/sublessons", subLessonRoutes);

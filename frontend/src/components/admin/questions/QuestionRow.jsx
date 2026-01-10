@@ -8,10 +8,10 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete }) => {
       sx={{
         "&:hover": {
           backgroundColor: "#f7fafc",
-          transform: "scale(1.01)",
+          // transform: "scale(1.01)",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
         },
-        transition: "all 0.2s ease",
+        // transition: "all 0.2s ease",
         cursor: "pointer",
       }}
     >
@@ -32,9 +32,9 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete }) => {
               height: 36,
               "&:hover": {
                 background: "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
-                transform: "scale(1.1)",
+                // transform: "scale(1.1)",
               },
-              transition: "all 0.2s ease",
+              // transition: "all 0.2s ease",
             }}
             size="small"
           >
@@ -49,9 +49,9 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete }) => {
               height: 36,
               "&:hover": {
                 background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
-                transform: "scale(1.1)",
+                // transform: "scale(1.1)",
               },
-              transition: "all 0.2s ease",
+              // transition: "all 0.2s ease",
             }}
             size="small"
           >

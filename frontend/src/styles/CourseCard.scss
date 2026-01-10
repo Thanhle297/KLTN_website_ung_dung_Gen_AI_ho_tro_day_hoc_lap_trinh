@@ -6,6 +6,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   &:hover {
     transform: translateY(-4px);
@@ -36,25 +37,32 @@
       font-size: 12px;
       padding: 4px 8px;
       border-radius: 6px;
+      font-weight: 600;
     }
   }
 
   &__body {
     padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 
     h3 {
       font-size: 18px;
       margin: 0 0 8px;
+      line-height: 1.4;
     }
 
     p {
       font-size: 14px;
       color: #555;
+      margin-bottom: 12px;
+      flex-grow: 1;
     }
 
     .course-card__btn {
-      margin-left: 60%;
-      margin-top: 10px;
+      margin-left: auto;
+      margin-top: auto;
       background: #007bff;
       color: #fff;
       border: none;
@@ -62,9 +70,102 @@
       padding: 8px 16px;
       cursor: pointer;
       transition: background 0.2s;
+      font-size: 14px;
+      font-weight: 500;
+      align-self: flex-end;
 
       &:hover {
         background: #0056b3;
+      }
+    }
+  }
+
+  // Tablet (768px - 1024px)
+  @media (max-width: 1024px) {
+    &__image {
+      height: 160px;
+
+      .course-card__tag {
+        font-size: 11px;
+        padding: 3px 7px;
+      }
+    }
+
+    &__body {
+      padding: 10px 14px;
+
+      h3 {
+        font-size: 17px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+
+      .course-card__btn {
+        padding: 7px 14px;
+        font-size: 13px;
+      }
+    }
+  }
+
+  // Mobile (max 767px)
+  @media (max-width: 767px) {
+    &__image {
+      height: 150px;
+
+      .course-card__tag {
+        font-size: 10px;
+        padding: 3px 6px;
+        bottom: 6px;
+        right: 6px;
+      }
+    }
+
+    &__body {
+      padding: 12px 14px;
+
+      h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      p {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .course-card__btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  }
+
+  // Small Mobile (max 480px)
+  @media (max-width: 480px) {
+    border-radius: 10px;
+
+    &__image {
+      height: 140px;
+    }
+
+    &__body {
+      padding: 10px 12px;
+
+      h3 {
+        font-size: 15px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+
+      .course-card__btn {
+        padding: 7px 14px;
+        font-size: 12px;
       }
     }
   }

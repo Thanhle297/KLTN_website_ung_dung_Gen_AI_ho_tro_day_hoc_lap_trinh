@@ -1,5 +1,7 @@
 .homepage {
   padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
 
   &__intro {
     text-align: center;
@@ -8,11 +10,13 @@
     h1 {
       font-size: 30px;
       color: #222;
+      line-height: 1.4;
     }
 
     p {
       font-size: 16px;
       color: #555;
+      line-height: 1.6;
     }
   }
 
@@ -21,12 +25,99 @@
       font-size: 24px;
       margin-bottom: 20px;
       text-align: center;
+      color: #222;
     }
 
     .homepage__grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 24px;
+    }
+  }
+
+  // Tablet (768px - 1024px)
+  @media (max-width: 1024px) {
+    padding: 30px;
+
+    &__intro {
+      margin-bottom: 30px;
+
+      h1 {
+        font-size: 26px;
+      }
+
+      p {
+        font-size: 15px;
+      }
+    }
+
+    &__courses {
+      h2 {
+        font-size: 22px;
+        margin-bottom: 18px;
+      }
+
+      .homepage__grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+      }
+    }
+  }
+
+  // Mobile (max 767px)
+  @media (max-width: 767px) {
+    padding: 20px 16px;
+
+    &__intro {
+      margin-bottom: 24px;
+
+      h1 {
+        font-size: 22px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+    }
+
+    &__courses {
+      h2 {
+        font-size: 20px;
+        margin-bottom: 16px;
+      }
+
+      .homepage__grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+  }
+
+  // Small Mobile (max 480px)
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+
+    &__intro {
+      margin-bottom: 20px;
+
+      h1 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+
+    &__courses {
+      h2 {
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+
+      .homepage__grid {
+        gap: 14px;
+      }
     }
   }
 }
