@@ -200,8 +200,8 @@ except Exception:
 MAX_CONCURRENT_SANDBOX = int(os.getenv("MAX_CONCURRENT_SANDBOX", "8"))
 
 # Giới hạn mặc định cho mỗi lần chạy (có thể override theo endpoint nếu muốn)
-DEFAULT_TIMEOUT_SEC = int(os.getenv("DEFAULT_TIMEOUT_SEC", "30"))
-DEFAULT_CPU_SECONDS = int(os.getenv("DEFAULT_CPU_SECONDS", "30"))
+DEFAULT_TIMEOUT_SEC = int(os.getenv("DEFAULT_TIMEOUT_SEC", "15"))
+DEFAULT_CPU_SECONDS = int(os.getenv("DEFAULT_CPU_SECONDS", "15"))
 DEFAULT_MEM_MB = int(os.getenv("DEFAULT_MEM_MB", "512"))
 
 MAX_INPUT_CALLS_DEFAULT = int(os.getenv("MAX_INPUT_CALLS_DEFAULT", "200"))
