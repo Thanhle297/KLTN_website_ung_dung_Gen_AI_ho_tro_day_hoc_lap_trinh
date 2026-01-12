@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import LayoutSimple from "../components/LayoutSimple";
-// import DifficultySlider from "../components/DifficultySlider";
+import DifficultySlider from "../components/DifficultySlider";
 import SubmitButton from "../components/SubmitButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import useLessonQuestions from "../hook/useLessonQuestions";
@@ -29,7 +29,7 @@ export default function CodeExSimple() {
     <>
       <div className="top-bar">
         <div className="left">
-          {/* <DifficultySlider onChange={setDifficulty} /> */}
+          <DifficultySlider onChange={setDifficulty} />
         </div>
         <div className="right">
           {lesson && (

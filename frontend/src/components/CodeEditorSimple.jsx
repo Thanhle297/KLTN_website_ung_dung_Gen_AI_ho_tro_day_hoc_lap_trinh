@@ -7,8 +7,6 @@ import { ImSpinner2 } from "react-icons/im";
 import "../styles/CodeEditorSimple.scss";
 
 export default function CodeEditorSimple({
-  code,
-  input,
   question,
   editorStates,
   updateEditorState,
@@ -37,7 +35,6 @@ export default function CodeEditorSimple({
     if (!question?.id) return;
 
     const local = editorStates?.[question.id] || {};
-
     setLocalCode(local.code || "");
     setInputText(local.input || "");
     setOutput(local.result || "");
@@ -47,33 +44,33 @@ export default function CodeEditorSimple({
   }, [question?.id, editorStates]);
 
   // ============================================================
-  // AUTO SAVE (GIỐNG CodeEditor)
+  // AUTO SAVE
   // ============================================================
   useEffect(() => {
-    if (!userId || !lessonId || !question || question.id == null) return;
+    if (!userId || !lessonId || !question?.id) return;
     if (!localCode && !inputText && !output && !guide) return;
 
-    const payload = {
-      userId,
-      lessonId,
-      questionId: String(question.id),
-      data: {
-        code: localCode || "",
-        input: inputText || "",
-        result: output || "",
-        guide: guide || null,
-        status: editorStates?.[question.id]?.status ?? null,
-      },
+    const data = {
+      code: localCode,
+      input: inputText,
+      result: output,
+      guide,
+      status: editorStates?.[question.id]?.status ?? null,
     };
 
-    const fingerprint = JSON.stringify(payload.data);
+    const fingerprint = JSON.stringify(data);
     if (fingerprint === lastSavedRef.current) return;
 
     const timer = setTimeout(() => {
       fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          userId,
+          lessonId,
+          questionId: String(question.id),
+          data,
+        }),
       })
         .then(() => {
           lastSavedRef.current = fingerprint;
@@ -88,13 +85,16 @@ export default function CodeEditorSimple({
   // RUN CODE
   // ============================================================
   const runCode = async () => {
+    if (!question?.id) return;
+
     setLoading(true);
     setOutput("⏳ Đang chạy code...\n");
     setGuide("");
     setHasNewGuide(false);
 
     try {
-      const resp = await fetch(
+      // 1️⃣ Chạy code Python
+      const runResp = await fetch(
         `${process.env.REACT_APP_API_URL_B}/run_code_simple`,
         {
           method: "POST",
@@ -102,14 +102,13 @@ export default function CodeEditorSimple({
           body: JSON.stringify({ code: localCode, input: inputText }),
         }
       );
-      const data = await resp.json();
-
-      const isSuccess = !!data.success;
-      const resultOutput = data.output || data.error || "Không có output";
+      const runData = await runResp.json();
+      const resultOutput = runData.output || runData.error || "Không có output";
 
       setOutput(resultOutput);
       onChangeResult?.(resultOutput);
 
+      // 2️⃣ Gọi AI chấm bài
       const aiResp = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/simple`,
         {
@@ -130,19 +129,37 @@ export default function CodeEditorSimple({
       );
 
       const aiData = await aiResp.json();
-      const guideText = aiData.guide || aiData.raw || "";
-      setGuide(guideText);
+      const isCorrect = !!aiData.isCorrect;
+
+      let guideText = aiData.guide || "";
+
+      // 🔴 CHỈ THÊM LOGIC – KHÔNG ĐỔI GIAO DIỆN
+      if (difficulty === 2) {
+        guideText = isCorrect
+          ? "Bài làm đạt yêu cầu."
+          : "Bài làm chưa đạt yêu cầu.";
+      }
+
+      setGuide(
+        guideText
+          .replace(/^#+\s*/gm, "") // xoá # ở đầu dòng
+          .trim()
+      );
+
       setHasNewGuide(true);
 
-      updateEditorState?.(question.id, {
+      // 3️⃣ Update state
+      const newState = {
         code: localCode,
         input: inputText,
         result: resultOutput,
         guide: guideText,
-        status: isSuccess ? "correct" : "wrong",
-      });
+        status: isCorrect ? "correct" : "wrong",
+      };
 
-      // SAVE NGAY SAU RUN
+      updateEditorState?.(question.id, newState);
+
+      // 4️⃣ Save ngay
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,32 +167,25 @@ export default function CodeEditorSimple({
           userId,
           lessonId,
           questionId: String(question.id),
-          data: {
-            code: localCode,
-            input: inputText,
-            result: resultOutput,
-            guide: guideText,
-            status: isSuccess ? "correct" : "wrong",
-          },
+          data: newState,
         }),
       });
 
-      lastSavedRef.current = JSON.stringify({
-        code: localCode,
-        input: inputText,
-        result: resultOutput,
-        guide: guideText,
-        status: isSuccess ? "correct" : "wrong",
-      });
+      lastSavedRef.current = JSON.stringify(newState);
 
+      // 5️⃣ Callback cho parent
       onExecuteResponse?.({
-        success: isSuccess,
-        instructs: guideText.split("\n").filter(Boolean),
-        simpleStatus: isSuccess ? "correct" : "wrong",
+        success: true,
+        simpleStatus: isCorrect ? "correct" : "wrong",
+        instructs:
+          difficulty === 2
+            ? [guideText]
+            : guideText.split("\n").filter(Boolean),
         questionId: String(question.id),
       });
     } catch (err) {
       setOutput(`❌ Lỗi: ${err.message}`);
+      updateEditorState?.(question.id, { status: "wrong" });
     } finally {
       setLoading(false);
     }
@@ -203,7 +213,11 @@ export default function CodeEditorSimple({
         }}
       />
 
-      <button onClick={runCode} disabled={loading} className="code-editor__run-btn">
+      <button
+        onClick={runCode}
+        disabled={loading}
+        className="code-editor__run-btn"
+      >
         {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
       </button>
 

@@ -11,7 +11,6 @@ export default function QuestionList({ questions, setCurrent, editorStates }) {
             : status === "wrong"
             ? "wrong"
             : "";
-
         return (
           <button
             key={q._id || q.id || idx}

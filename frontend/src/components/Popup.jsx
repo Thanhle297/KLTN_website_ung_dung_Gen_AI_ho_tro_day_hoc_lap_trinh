@@ -92,7 +92,7 @@ export default function FETestPopup({ data, onClose }) {
                     .split("#")
                     .filter((line) => line.trim() !== "")
                     .map((line, idx) => (
-                      <p key={idx}>#{line.trim()}</p>
+                      <p key={idx}>{line.trim()}</p>
                     ))}
                 </div>
               </div>
