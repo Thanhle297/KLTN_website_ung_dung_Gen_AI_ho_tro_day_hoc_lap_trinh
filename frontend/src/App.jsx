@@ -85,20 +85,21 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import {ThemeProvider,createTheme} from '@mui/material/styles'
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
 import CodeEx from "./pages/CodeEx";
 import CodeExSimple from "./pages/CodeExSimple";
+import ReviewPage from "./pages/ReviewPage";
 import Login from "./auth/login";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
 import Profile from "./pages/Profile";
 //dashboard admin
-import AdminRoute from "./routes/AdminRoute"
+import AdminRoute from "./routes/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // MUI theme
@@ -159,8 +160,7 @@ function AppContent() {
   const [countdown, setCountdown] = useState(60);
 
   const hideHeader =
-  location.pathname === "/login" ||
-  location.pathname.startsWith("/admin");
+    location.pathname === "/login" || location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const handleLogout = () => {
@@ -268,8 +268,16 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/review/:submissionId"
+          element={
+            <ProtectedRoute>
+              <ReviewPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/profile" element={<Profile/>} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* ✅ Admin Dashboard, chỉ admin mới vào được */}
         <Route
@@ -281,8 +289,6 @@ function AppContent() {
           }
         />
       </Routes>
-
-      
     </>
   );
 }

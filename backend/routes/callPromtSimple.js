@@ -21,7 +21,13 @@ function extractInstructs(text) {
 
   // ✅ LỌC RÁC SAU KHI EXTRACT
   return instructs.filter(
-    (s) => s.length > 0 && s !== "." && s !== "**." && s !== "**" && s!==":"
+    (s) =>
+      s.length > 0 &&
+      s !== "." &&
+      s !== "**." &&
+      s !== "**" &&
+      s !== ":" &&
+      s !== "**:"
   );
 }
 

@@ -91,4 +91,57 @@ router.post("/", async (req, res) => {
   }
 });
 
+// ✅ GET HISTORY
+router.get("/history/:userId/:subLessonId", async (req, res) => {
+  try {
+    const db = getDB();
+    const { userId, subLessonId } = req.params;
+
+    const history = await db
+      .collection("submit_history")
+      .find(
+        { userId, lessonId: subLessonId }, // lessonId trong DB chính là subLessonId
+        {
+          projection: {
+            _id: 1,
+            createdAt: 1,
+            progress: 1,
+            correct: 1,
+            total: 1,
+            requiredProgress: 1,
+          },
+        }
+      )
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json(history);
+  } catch (err) {
+    console.error("❌ History error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ GET DETAIL
+router.get("/detail/:submissionId", async (req, res) => {
+  try {
+    const db = getDB();
+    const { ObjectId } = require("mongodb");
+    const { submissionId } = req.params;
+
+    const submission = await db
+      .collection("submit_history")
+      .findOne({ _id: new ObjectId(submissionId) });
+
+    if (!submission) {
+      return res.status(404).json({ error: "Không tìm thấy bài nộp" });
+    }
+
+    res.json(submission);
+  } catch (err) {
+    console.error("❌ Detail error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

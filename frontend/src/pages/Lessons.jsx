@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/Lessons.scss";
 
+import SubmissionHistoryModal from "../components/SubmissionHistoryModal";
+
 export default function Lessons() {
   const { classId } = useParams();
   const navigate = useNavigate();
@@ -11,17 +13,17 @@ export default function Lessons() {
   const [closing, setClosing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subLessons, setSubLessons] = useState({});
-  const [subProgress, setSubProgress] = useState({}); // { subLessonId: { progress, completed } }
-  const [accessDenied, setAccessDenied] = useState(false); // ✅ Thêm state kiểm tra quyền
+  const [subProgress, setSubProgress] = useState({});
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [historyTarget, setHistoryTarget] = useState(null); // ✅ State cho modal lịch sử
 
   const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token"); // ✅ Lấy token
+  const token = localStorage.getItem("token");
 
-  // ✅ Kiểm tra quyền truy cập course trước
+  // ... (giữ nguyên useEffect và các hàm fetch)
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        // Lấy danh sách courses user được phân vào
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
           {
@@ -48,7 +50,6 @@ export default function Lessons() {
           return;
         }
 
-        // Nếu có quyền, lấy lessons
         fetchLessons();
       } catch (err) {
         console.error("❌ Lỗi kiểm tra quyền:", err);
@@ -60,7 +61,6 @@ export default function Lessons() {
     checkAccess();
   }, [classId, token]);
 
-  // Lấy danh sách lesson
   const fetchLessons = () => {
     fetch(`${process.env.REACT_APP_API_URL}/api/lessons/course/${classId}`)
       .then((res) => res.json())
@@ -124,7 +124,6 @@ export default function Lessons() {
 
   if (loading) return <p>Đang tải danh sách bài học...</p>;
 
-  // ✅ Hiển thị thông báo nếu không có quyền truy cập
   if (accessDenied) {
     return (
       <div
@@ -238,8 +237,28 @@ export default function Lessons() {
                                   )
                                 }
                               >
-                                Làm bài
+                                {prog.progress > 0 ? "Làm lại" : "Làm bài"}
                               </button>
+
+                              {/* ✅ Nút xem lịch sử - Chỉ hiển thị khi đã làm bài */}
+                              {prog.progress > 0 && (
+                                <button
+                                  className="btn-history"
+                                  onClick={() => setHistoryTarget(sub.lessonId)}
+                                  style={{
+                                    marginLeft: "0.5rem",
+                                    padding: "0.5rem 1rem",
+                                    background: "#f3f4f6",
+                                    color: "#374151",
+                                    border: "1px solid #d1d5db",
+                                    borderRadius: "6px",
+                                    fontWeight: "500",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Lịch sử
+                                </button>
+                              )}
 
                               <button
                                 className={`btn-status ${
@@ -254,7 +273,6 @@ export default function Lessons() {
                             </div>
                           </div>
 
-                          {/* PROGRESS — NGOÀI CARD */}
                           <div className="progress-section">
                             <div className="progress-bar">
                               <div
@@ -301,6 +319,15 @@ export default function Lessons() {
             </div>
           );
         })}
+
+      {/* ✅ MODAL LỊCH SỬ */}
+      {historyTarget && (
+        <SubmissionHistoryModal
+          userId={userId}
+          subLessonId={historyTarget}
+          onClose={() => setHistoryTarget(null)}
+        />
+      )}
     </div>
   );
 }
