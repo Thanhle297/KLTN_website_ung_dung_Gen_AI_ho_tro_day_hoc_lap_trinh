@@ -1,8 +1,8 @@
 import React from "react";
 import { TableRow, TableCell, IconButton, Stack } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, People } from "@mui/icons-material";
 
-const CourseRow = React.memo(({ course, onEdit, onDelete }) => {
+const CourseRow = React.memo(({ course, onEdit, onDelete, onManageUsers }) => {
   return (
     <TableRow
       sx={{
@@ -63,6 +63,22 @@ const CourseRow = React.memo(({ course, onEdit, onDelete }) => {
             size="small"
           >
             <Delete sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton
+            onClick={() => onManageUsers(course)}
+            sx={{
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              color: "white",
+              width: 36,
+              height: 36,
+              "&:hover": {
+                background: "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
+              },
+            }}
+            size="small"
+            title="Quản lý học sinh"
+          >
+            <People sx={{ fontSize: 18 }} />
           </IconButton>
         </Stack>
       </TableCell>

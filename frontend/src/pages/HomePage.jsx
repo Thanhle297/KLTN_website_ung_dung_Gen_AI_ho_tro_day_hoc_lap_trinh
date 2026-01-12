@@ -22,8 +22,9 @@ export default function HomePage() {
     },
   ];
 
+  // ✅ Thay đổi endpoint để chỉ lấy courses được phân vào
   const { courses, loading } = useCourses(
-    `${process.env.REACT_APP_API_URL}/api/courses`,
+    `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
     fallbackCourses
   );
 

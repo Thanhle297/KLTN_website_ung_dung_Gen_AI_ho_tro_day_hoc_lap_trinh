@@ -24,6 +24,7 @@ import {
   Dashboard as DashboardIcon,
   Home,
   Menu as MenuIcon,
+  Assignment, // ✅ Thêm icon mới
 } from "@mui/icons-material";
 import {
   Routes,
@@ -38,6 +39,7 @@ import CoursesCRUD from "./CoursesCRUD";
 import LessonsCRUD from "./LessonsCRUD";
 import SubLessonsCRUD from "./SubLessonsCRUD";
 import QuestionsCRUD from "./QuestionsCRUD";
+import EnrollmentsCRUD from "./EnrollmentsCRUD"; // ✅ Thêm import mới
 
 const drawerWidth = 260;
 
@@ -59,6 +61,7 @@ export default function AdminDashboard() {
     { label: "Quản lý Bài học", path: "lessons", icon: <Book /> },
     { label: "Quản lý SubLesson", path: "sub-lessons", icon: <Topic /> },
     { label: "Quản lý Câu hỏi", path: "questions", icon: <Quiz /> },
+    { label: "Quản lý Phân bổ", path: "enrollments", icon: <Assignment /> },
   ];
 
   const drawerContent = (
@@ -274,6 +277,7 @@ export default function AdminDashboard() {
           <Route path="lessons" element={<LessonsCRUD />} />
           <Route path="sub-lessons" element={<SubLessonsCRUD />} />
           <Route path="questions" element={<QuestionsCRUD />} />
+          <Route path="enrollments" element={<EnrollmentsCRUD />} />
         </Routes>
       </Box>
     </Box>

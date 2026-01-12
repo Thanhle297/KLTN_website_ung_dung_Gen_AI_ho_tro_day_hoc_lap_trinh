@@ -56,6 +56,18 @@ export default function useAdminAPI() {
       createQuestion: (data) => API.post("/questions", data),
       updateQuestion: (id, data) => API.put(`/questions/${id}`, data),
       deleteQuestion: (id) => API.delete(`/questions/${id}`),
+
+      /* ===== ENROLLMENT ===== */
+      enrollUserToCourse: (userId, courseId) =>
+        API.post("/enrollments/enroll", { userId, courseId }),
+      unenrollUserFromCourse: (userId, courseId) =>
+        API.post("/enrollments/unenroll", { userId, courseId }),
+      bulkEnrollUsers: (userIds, courseIds) =>
+        API.post("/enrollments/bulk-enroll", { userIds, courseIds }),
+      getCourseUsers: (courseId) =>
+        API.get(`/enrollments/course/${courseId}/users`),
+      getUserCourses: (userId) =>
+        API.get(`/enrollments/user/${userId}/courses`),
     }),
     []
   );

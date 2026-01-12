@@ -12,17 +12,62 @@ export default function Lessons() {
   const [loading, setLoading] = useState(true);
   const [subLessons, setSubLessons] = useState({});
   const [subProgress, setSubProgress] = useState({}); // { subLessonId: { progress, completed } }
+  const [accessDenied, setAccessDenied] = useState(false); // ✅ Thêm state kiểm tra quyền
 
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token"); // ✅ Lấy token
+
+  // ✅ Kiểm tra quyền truy cập course trước
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        // Lấy danh sách courses user được phân vào
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+
+        const myCourses = await res.json();
+        const hasAccess = myCourses.some(
+          (course) => course.courseId === classId
+        );
+
+        if (!hasAccess) {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+
+        // Nếu có quyền, lấy lessons
+        fetchLessons();
+      } catch (err) {
+        console.error("❌ Lỗi kiểm tra quyền:", err);
+        setAccessDenied(true);
+        setLoading(false);
+      }
+    };
+
+    checkAccess();
+  }, [classId, token]);
 
   // Lấy danh sách lesson
-  useEffect(() => {
+  const fetchLessons = () => {
     fetch(`${process.env.REACT_APP_API_URL}/api/lessons/course/${classId}`)
       .then((res) => res.json())
       .then((data) => setLessons(data))
       .catch((err) => console.error("❌ Lỗi tải bài học:", err))
       .finally(() => setLoading(false));
-  }, [classId]);
+  };
 
   const fetchSublessonProgress = async (subLessonId) => {
     if (!userId) return;
@@ -78,6 +123,44 @@ export default function Lessons() {
   };
 
   if (loading) return <p>Đang tải danh sách bài học...</p>;
+
+  // ✅ Hiển thị thông báo nếu không có quyền truy cập
+  if (accessDenied) {
+    return (
+      <div
+        className="lessons-list"
+        style={{ textAlign: "center", padding: "3rem" }}
+      >
+        <h1 style={{ color: "#e53e3e", marginBottom: "1rem" }}>
+          🚫 Không có quyền truy cập
+        </h1>
+        <p
+          style={{ fontSize: "1.1rem", color: "#666", marginBottom: "1.5rem" }}
+        >
+          Bạn chưa được phân bổ vào khóa học này.
+        </p>
+        <p style={{ fontSize: "0.9rem", color: "#999" }}>
+          Vui lòng liên hệ giáo viên để được thêm vào khóa học.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            marginTop: "2rem",
+            padding: "0.75rem 2rem",
+            fontSize: "1rem",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Quay về trang chủ
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="lessons-list">

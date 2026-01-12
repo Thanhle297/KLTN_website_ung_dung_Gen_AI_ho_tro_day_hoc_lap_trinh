@@ -38,9 +38,7 @@ router.get("/me", authMiddleware, async (req, res) => {
 
     res.json(user);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Lỗi server", error: error.message });
+    res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 });
 
@@ -102,6 +100,7 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
     fullname: fullname || "",
     role: role || "user",
     isActive: isActive ?? true,
+    enrolledCourses: [], // ✅ Thêm field mới
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -123,10 +122,7 @@ router.put("/:id", authMiddleware, adminOnly, async (req, res) => {
 
   await db
     .collection("users")
-    .updateOne(
-      { _id: new ObjectId(req.params.id) },
-      { $set: updateData }
-    );
+    .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updateData });
 
   res.json({ message: "Cập nhật user thành công" });
 });
@@ -157,16 +153,14 @@ router.put("/me/update", authMiddleware, async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(req.user.id) },
-      { $set: updateData }
-    );
+    await db
+      .collection("users")
+      .updateOne({ _id: new ObjectId(req.user.id) }, { $set: updateData });
 
     res.json({ message: "Cập nhật thông tin thành công" });
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 });
-
 
 module.exports = router;

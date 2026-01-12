@@ -23,7 +23,7 @@ import UserFormDialog from "../../components/admin/users/UserFormDialog";
 import ChangePasswordDialog from "../../components/admin/users/ChangePasswordDialog";
 import DeleteConfirmDialog from "../../components/admin/users/DeleteConfirmDialog";
 import UserNotification from "../../components/admin/users/UserNotification";
-
+import UserCoursesDialog from "../../components/admin/users/UserCoursesDialog";
 export default function UsersCRUD() {
   const api = useAdminAPI();
 
@@ -44,6 +44,10 @@ export default function UsersCRUD() {
   // Delete confirmation dialog state
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingUser, setDeletingUser] = useState(null);
+
+  // Courses dialog state
+  const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
+  const [managingUser, setManagingUser] = useState(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -264,7 +268,15 @@ export default function UsersCRUD() {
       });
     }
   }, [passForm, api]);
+  const handleManageCourses = useCallback((user) => {
+    setManagingUser(user);
+    setOpenCoursesDialog(true);
+  }, []);
 
+  const handleCloseCoursesDialog = useCallback(() => {
+    setOpenCoursesDialog(false);
+    setManagingUser(null);
+  }, []);
   /* ============================== RENDER ============================== */
   const filteredUsers = users.filter((u) =>
     u.username.toLowerCase().includes(search.toLowerCase())
@@ -390,6 +402,16 @@ export default function UsersCRUD() {
                       fontSize: "0.95rem",
                     }}
                   >
+                    Khóa học
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
                     Thao tác
                   </TableCell>
                 </TableRow>
@@ -403,6 +425,7 @@ export default function UsersCRUD() {
                     onEdit={openEditDialog}
                     onDelete={handleDelete}
                     onChangePassword={openChangePass}
+                    onManageCourses={handleManageCourses}
                   />
                 ))}
 
@@ -471,6 +494,17 @@ export default function UsersCRUD() {
         message={snack.message}
         severity={snack.severity}
         onClose={handleCloseSnack}
+      />
+      {/* Dialog quản lý khóa học */}
+      <UserCoursesDialog
+        open={openCoursesDialog}
+        user={managingUser}
+        onClose={handleCloseCoursesDialog}
+        onSave={() => {
+          showMessage("Cập nhật khóa học thành công");
+          loadUsers();
+        }}
+        api={api}
       />
     </Box>
   );

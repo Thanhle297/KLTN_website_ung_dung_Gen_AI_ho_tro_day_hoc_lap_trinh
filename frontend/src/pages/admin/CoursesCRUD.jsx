@@ -6,6 +6,7 @@ import CoursesHeader from "../../components/admin/courses/CoursesHeader";
 import CoursesTable from "../../components/admin/courses/CoursesTable";
 import CourseFormDialog from "../../components/admin/courses/CourseFormDialog";
 import DeleteConfirmDialog from "../../components/admin/courses/DeleteConfirmDialog";
+import CourseUsersDialog from "../../components/admin/courses/CourseUsersDialog";
 
 export default function CoursesCRUD() {
   const api = useAdminAPI();
@@ -15,6 +16,9 @@ export default function CoursesCRUD() {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState(null);
+
+  const [openUsersDialog, setOpenUsersDialog] = useState(false);
+  const [managingCourse, setManagingCourse] = useState(null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -90,6 +94,19 @@ export default function CoursesCRUD() {
     [editing, api, showMessage, loadCourses]
   );
 
+  const handleCloseDelete = useCallback(() => {
+    setDeleteTarget(null);
+  }, []);
+  // ✅ Thêm handlers cho CourseUsersDialog
+  const handleManageUsers = useCallback((course) => {
+    setManagingCourse(course);
+    setOpenUsersDialog(true);
+  }, []);
+  const handleCloseUsersDialog = useCallback(() => {
+    setOpenUsersDialog(false);
+    setManagingCourse(null);
+  }, []);
+
   /* ==================== DELETE ==================== */
   const handleDeleteClick = useCallback((course) => {
     setDeleteTarget(course);
@@ -128,6 +145,7 @@ export default function CoursesCRUD() {
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
+        onManageUsers={handleManageUsers}
       />
 
       <CourseFormDialog
@@ -142,6 +160,17 @@ export default function CoursesCRUD() {
         courseName={deleteTarget?.title || ""}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
+      />
+
+      <CourseUsersDialog
+        open={openUsersDialog}
+        course={managingCourse}
+        onClose={handleCloseUsersDialog}
+        onSave={() => {
+          showMessage("Cập nhật học sinh thành công");
+          loadCourses();
+        }}
+        api={api}
       />
 
       <Snackbar

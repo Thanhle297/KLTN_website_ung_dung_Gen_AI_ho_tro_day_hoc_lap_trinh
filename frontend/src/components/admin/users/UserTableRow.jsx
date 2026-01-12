@@ -19,6 +19,7 @@ import {
   Person,
   CheckCircle,
   Cancel,
+  MenuBook, // ✅ Thêm icon mới
 } from "@mui/icons-material";
 
 // Helper function để lấy cấu hình role
@@ -56,8 +57,16 @@ const getInitials = (name) => {
   return name.substring(0, 2).toUpperCase();
 };
 
-const UserTableRow = ({ user, index, onEdit, onDelete, onChangePassword }) => {
+const UserTableRow = ({
+  user,
+  index,
+  onEdit,
+  onDelete,
+  onChangePassword,
+  onManageCourses,
+}) => {
   const roleConfig = getRoleConfig(user.role);
+  const courseCount = user.enrolledCourses?.length || 0;
 
   return (
     <Fade in={true} style={{ transitionDelay: `${index * 30}ms` }}>
@@ -164,9 +173,45 @@ const UserTableRow = ({ user, index, onEdit, onDelete, onChangePassword }) => {
           />
         </TableCell>
 
+        {/* Khóa học */}
+        <TableCell align="center">
+          <Chip
+            label={`${courseCount} khóa học`}
+            size="small"
+            sx={{
+              fontWeight: 600,
+              fontSize: "0.8rem",
+              background:
+                courseCount > 0
+                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                  : "#e0e0e0",
+              color: courseCount > 0 ? "white" : "#666",
+            }}
+          />
+        </TableCell>
+
         {/* Actions */}
         <TableCell align="right">
           <Stack direction="row" spacing={1} justifyContent="flex-end">
+            {/* ✅ Nút quản lý khóa học */}
+            <IconButton
+              onClick={() => onManageCourses(user)}
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                width: 36,
+                height: 36,
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                },
+                transition: "all 0.2s ease",
+              }}
+              size="small"
+              title="Quản lý khóa học"
+            >
+              <MenuBook sx={{ fontSize: 18 }} />
+            </IconButton>
             <IconButton
               onClick={() => onChangePassword(user)}
               sx={{
@@ -233,7 +278,9 @@ const areEqual = (prevProps, nextProps) => {
     prevProps.user.role === nextProps.user.role &&
     prevProps.user.fullname === nextProps.user.fullname &&
     prevProps.user.email === nextProps.user.email &&
-    prevProps.user.username === nextProps.user.username
+    prevProps.user.username === nextProps.user.username &&
+    prevProps.user.enrolledCourses?.length ===
+      nextProps.user.enrolledCourses?.length // ✅ Thêm check enrolledCourses
   );
 };
 
