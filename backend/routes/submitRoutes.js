@@ -36,6 +36,12 @@ router.post("/", async (req, res) => {
     const requiredProgress = subLesson?.requiredProgress ?? 70;
     const completed = progress >= requiredProgress;
 
+    // 2.5️⃣ LẤY DANH SÁCH CÂU HỎI HIỆN TẠI (SNAPSHOT)
+    const questionsSnapshot = await db
+      .collection("question")
+      .find({ lessonId })
+      .toArray();
+
     // 3️⃣ LƯU LỊCH SỬ (KHÔNG GHI ĐÈ)
     await db.collection("submit_history").insertOne({
       userId,
@@ -47,6 +53,7 @@ router.post("/", async (req, res) => {
       progress,
       requiredProgress,
       editorStates,
+      questions: questionsSnapshot, // ✅ Lưu snapshot câu hỏi
       createdAt: new Date(),
     });
 

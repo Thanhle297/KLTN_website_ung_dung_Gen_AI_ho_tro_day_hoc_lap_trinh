@@ -24,8 +24,11 @@ export default function ReviewPage() {
         const subData = await resSub.json();
         setSubmission(subData);
 
-        if (subData.lessonId) {
-          // 2. Fetch câu hỏi gốc (bao gồm đáp án đúng)
+        if (subData.questions && subData.questions.length > 0) {
+          // ✅ Ưu tiên dùng snapshot câu hỏi đã lưu khi nộp bài
+          setQuestions(subData.questions);
+        } else if (subData.lessonId) {
+          // 2. Fetch câu hỏi gốc (bao gồm đáp án đúng) - Fallback cho bài cũ
           const resQ = await fetch(
             `${process.env.REACT_APP_API_URL}/api/questions?lessonId=${subData.lessonId}`
           );
