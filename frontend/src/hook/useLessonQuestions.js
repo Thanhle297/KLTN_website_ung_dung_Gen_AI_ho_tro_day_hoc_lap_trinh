@@ -84,11 +84,23 @@ export default function useLessonQuestions(lessonId, userId) {
         // 3) Set current question
         if (qList.length > 0) setCurrent(qList[0]);
 
-        // 4) If lesson missing courseId, infer from first question (optional)
-        if (lessonData && !lessonData.courseId && qList.length > 0) {
-          const inferredCourseId = qList[0]?.courseId || null;
-          setLesson({ ...lessonData, courseId: inferredCourseId });
+        // 4) Đảm bảo có courseId (lấy từ bài cha nếu đây là subLesson)
+        let finalLesson = lessonData;
+
+        if (
+          lessonData &&
+          !lessonData.courseId &&
+          lessonData.parentLesson?.lessonId
+        ) {
+          const parentRes = await fetch(
+            `${apiBase}/api/lessons/${lessonData.parentLesson.lessonId}`,
+            { signal: controller.signal }
+          );
+          const parentLesson = await safeJson(parentRes);
+          finalLesson = { ...lessonData, courseId: parentLesson.courseId };
         }
+
+        setLesson(finalLesson);
       } catch (err) {
         if (err?.name !== "AbortError") {
           console.error("❌ Lỗi load bài học/câu hỏi/temp:", err);

@@ -40,8 +40,10 @@ export default function Lessons() {
         }
 
         const myCourses = await res.json();
+        console.log("MY COURSES:", myCourses);
+        console.log("CLASS ID:", classId);
         const hasAccess = myCourses.some(
-          (course) => course.courseId === classId
+          (course) => String(course.courseId) === String(classId)
         );
 
         if (!hasAccess) {
@@ -49,6 +51,7 @@ export default function Lessons() {
           setLoading(false);
           return;
         }
+        setAccessDenied(false);
 
         fetchLessons();
       } catch (err) {

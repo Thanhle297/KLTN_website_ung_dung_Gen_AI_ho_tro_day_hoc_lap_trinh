@@ -81,6 +81,15 @@ router.post("/", async (req, res) => {
       );
     }
 
+    // // 🧠 FIX QUYỀN TRUY CẬP COURSE — CỰC KỲ QUAN TRỌNG
+    // await db.collection("users").updateOne(
+    //   { _id: new ObjectId(userId) },
+    //   {
+    //     $addToSet: { enrolledCourses: courseId },
+    //     $set: { updatedAt: new Date() },
+    //   }
+    // );
+
     return res.json({
       success: true,
       correct,
