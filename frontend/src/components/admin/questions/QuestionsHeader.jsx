@@ -19,6 +19,7 @@ const QuestionsHeader = React.memo(
     onLessonChange,
     onSubLessonChange,
     onAddClick,
+    onImportClick,
   }) => {
     return (
       <Box
@@ -88,7 +89,35 @@ const QuestionsHeader = React.memo(
         )}
 
         {selectedSubLesson && (
-          <Stack direction="row" justifyContent="flex-end">
+          <Stack direction="row" spacing={2} justifyContent="flex-end">
+            {onImportClick && (
+              <Button
+                variant="outlined"
+                onClick={onImportClick}
+                // startIcon={
+                //   <Box
+                //     component="span"
+                //     className="material-icons"
+                //     sx={{ fontSize: 20 }}
+                //   ></Box>
+                // }
+                sx={{
+                  color: "#667eea",
+                  borderColor: "#667eea",
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 3,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": {
+                    borderColor: "#764ba2",
+                    bgcolor: "rgba(102, 126, 234, 0.05)",
+                  },
+                }}
+              >
+                Lấy từ Bank
+              </Button>
+            )}
             <Button
               variant="contained"
               onClick={onAddClick}

@@ -24,7 +24,7 @@ import {
   Dashboard as DashboardIcon,
   Home,
   Menu as MenuIcon,
-  Assignment, // ✅ Thêm icon mới
+  Assignment,
 } from "@mui/icons-material";
 import {
   Routes,
@@ -39,7 +39,8 @@ import CoursesCRUD from "./CoursesCRUD";
 import LessonsCRUD from "./LessonsCRUD";
 import SubLessonsCRUD from "./SubLessonsCRUD";
 import QuestionsCRUD from "./QuestionsCRUD";
-import EnrollmentsCRUD from "./EnrollmentsCRUD"; // ✅ Thêm import mới
+import QuestionBank from "./QuestionBank";
+import EnrollmentsCRUD from "./EnrollmentsCRUD";
 
 const drawerWidth = 260;
 
@@ -57,10 +58,11 @@ export default function AdminDashboard() {
 
   const menu = [
     { label: "Quản lý User", path: "users", icon: <People /> },
+    { label: "Ngân hàng câu hỏi", path: "question-bank", icon: <Assignment /> },
     { label: "Quản lý Khóa học", path: "courses", icon: <School /> },
     { label: "Quản lý Bài học", path: "lessons", icon: <Book /> },
     { label: "Quản lý SubLesson", path: "sub-lessons", icon: <Topic /> },
-    { label: "Quản lý Câu hỏi", path: "questions", icon: <Quiz /> },
+    { label: "Câu hỏi theo bài", path: "questions", icon: <Quiz /> },
     { label: "Quản lý Phân bổ", path: "enrollments", icon: <Assignment /> },
   ];
 
@@ -273,6 +275,7 @@ export default function AdminDashboard() {
 
         <Routes>
           <Route path="users" element={<UsersCRUD />} />
+          <Route path="question-bank" element={<QuestionBank />} />
           <Route path="courses" element={<CoursesCRUD />} />
           <Route path="lessons" element={<LessonsCRUD />} />
           <Route path="sub-lessons" element={<SubLessonsCRUD />} />

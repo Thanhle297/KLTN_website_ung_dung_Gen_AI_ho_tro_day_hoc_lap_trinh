@@ -52,10 +52,14 @@ export default function useAdminAPI() {
       /* ===== QUESTION ===== */
       getQuestions: (lessonId) =>
         API.get(`/questions`, { params: { lessonId } }),
+      getBankQuestions: (category) =>
+        API.get(`/questions`, { params: { isBank: true, category } }),
       getQuestion: (id) => API.get(`/questions/${id}`),
       createQuestion: (data) => API.post("/questions", data),
       updateQuestion: (id, data) => API.put(`/questions/${id}`, data),
       deleteQuestion: (id) => API.delete(`/questions/${id}`),
+      assignQuestionsToLesson: (questionIds, targetLessonId) =>
+        API.post("/questions/assign", { questionIds, targetLessonId }),
 
       /* ===== ENROLLMENT ===== */
       enrollUserToCourse: (userId, courseId) =>

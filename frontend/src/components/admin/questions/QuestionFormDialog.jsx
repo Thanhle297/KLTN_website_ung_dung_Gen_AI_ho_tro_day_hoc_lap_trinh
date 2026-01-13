@@ -26,6 +26,7 @@ const QuestionFormDialog = ({ open, editing, onClose, onSave }) => {
     if (editing) {
       setForm({
         question: editing.question,
+        category: editing.category || "",
         ex: editing.ex || [{ input: "", output: "" }],
         testcase: editing.testcase || [{ input: [""], expected: "" }],
         echo_input: editing.echo_input ?? false,
@@ -35,6 +36,7 @@ const QuestionFormDialog = ({ open, editing, onClose, onSave }) => {
     } else {
       setForm({
         question: "",
+        category: "",
         ex: [{ input: "", output: "" }],
         testcase: [{ input: [""], expected: "" }],
         echo_input: false,
@@ -117,6 +119,21 @@ const QuestionFormDialog = ({ open, editing, onClose, onSave }) => {
             onChange={(e) => handleChange("question", e.target.value)}
             fullWidth
             multiline
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+              },
+            }}
+          />
+
+          {/* CATEGORY (New) */}
+          <TextField
+            label="Danh mục (Category)"
+            value={form.category || ""}
+            onChange={(e) => handleChange("category", e.target.value)}
+            fullWidth
+            size="small"
+            placeholder="VD: Java, Python, Loop..."
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,

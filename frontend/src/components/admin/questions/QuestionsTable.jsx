@@ -14,7 +14,9 @@ import {
 import QuestionRow from "./QuestionRow";
 
 const QuestionsTable = React.memo(
-  ({ questions, loading, selectedSubLesson, onEdit, onDelete }) => {
+  ({ questions, loading, selectedSubLesson, onEdit, onDelete, onAssign }) => {
+    const isBankMode = selectedSubLesson === "BANK";
+
     if (!selectedSubLesson) {
       return (
         <Paper
@@ -86,6 +88,15 @@ const QuestionsTable = React.memo(
                     fontSize: "0.95rem",
                   }}
                 >
+                  Category
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
                   Câu hỏi
                 </TableCell>
                 <TableCell
@@ -144,6 +155,7 @@ const QuestionsTable = React.memo(
                   question={question}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onAssign={isBankMode ? onAssign : null}
                 />
               ))}
 

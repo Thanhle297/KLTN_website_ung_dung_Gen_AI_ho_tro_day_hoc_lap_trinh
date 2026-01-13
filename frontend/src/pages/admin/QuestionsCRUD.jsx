@@ -6,6 +6,7 @@ import QuestionsHeader from "../../components/admin/questions/QuestionsHeader";
 import QuestionsTable from "../../components/admin/questions/QuestionsTable";
 import QuestionFormDialog from "../../components/admin/questions/QuestionFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
+import ImportFromBankModal from "../../components/admin/questions/ImportFromBankModal"; // [NEW]
 
 export default function QuestionsCRUD() {
   const api = useAdminAPI();
@@ -23,6 +24,8 @@ export default function QuestionsCRUD() {
   const [editing, setEditing] = useState(null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [openImport, setOpenImport] = useState(false); // [NEW]
 
   const [snack, setSnack] = useState({
     open: false,
@@ -169,6 +172,23 @@ export default function QuestionsCRUD() {
     setDeleteTarget(null);
   }, []);
 
+  /* ================= IMPORT ================= */
+  const handleOpenImport = useCallback(() => {
+    if (!selectedSubLesson) {
+      notify("Vui lòng chọn SubLesson trước", "warning");
+      return;
+    }
+    setOpenImport(true);
+  }, [selectedSubLesson, notify]);
+
+  const handleImportSuccess = useCallback(
+    (count) => {
+      notify(`Đã lấy ${count} câu hỏi từ ngân hàng`);
+      loadQuestions();
+    },
+    [notify, loadQuestions]
+  );
+
   /* ================= RENDER UI ================= */
   return (
     <Box
@@ -186,6 +206,7 @@ export default function QuestionsCRUD() {
         onLessonChange={handleLessonChange}
         onSubLessonChange={handleSubLessonChange}
         onAddClick={handleAddClick}
+        onImportClick={handleOpenImport} // [NEW]
       />
 
       <QuestionsTable
@@ -209,6 +230,13 @@ export default function QuestionsCRUD() {
         itemType="câu hỏi"
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
+      />
+
+      <ImportFromBankModal
+        open={openImport}
+        onClose={() => setOpenImport(false)}
+        targetLessonId={selectedSubLesson}
+        onSuccess={handleImportSuccess}
       />
 
       <Snackbar
