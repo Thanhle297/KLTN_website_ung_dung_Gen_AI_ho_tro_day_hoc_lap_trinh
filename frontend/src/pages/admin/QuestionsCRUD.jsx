@@ -11,6 +11,9 @@ import ImportFromBankModal from "../../components/admin/questions/ImportFromBank
 export default function QuestionsCRUD() {
   const api = useAdminAPI();
 
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
+
   const [lessons, setLessons] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState("");
 
@@ -25,7 +28,7 @@ export default function QuestionsCRUD() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const [openImport, setOpenImport] = useState(false); // [NEW]
+  const [openImport, setOpenImport] = useState(false);
 
   const [snack, setSnack] = useState({
     open: false,
@@ -41,56 +44,81 @@ export default function QuestionsCRUD() {
     setSnack((s) => ({ ...s, open: false }));
   }, []);
 
+  /* ================= LOAD COURSES ================= */
+  const loadCourses = useCallback(async () => {
+    try {
+      const res = await api.getCourses();
+      const list = Array.isArray(res.data) ? res.data : [];
+      setCourses(list);
+      if (!selectedCourse && list.length > 0) {
+        setSelectedCourse(list[0].courseId);
+      }
+    } catch {
+      notify("Không thể tải danh sách khóa học", "error");
+    }
+  }, [api, notify, selectedCourse]);
+
   /* ================= LOAD LESSON ================= */
   const loadLessons = useCallback(async () => {
+    if (!selectedCourse) return;
     try {
-      const res = await api.getLessonsByCourse("10");
+      const res = await api.getLessonsByCourse(selectedCourse);
       setLessons(res.data);
+      // Reset khi đổi khóa học
+      setSelectedLesson("");
+      setSelectedSubLesson("");
+      setSubLessons([]);
+      setQuestions([]);
     } catch {
       notify("Lỗi tải bài học", "error");
     }
-  }, [api, notify]);
+  }, [api, notify, selectedCourse]);
 
   /* ================= LOAD SUBLESSON ================= */
   const loadSubLessons = useCallback(async () => {
-    if (!selectedLesson) return;
+    if (!selectedLesson || !selectedCourse) return;
 
     try {
-      const res = await api.getSubLessons(selectedLesson);
+      const res = await api.getSubLessons(selectedLesson, selectedCourse);
       setSubLessons(res.data);
+      // Reset khi đổi bài học chính
+      setSelectedSubLesson("");
+      setQuestions([]);
     } catch {
       notify("Lỗi tải SubLesson", "error");
     }
-  }, [selectedLesson, api, notify]);
+  }, [selectedLesson, selectedCourse, api, notify]);
 
   /* ================= LOAD QUESTIONS ================= */
   const loadQuestions = useCallback(async () => {
-    if (!selectedSubLesson) return;
+    if (!selectedSubLesson || !selectedCourse) return;
 
     try {
       setLoading(true);
-      const res = await api.getQuestions(selectedSubLesson);
+      const res = await api.getQuestions(selectedSubLesson, selectedCourse);
       setQuestions(res.data);
     } catch {
       notify("Lỗi tải câu hỏi", "error");
     } finally {
       setLoading(false);
     }
-  }, [selectedSubLesson, api, notify]);
+  }, [selectedSubLesson, selectedCourse, api, notify]);
 
   useEffect(() => {
-    loadLessons();
-  }, [loadLessons]);
+    loadCourses();
+  }, [loadCourses]);
 
   useEffect(() => {
-    setSelectedSubLesson("");
-    setSubLessons([]);
-    if (selectedLesson) loadSubLessons();
-  }, [selectedLesson, loadSubLessons]);
+    if (selectedCourse) loadLessons();
+  }, [loadLessons, selectedCourse]);
 
   useEffect(() => {
-    loadQuestions();
-  }, [loadQuestions]);
+    if (selectedLesson && selectedCourse) loadSubLessons();
+  }, [loadSubLessons, selectedLesson, selectedCourse]);
+
+  useEffect(() => {
+    if (selectedSubLesson && selectedCourse) loadQuestions();
+  }, [loadQuestions, selectedSubLesson, selectedCourse]);
 
   /* ================= FORM ================= */
   const handleAddClick = useCallback(() => {
@@ -105,6 +133,10 @@ export default function QuestionsCRUD() {
 
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
+  }, []);
+
+  const handleCourseChange = useCallback((value) => {
+    setSelectedCourse(value);
   }, []);
 
   const handleLessonChange = useCallback((value) => {
@@ -129,7 +161,7 @@ export default function QuestionsCRUD() {
         ...formData,
         lessonId: selectedSubLesson,
         topic: topicId,
-        courseId: "10",
+        courseId: selectedCourse,
       };
 
       try {
@@ -147,7 +179,7 @@ export default function QuestionsCRUD() {
         notify("Lỗi lưu câu hỏi", "error");
       }
     },
-    [selectedSubLesson, editing, api, notify, loadQuestions]
+    [selectedSubLesson, selectedCourse, editing, api, notify, loadQuestions]
   );
 
   /* ================= DELETE ================= */
@@ -194,11 +226,15 @@ export default function QuestionsCRUD() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background:
+          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
       <QuestionsHeader
+        courses={courses}
+        selectedCourse={selectedCourse}
+        onCourseChange={handleCourseChange}
         lessons={lessons}
         selectedLesson={selectedLesson}
         subLessons={subLessons}
@@ -206,7 +242,7 @@ export default function QuestionsCRUD() {
         onLessonChange={handleLessonChange}
         onSubLessonChange={handleSubLessonChange}
         onAddClick={handleAddClick}
-        onImportClick={handleOpenImport} // [NEW]
+        onImportClick={handleOpenImport}
       />
 
       <QuestionsTable
@@ -236,6 +272,7 @@ export default function QuestionsCRUD() {
         open={openImport}
         onClose={() => setOpenImport(false)}
         targetLessonId={selectedSubLesson}
+        courseId={selectedCourse}
         onSuccess={handleImportSuccess}
       />
 

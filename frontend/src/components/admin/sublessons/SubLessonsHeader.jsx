@@ -11,7 +11,15 @@ import {
 } from "@mui/material";
 
 const SubLessonsHeader = React.memo(
-  ({ lessonList, selectedLesson, onLessonChange, onAddClick }) => {
+  ({
+    courses,
+    selectedCourse,
+    onCourseChange,
+    lessonList,
+    selectedLesson,
+    onLessonChange,
+    onAddClick,
+  }) => {
     return (
       <Box
         sx={{
@@ -36,6 +44,26 @@ const SubLessonsHeader = React.memo(
         >
           📖 Quản lý SubLesson
         </Typography>
+
+        {/* Chọn Khóa học */}
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel>Chọn Khóa học</InputLabel>
+          <Select
+            label="Chọn Khóa học"
+            value={selectedCourse}
+            onChange={(e) => onCourseChange(e.target.value)}
+            sx={{
+              borderRadius: 2,
+              backgroundColor: "white",
+            }}
+          >
+            {courses?.map((c) => (
+              <MenuItem key={c.courseId} value={c.courseId}>
+                {c.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         {/* Chọn bài lớn */}
         <FormControl fullWidth sx={{ mb: 3 }}>

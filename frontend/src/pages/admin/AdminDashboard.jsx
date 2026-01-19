@@ -83,31 +83,32 @@ export default function AdminDashboard() {
               sx={{
                 borderRadius: 3,
                 mb: 1.5,
-                py: 1.5,
-                transition: "all 0.3s ease",
+                py: 2,
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                 "&.Mui-selected": {
                   background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
-                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+                    "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
+                  color: "#1976D2",
+                  boxShadow: "0 2px 8px rgba(33, 150, 243, 0.12)",
                   "&:hover": {
                     background:
-                      "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                      "linear-gradient(135deg, #BBDEFB 0%, #E3F2FD 100%)",
                     transform: "translateX(4px)",
                   },
-                  "& .MuiListItemIcon-root": { color: "white" },
+                  "& .MuiListItemIcon-root": { color: "#1976D2" },
                 },
                 "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.08)",
+                  backgroundColor: "#F5F9FC",
                   transform: "translateX(4px)",
+                  borderLeft: "3px solid #2196F3",
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 40,
-                  color: isSelected ? "white" : "#667eea",
-                  transition: "all 0.3s ease",
+                  color: isSelected ? "#1976D2" : "#2196F3",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
                 {item.icon}
@@ -115,8 +116,9 @@ export default function AdminDashboard() {
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
-                  fontWeight: isSelected ? 700 : 500,
+                  fontWeight: isSelected ? 600 : 500,
                   fontSize: "0.95rem",
+                  letterSpacing: "0.3px",
                 }}
               />
             </ListItemButton>
@@ -134,9 +136,10 @@ export default function AdminDashboard() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background:
+            "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
           backdropFilter: "blur(10px)",
-          boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)",
+          boxShadow: "0 2px 12px rgba(33, 150, 243, 0.15)",
         }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -165,15 +168,20 @@ export default function AdminDashboard() {
               sx={{
                 height: 50,
                 display: { xs: "none", sm: "block" },
-                // filter: "brightness(0) invert(1)",
+                filter: "drop-shadow(0 2px 4px rgba(33, 150, 243, 0.3))",
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                },
               }}
             />
             <Typography
               variant="h5"
               noWrap
-              fontWeight="700"
+              fontWeight="600"
               sx={{
                 color: "white",
+                letterSpacing: "0.5px",
                 textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
@@ -207,11 +215,11 @@ export default function AdminDashboard() {
             <Avatar
               sx={{
                 bgcolor: "white",
-                color: "#667eea",
+                color: "#2196F3",
                 width: 40,
                 height: 40,
-                fontWeight: 700,
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                fontWeight: 600,
+                boxShadow: "0 2px 8px rgba(33, 150, 243, 0.2)",
               }}
             >
               A
@@ -232,8 +240,8 @@ export default function AdminDashboard() {
             sx={{
               "& .MuiDrawer-paper": {
                 width: drawerWidth,
-                background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)",
-                borderRight: "1px solid rgba(102, 126, 234, 0.1)",
+                background: "#FFFFFF",
+                borderRight: "1px solid #E3F2FD",
               },
             }}
           >
@@ -248,8 +256,8 @@ export default function AdminDashboard() {
             sx={{
               "& .MuiDrawer-paper": {
                 width: drawerWidth,
-                background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)",
-                borderRight: "1px solid rgba(102, 126, 234, 0.1)",
+                background: "#FFFFFF",
+                borderRight: "1px solid #E3F2FD",
               },
             }}
           >
@@ -265,10 +273,11 @@ export default function AdminDashboard() {
         sx={{
           flexGrow: 1,
           // p: 1,
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          background:
+            "linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 50%, #E8F5E9 100%)",
           minHeight: "100vh",
           ml: sidebarOpen && !isMobile ? `${drawerWidth}px` : 0,
-          transition: "margin-left 0.3s ease",
+          transition: "margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <Toolbar />

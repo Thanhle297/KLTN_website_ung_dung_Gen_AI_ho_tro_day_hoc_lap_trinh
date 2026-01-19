@@ -9,12 +9,19 @@ async function importUsers() {
   const db = getDB();
   const users = [];
 
-  fs.createReadStream("10T1.csv")
+  fs.createReadStream("10T2.csv")
     .pipe(
       csv({
-        separator: ";", // file dùng dấu chấm phẩy
-        headers: ["username", "email", "password", "role", "fullname", "isActive"],
-        skipLines: 1,   // bỏ dòng tiêu đề gốc
+        separator: ",", // file dùng dấu chấm phẩy
+        headers: [
+          "username",
+          "email",
+          "password",
+          "role",
+          "fullname",
+          "isActive",
+        ],
+        skipLines: 1, // bỏ dòng tiêu đề gốc
       })
     )
     .on("data", (row) => users.push(row))

@@ -5,12 +5,11 @@ function safeJson(res) {
   return res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`));
 }
 
-export default function useLessonQuestions(lessonId, userId) {
+export default function useLessonQuestions(lessonId, userId, courseId) {
   const [lesson, setLesson] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(null);
 
-  // editorStates: { [questionId]: { code, results, guide, status, hasNewGuide } }
   const [editorStates, setEditorStates] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -41,12 +40,18 @@ export default function useLessonQuestions(lessonId, userId) {
     async function loadAll() {
       setLoading(true);
       try {
-        // 1) Load lesson + questions + temp in parallel
+        const cQuery = courseId ? `&courseId=${courseId}` : "";
         const [lessonData, questionsData, tempData] = await Promise.all([
-          fetch(`${apiBase}/api/lessons/detail/${lessonId}`, {
-            signal: controller.signal,
-          }).then(safeJson),
-          fetch(`${apiBase}/api/questions?lessonId=${lessonId}`, {
+          fetch(
+            `${apiBase}/api/lessons/detail/${lessonId}?${cQuery.replace(
+              "&",
+              ""
+            )}`,
+            {
+              signal: controller.signal,
+            }
+          ).then(safeJson),
+          fetch(`${apiBase}/api/questions?lessonId=${lessonId}${cQuery}`, {
             signal: controller.signal,
           }).then(safeJson),
           fetch(
@@ -64,12 +69,10 @@ export default function useLessonQuestions(lessonId, userId) {
         const tempMap =
           tempData && typeof tempData === "object" ? tempData : {};
 
-        // 2) Build editorStates merged: temp ưu tiên, fallback defaultCode
         const mergedStates = {};
         for (const q of qList) {
           const qid = q?.id;
           if (!qid) continue;
-
           const temp = tempMap[qid];
           mergedStates[qid] = {
             code: (temp?.code ?? q?.defaultCode ?? "").toString(),
@@ -80,26 +83,22 @@ export default function useLessonQuestions(lessonId, userId) {
           };
         }
         setEditorStates(mergedStates);
-
-        // 3) Set current question
         if (qList.length > 0) setCurrent(qList[0]);
 
-        // 4) Đảm bảo có courseId (lấy từ bài cha nếu đây là subLesson)
         let finalLesson = lessonData;
-
         if (
           lessonData &&
           !lessonData.courseId &&
           lessonData.parentLesson?.lessonId
         ) {
+          const pQuery = courseId ? `?courseId=${courseId}` : "";
           const parentRes = await fetch(
-            `${apiBase}/api/lessons/${lessonData.parentLesson.lessonId}`,
+            `${apiBase}/api/lessons/${lessonData.parentLesson.lessonId}${pQuery}`,
             { signal: controller.signal }
           );
           const parentLesson = await safeJson(parentRes);
           finalLesson = { ...lessonData, courseId: parentLesson.courseId };
         }
-
         setLesson(finalLesson);
       } catch (err) {
         if (err?.name !== "AbortError") {
@@ -112,7 +111,7 @@ export default function useLessonQuestions(lessonId, userId) {
 
     loadAll();
     return () => controller.abort();
-  }, [apiBase, lessonId, userId]);
+  }, [apiBase, lessonId, userId, courseId]);
 
   return {
     lesson,

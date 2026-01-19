@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
@@ -174,7 +175,7 @@ function AppContent() {
           }
         />
         <Route
-          path="/lesson/:lessonId"
+          path="/course/:classId/lesson/:lessonId"
           element={
             <ProtectedRoute>
               <CodeEx />
@@ -182,7 +183,7 @@ function AppContent() {
           }
         />
         <Route
-          path="/lesson-simple/:lessonId"
+          path="/course/:classId/lesson-simple/:lessonId"
           element={
             <ProtectedRoute>
               <CodeExSimple />
@@ -210,6 +211,8 @@ function AppContent() {
           }
         />
       </Routes>
+
+      {!hideHeader && <Footer />}
     </>
   );
 }

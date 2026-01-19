@@ -23,6 +23,14 @@ export default function Lessons() {
   // ... (giữ nguyên useEffect và các hàm fetch)
   useEffect(() => {
     const checkAccess = async () => {
+      // Reset state khi đổi khóa học để tránh trùng lặp dữ liệu cache
+      setLoading(true);
+      setLessons([]);
+      setSubLessons({});
+      setSubProgress({});
+      setExpanded(null);
+      setClosing(null);
+
       try {
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
@@ -106,7 +114,7 @@ export default function Lessons() {
     if (!subLessons[lessonId]) {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}`
+          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}?courseId=${classId}`
         );
         const data = await res.json();
         if (data.subLessons) {
@@ -235,8 +243,8 @@ export default function Lessons() {
                                 onClick={() =>
                                   navigate(
                                     sub.mode === "simple"
-                                      ? `/lesson-simple/${sub.lessonId}`
-                                      : `/lesson/${sub.lessonId}`
+                                      ? `/course/${classId}/lesson-simple/${sub.lessonId}`
+                                      : `/course/${classId}/lesson/${sub.lessonId}`
                                   )
                                 }
                               >

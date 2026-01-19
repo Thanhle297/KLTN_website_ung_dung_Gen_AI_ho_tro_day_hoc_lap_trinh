@@ -35,31 +35,45 @@ export default function useAdminAPI() {
 
       /* ===== LESSON ===== */
       getLessonsByCourse: (courseId) => API.get(`/lessons/course/${courseId}`),
-      getLesson: (lessonId) => API.get(`/lessons/${lessonId}`),
+      getLesson: (lessonId, courseId) =>
+        API.get(`/lessons/${lessonId}`, { params: { courseId } }),
       createLesson: (data) => API.post("/lessons", data),
-      updateLesson: (lessonId, data) => API.put(`/lessons/${lessonId}`, data),
-      deleteLesson: (lessonId) => API.delete(`/lessons/${lessonId}`),
+      updateLesson: (lessonId, data, courseId) =>
+        API.put(`/lessons/${lessonId}`, data, {
+          params: { courseId: courseId || data.courseId },
+        }),
+      deleteLesson: (lessonId, courseId) =>
+        API.delete(`/lessons/${lessonId}`, { params: { courseId } }),
 
       /* ===== SUBLESSON ===== */
-      getSubLessons: (lessonId) => API.get(`/sublessons/${lessonId}/sub`),
-      createSubLesson: (lessonId, data) =>
-        API.post(`/sublessons/${lessonId}/sub`, data),
-      updateSubLesson: (lessonId, subId, data) =>
-        API.put(`/sublessons/${lessonId}/sub/${subId}`, data),
-      deleteSubLesson: (lessonId, subId) =>
-        API.delete(`/sublessons/${lessonId}/sub/${subId}`),
+      getSubLessons: (lessonId, courseId) =>
+        API.get(`/sublessons/${lessonId}/sub`, { params: { courseId } }),
+      createSubLesson: (lessonId, data, courseId) =>
+        API.post(`/sublessons/${lessonId}/sub`, data, { params: { courseId } }),
+      updateSubLesson: (lessonId, subId, data, courseId) =>
+        API.put(`/sublessons/${lessonId}/sub/${subId}`, data, {
+          params: { courseId },
+        }),
+      deleteSubLesson: (lessonId, subId, courseId) =>
+        API.delete(`/sublessons/${lessonId}/sub/${subId}`, {
+          params: { courseId },
+        }),
 
       /* ===== QUESTION ===== */
-      getQuestions: (lessonId) =>
-        API.get(`/questions`, { params: { lessonId } }),
+      getQuestions: (lessonId, courseId) =>
+        API.get(`/questions`, { params: { lessonId, courseId } }),
       getBankQuestions: (category) =>
         API.get(`/questions`, { params: { isBank: true, category } }),
       getQuestion: (id) => API.get(`/questions/${id}`),
       createQuestion: (data) => API.post("/questions", data),
       updateQuestion: (id, data) => API.put(`/questions/${id}`, data),
       deleteQuestion: (id) => API.delete(`/questions/${id}`),
-      assignQuestionsToLesson: (questionIds, targetLessonId) =>
-        API.post("/questions/assign", { questionIds, targetLessonId }),
+      assignQuestionsToLesson: (questionIds, targetLessonId, courseId) =>
+        API.post("/questions/assign", {
+          questionIds,
+          targetLessonId,
+          courseId,
+        }),
 
       /* ===== ENROLLMENT ===== */
       enrollUserToCourse: (userId, courseId) =>

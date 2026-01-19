@@ -22,10 +22,11 @@ async function getNextQuestionId(db) {
 
 /* ------------ GET All / by lessonId or isBank ------------ */
 router.get("/", async (req, res) => {
-  const { lessonId, isBank, category } = req.query;
+  const { lessonId, isBank, category, courseId } = req.query;
   const query = {};
 
   if (lessonId) query.lessonId = lessonId;
+  if (courseId) query.courseId = courseId;
   if (isBank === "true") query.isBank = true;
   if (category) query.category = { $regex: category, $options: "i" };
 
@@ -41,7 +42,7 @@ router.get("/", async (req, res) => {
 /* ------------ ASSIGN (Clone from Bank) ------------ */
 router.post("/assign", async (req, res) => {
   try {
-    const { questionIds, targetLessonId } = req.body;
+    const { questionIds, targetLessonId, courseId } = req.body;
     const db = getDB();
 
     const sources = await db
@@ -61,6 +62,7 @@ router.post("/assign", async (req, res) => {
         ...rest,
         id: newId,
         lessonId: targetLessonId,
+        courseId: courseId, // Gán courseId của khóa học đích
         isBank: false,
       });
     }

@@ -33,7 +33,8 @@ export default function HomePage() {
   return (
     <div className="homepage">
       <section className="homepage__intro">
-        <h1>Chào mừng bạn đến với hệ thống học lập trình 🎓</h1>
+        <h1>Chào mừng bạn đến với hệ thống học lập trình</h1>
+        <p>Khám phá và học tập với các khóa học chất lượng cao</p>
       </section>
 
       <section className="homepage__courses">

@@ -16,10 +16,17 @@ import {
   Typography,
 } from "@mui/material";
 
-const LessonFormDialog = ({ open, editing, courses, onClose, onSave }) => {
+const LessonFormDialog = ({
+  open,
+  editing,
+  courses,
+  onClose,
+  onSave,
+  defaultCourseId,
+}) => {
   const [form, setForm] = useState({
     lessonId: "",
-    courseId: "10",
+    courseId: "",
     title: "",
     description: "",
     order: 1,
@@ -31,7 +38,7 @@ const LessonFormDialog = ({ open, editing, courses, onClose, onSave }) => {
     if (editing) {
       setForm({
         lessonId: editing.lessonId || "",
-        courseId: editing.courseId || "10",
+        courseId: editing.courseId || "",
         title: editing.title || "",
         description: editing.description || "",
         order: editing.order ?? 1,
@@ -41,7 +48,7 @@ const LessonFormDialog = ({ open, editing, courses, onClose, onSave }) => {
     } else {
       setForm({
         lessonId: "",
-        courseId: "10",
+        courseId: defaultCourseId || "",
         title: "",
         description: "",
         order: 1,
@@ -49,7 +56,7 @@ const LessonFormDialog = ({ open, editing, courses, onClose, onSave }) => {
         display: true,
       });
     }
-  }, [editing, open]);
+  }, [editing, open, defaultCourseId]);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));

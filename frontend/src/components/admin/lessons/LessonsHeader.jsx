@@ -11,7 +11,14 @@ import {
 } from "@mui/material";
 
 const LessonsHeader = React.memo(
-  ({ filterDisplay, onFilterChange, onAddClick }) => {
+  ({
+    courses,
+    selectedCourse,
+    onCourseChange,
+    filterDisplay,
+    onFilterChange,
+    onAddClick,
+  }) => {
     return (
       <Box
         sx={{
@@ -43,7 +50,31 @@ const LessonsHeader = React.memo(
             📚 Quản lý Bài học
           </Typography>
 
-          <Stack direction="row" gap={1.5} justifyContent="flex-end">
+          <Stack
+            direction="row"
+            gap={1.5}
+            justifyContent="flex-end"
+            sx={{ flexWrap: "wrap" }}
+          >
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Khóa học</InputLabel>
+              <Select
+                label="Khóa học"
+                value={selectedCourse}
+                onChange={(e) => onCourseChange(e.target.value)}
+                sx={{
+                  borderRadius: 2,
+                  backgroundColor: "white",
+                }}
+              >
+                {courses?.map((c) => (
+                  <MenuItem key={c.courseId} value={c.courseId}>
+                    {c.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel>Hiển thị</InputLabel>
               <Select

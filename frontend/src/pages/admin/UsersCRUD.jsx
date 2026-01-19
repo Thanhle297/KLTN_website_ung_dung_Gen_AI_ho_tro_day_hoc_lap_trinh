@@ -292,7 +292,8 @@ export default function UsersCRUD() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background:
+          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
         overflowX: "hidden",
       }}
@@ -345,7 +346,7 @@ export default function UsersCRUD() {
                 <TableRow
                   sx={{
                     background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                   }}
                 >
                   <TableCell

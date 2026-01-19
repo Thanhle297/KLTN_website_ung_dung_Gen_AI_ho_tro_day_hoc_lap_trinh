@@ -306,9 +306,10 @@ export default function EnrollmentsCRUD() {
           onClick={handleSave}
           disabled={!hasChanges || saving}
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background:
+              "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
             "&:hover": {
-              background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+              background: "linear-gradient(135deg, #1976D2 0%, #42A5F5 100%)",
             },
           }}
         >
@@ -329,7 +330,7 @@ export default function EnrollmentsCRUD() {
                 <TableCell
                   sx={{
                     background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                     color: "white",
                     fontWeight: 700,
                     minWidth: 200,
@@ -343,7 +344,7 @@ export default function EnrollmentsCRUD() {
                     align="center"
                     sx={{
                       background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                       color: "white",
                       fontWeight: 700,
                       minWidth: 120,
@@ -378,9 +379,9 @@ export default function EnrollmentsCRUD() {
                         )}
                         onChange={() => handleToggle(user._id, course.courseId)}
                         sx={{
-                          color: "#667eea",
+                          color: "#2196F3",
                           "&.Mui-checked": {
-                            color: "#764ba2",
+                            color: "#1976D2",
                           },
                         }}
                       />

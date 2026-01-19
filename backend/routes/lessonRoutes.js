@@ -14,9 +14,11 @@ router.get("/course/:courseId", async (req, res) => {
 
 /* -------- GET 1 lesson -------- */
 router.get("/:lessonId", async (req, res) => {
-  const doc = await getDB()
-    .collection("lessons")
-    .findOne({ lessonId: req.params.lessonId });
+  const { courseId } = req.query;
+  const query = { lessonId: req.params.lessonId };
+  if (courseId) query.courseId = courseId;
+
+  const doc = await getDB().collection("lessons").findOne(query);
   res.json(doc);
 });
 
@@ -25,27 +27,33 @@ router.get("/detail/:lessonId", async (req, res) => {
   try {
     const db = getDB();
     const lessonId = req.params.lessonId;
+    const { courseId } = req.query;
 
     // 1) BÀI LỚN
-    const main = await db.collection("lessons").findOne({ lessonId });
+    const query = { lessonId };
+    if (courseId) query.courseId = courseId;
+
+    const main = await db.collection("lessons").findOne(query);
 
     if (main) {
       if (Array.isArray(main.subLessons)) {
         for (const sub of main.subLessons) {
-          const count = await db
-            .collection("question")
-            .countDocuments({ lessonId: sub.lessonId });
+          // Khi đếm câu hỏi cho subLesson, cũng phải gán với courseId của bài lớn
+          const qQuery = { lessonId: sub.lessonId };
+          if (main.courseId) qQuery.courseId = main.courseId;
 
+          const count = await db.collection("question").countDocuments(qQuery);
           sub.questionCount = count;
         }
       }
       return res.json(main);
     }
 
-    // 2) SUBLESSON
-    const parent = await db.collection("lessons").findOne({
-      "subLessons.lessonId": lessonId,
-    });
+    // 2) SUBLESSON (Trong trường hợp lessonId là của 1 subLesson)
+    const parentQuery = { "subLessons.lessonId": lessonId };
+    if (courseId) parentQuery.courseId = courseId;
+
+    const parent = await db.collection("lessons").findOne(parentQuery);
 
     if (!parent) {
       return res.status(404).json({ error: "Không tìm thấy bài học" });
@@ -53,9 +61,10 @@ router.get("/detail/:lessonId", async (req, res) => {
 
     const sub = parent.subLessons.find((s) => s.lessonId === lessonId);
 
-    const count = await db
-      .collection("question")
-      .countDocuments({ lessonId });
+    // Đếm câu hỏi cho subLesson này (gắn với courseId của bài cha)
+    const qQuerySub = { lessonId: sub.lessonId };
+    if (parent.courseId) qQuerySub.courseId = parent.courseId;
+    const count = await db.collection("question").countDocuments(qQuerySub);
 
     sub.questionCount = count;
     sub.parentLesson = {
@@ -78,18 +87,21 @@ router.post("/", async (req, res) => {
 /* -------- UPDATE -------- */
 router.put("/:lessonId", async (req, res) => {
   try {
+    const { courseId } = req.query;
     const data = { ...req.body };
-    delete data._id;               // 🔒 chặn update _id tuyệt đối
+    delete data._id;
 
-    const result = await getDB().collection("lessons").updateOne(
-      { lessonId: req.params.lessonId },
-      { $set: data }
-    );
+    const query = { lessonId: req.params.lessonId };
+    if (courseId) query.courseId = courseId;
+
+    const result = await getDB()
+      .collection("lessons")
+      .updateOne(query, { $set: data });
 
     res.json({
       message: "Lesson updated",
       matched: result.matchedCount,
-      modified: result.modifiedCount
+      modified: result.modifiedCount,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -98,8 +110,12 @@ router.put("/:lessonId", async (req, res) => {
 
 /* -------- DELETE -------- */
 router.delete("/:lessonId", async (req, res) => {
-  await getDB().collection("lessons").deleteOne({ lessonId: req.params.lessonId });
-  res.json({ message: "Lesson deleted" });
+  const { courseId } = req.query;
+  const query = { lessonId: req.params.lessonId };
+  if (courseId) query.courseId = courseId;
+
+  const result = await getDB().collection("lessons").deleteOne(query);
+  res.json({ message: "Lesson deleted", deletedCount: result.deletedCount });
 });
 
 module.exports = router;

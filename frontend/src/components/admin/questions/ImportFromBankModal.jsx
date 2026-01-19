@@ -26,6 +26,7 @@ export default function ImportFromBankModal({
   open,
   onClose,
   targetLessonId,
+  courseId,
   onSuccess,
 }) {
   const api = useAdminAPI();
@@ -75,7 +76,7 @@ export default function ImportFromBankModal({
 
     try {
       setLoading(true);
-      await api.assignQuestionsToLesson(selectedIds, targetLessonId);
+      await api.assignQuestionsToLesson(selectedIds, targetLessonId, courseId);
       if (onSuccess) onSuccess(selectedIds.length);
       onClose();
     } catch (error) {

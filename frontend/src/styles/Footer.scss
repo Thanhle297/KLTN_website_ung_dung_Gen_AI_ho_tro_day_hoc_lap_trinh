@@ -1,0 +1,406 @@
+// Footer.scss - Modern Education Design with White-Blue Gradient
+// Matching Header design system
+
+/* ==========================================================================
+   Import Inter Font (consistent with Header)
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ==========================================================================
+   Color Variables - Education Blue & White Palette
+   (Consistent with Header.scss and HomePage.scss)
+   ========================================================================== */
+
+$bg-primary: #ffffff;
+$bg-secondary: #f8fafb;
+$bg-gradient-start: #e0f2fe;
+
+$blue-primary: #2563eb;
+$blue-secondary: #1d4ed8;
+$blue-light: #dbeafe;
+$blue-education: #0ea5e9;
+$blue-accent: #3b82f6;
+$blue-200: #bae6fd;
+$blue-300: #93c5fd;
+
+$text-primary: #0f172a;
+$text-secondary: #334155;
+$text-muted: #64748b;
+
+$border-light: #e2e8f0;
+
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ==========================================================================
+   Footer Container - Gradient Background Matching Header
+   ========================================================================== */
+
+.footer {
+  // Gradient background matching header (inverted)
+  background: linear-gradient(
+    135deg,
+    rgba(224, 242, 254, 0.98) 0%,
+    rgba(147, 197, 253, 0.96) 30%,
+    rgba(186, 230, 253, 0.97) 50%,
+    rgba(147, 197, 253, 0.96) 70%,
+    rgba(224, 242, 254, 0.98) 100%
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  margin-top: auto;
+  padding: 60px 5% 0;
+  border-top: 1px solid rgba(147, 197, 253, 0.4);
+  box-shadow: 0 -4px 20px rgba(37, 99, 235, 0.1);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+    sans-serif;
+
+  /* ==========================================================================
+     Footer Container - Grid Layout
+     ========================================================================== */
+
+  &__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+
+    @media (max-width: 1023px) {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 767px) {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      text-align: center;
+    }
+  }
+
+  /* ==========================================================================
+     Footer Sections
+     ========================================================================== */
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__about {
+    .footer__logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+
+      // Gradient text effect
+      background: linear-gradient(
+        135deg,
+        $blue-primary 0%,
+        $blue-education 50%,
+        $blue-secondary 100%
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  &__description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: $text-secondary;
+    max-width: 350px;
+
+    @media (max-width: 767px) {
+      max-width: 100%;
+    }
+  }
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 4px;
+    position: relative;
+    padding-bottom: 8px;
+
+    // Decorative gradient underline
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        $blue-primary 0%,
+        $blue-education 100%
+      );
+      border-radius: 2px;
+
+      @media (max-width: 767px) {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+  }
+
+  /* ==========================================================================
+     Links
+     ========================================================================== */
+
+  &__links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    li {
+      a {
+        color: $text-secondary;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: $transition-smooth;
+        display: inline-block;
+        position: relative;
+
+        &::before {
+          content: "";
+          position: absolute;
+          width: 0;
+          height: 2px;
+          bottom: -2px;
+          left: 0;
+          background: linear-gradient(90deg, $blue-primary, $blue-education);
+          transition: width 0.3s ease;
+        }
+
+        &:hover {
+          color: $blue-primary;
+          padding-left: 4px;
+
+          &::before {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  /* ==========================================================================
+     Social Media Icons
+     ========================================================================== */
+
+  &__social {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+
+    @media (max-width: 767px) {
+      justify-content: center;
+    }
+
+    a {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, $blue-primary, $blue-education);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.1rem;
+      transition: $transition-smooth;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, $blue-secondary, $blue-primary);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  /* ==========================================================================
+     Bottom Bar - Copyright
+     ========================================================================== */
+
+  &__bottom {
+    border-top: 1px solid rgba(147, 197, 253, 0.3);
+    padding: 24px 0;
+    text-align: center;
+  }
+
+  &__copyright {
+    font-size: 0.9rem;
+    color: $text-muted;
+    margin: 0;
+
+    i {
+      color: #ef4444;
+      margin: 0 4px;
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ==========================================================================
+   Responsive Design - Mobile Optimization
+   ========================================================================== */
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .footer {
+    padding: 50px 4% 0;
+
+    &__container {
+      padding-bottom: 32px;
+    }
+
+    &__about {
+      .footer__logo {
+        font-size: 1.35rem;
+      }
+    }
+
+    &__description {
+      font-size: 0.9rem;
+    }
+
+    &__title {
+      font-size: 1.05rem;
+    }
+  }
+}
+
+/* Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
+  .footer {
+    padding: 40px 4% 0;
+
+    &__container {
+      padding-bottom: 28px;
+    }
+
+    &__about {
+      .footer__logo {
+        font-size: 1.3rem;
+      }
+    }
+
+    &__description {
+      font-size: 0.9rem;
+    }
+
+    &__title {
+      font-size: 1rem;
+    }
+
+    &__bottom {
+      padding: 20px 0;
+    }
+  }
+}
+
+/* Small Mobile (320px - 479px) */
+@media (max-width: 479px) {
+  .footer {
+    padding: 32px 3% 0;
+
+    &__container {
+      gap: 24px;
+      padding-bottom: 24px;
+    }
+
+    &__about {
+      .footer__logo {
+        font-size: 1.25rem;
+      }
+    }
+
+    &__description {
+      font-size: 0.85rem;
+    }
+
+    &__title {
+      font-size: 0.95rem;
+    }
+
+    &__links li a {
+      font-size: 0.9rem;
+    }
+
+    &__social a {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
+
+    &__bottom {
+      padding: 18px 0;
+    }
+
+    &__copyright {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+/* ==========================================================================
+   Accessibility Features
+   ========================================================================== */
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .footer,
+  .footer__links li a,
+  .footer__social a,
+  .footer__copyright i {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Focus-visible for keyboard navigation */
+.footer__links li a:focus-visible,
+.footer__social a:focus-visible {
+  outline: 3px solid $blue-primary;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .footer {
+    background: rgba(224, 242, 254, 0.95);
+    border-top: 2px solid $blue-primary;
+
+    &__about .footer__logo {
+      -webkit-text-fill-color: $blue-primary;
+    }
+  }
+}

@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   Box,
   Snackbar,
@@ -9,6 +15,8 @@ import {
   Button,
   Stack,
   IconButton,
+  Paper,
+  TablePagination,
 } from "@mui/material";
 import { Search, Add, Assignment } from "@mui/icons-material";
 
@@ -41,6 +49,10 @@ export default function QuestionBank() {
     severity: "success",
   });
 
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   const notify = useCallback((msg, severity = "success") => {
     setSnack({ open: true, message: msg, severity });
   }, []);
@@ -71,6 +83,7 @@ export default function QuestionBank() {
   useEffect(() => {
     const timer = setTimeout(() => {
       loadQuestions();
+      setPage(0); // Reset to first page when filter changes
     }, 500); // Debounce 500ms
 
     return () => clearTimeout(timer);
@@ -183,11 +196,28 @@ export default function QuestionBank() {
     notify("Đã phân phối câu hỏi thành công");
   }, [notify]);
 
+  /* ================= PAGINATION ================= */
+  const paginatedQuestions = useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return questions.slice(startIndex, endIndex);
+  }, [questions, page, rowsPerPage]);
+
+  const handleChangePage = useCallback((event, newPage) => {
+    setPage(newPage);
+  }, []);
+
+  const handleChangeRowsPerPage = useCallback((event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  }, []);
+
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background:
+          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
@@ -234,7 +264,7 @@ export default function QuestionBank() {
             onClick={handleAddClick}
             sx={{
               bgcolor: "white",
-              color: "#667eea",
+              color: "#2196F3",
               fontWeight: 700,
               "&:hover": { bgcolor: "#f0f0f0" },
             }}
@@ -247,13 +277,37 @@ export default function QuestionBank() {
       {/* TABLE */}
       {/* Note: passing 'bank' as true or selectedSubLesson="BANK" to show table */}
       <QuestionsTable
-        questions={questions}
+        questions={paginatedQuestions}
         loading={loading}
         selectedSubLesson="BANK" // Fake ID to ensure table renders
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
         onAssign={handleAssignClick}
       />
+
+      {/* Pagination */}
+      {!loading && questions.length > 0 && (
+        <Paper sx={{ borderRadius: 3, mt: 2 }}>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            component="div"
+            count={questions.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Số câu hỏi mỗi trang:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} của ${count} câu hỏi`
+            }
+            sx={{
+              ".MuiTablePagination-toolbar": {
+                backgroundColor: "rgba(33, 150, 243, 0.05)",
+              },
+            }}
+          />
+        </Paper>
+      )}
 
       {/* HACK: floating button for distributing? No. 
          I should updated QuestionRow to have Assign button.

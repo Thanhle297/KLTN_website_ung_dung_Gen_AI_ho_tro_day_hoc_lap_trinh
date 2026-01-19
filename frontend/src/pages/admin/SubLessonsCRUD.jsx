@@ -10,6 +10,9 @@ import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDial
 export default function SubLessonsCRUD() {
   const api = useAdminAPI();
 
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
+
   const [lessonList, setLessonList] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState("");
 
@@ -35,38 +38,60 @@ export default function SubLessonsCRUD() {
     setSnack((s) => ({ ...s, open: false }));
   }, []);
 
-  /* ------- LOAD danh sách bài lớn ------- */
-  const loadLessons = useCallback(async () => {
+  /* ------- LOAD danh sách Khóa học ------- */
+  const loadCourses = useCallback(async () => {
     try {
-      const res = await api.getLessonsByCourse("10"); // tùy course
+      const res = await api.getCourses();
+      const list = Array.isArray(res.data) ? res.data : [];
+      setCourses(list);
+      if (!selectedCourse && list.length > 0) {
+        setSelectedCourse(list[0].courseId);
+      }
+    } catch {
+      notify("Không thể tải danh sách khóa học", "error");
+    }
+  }, [api, notify, selectedCourse]);
+
+  /* ------- LOAD danh sách bài lớn theo khóa học ------- */
+  const loadLessons = useCallback(async () => {
+    if (!selectedCourse) return;
+    try {
+      const res = await api.getLessonsByCourse(selectedCourse);
       setLessonList(res.data);
+      // Reset selected lesson khi đổi course
+      setSelectedLesson("");
+      setSubLessons([]);
     } catch {
       notify("Lỗi tải danh sách bài học", "error");
     }
-  }, [api, notify]);
+  }, [api, notify, selectedCourse]);
 
-  /* ------- LOAD subLessons theo bài ------- */
+  /* ------- LOAD subLessons theo bài và khóa học ------- */
   const loadSubLessons = useCallback(async () => {
-    if (!selectedLesson) return;
+    if (!selectedLesson || !selectedCourse) return;
 
     try {
       setLoading(true);
-      const res = await api.getSubLessons(selectedLesson);
+      const res = await api.getSubLessons(selectedLesson, selectedCourse);
       setSubLessons(res.data);
     } catch {
       notify("Lỗi tải sublesson", "error");
     } finally {
       setLoading(false);
     }
-  }, [selectedLesson, api, notify]);
+  }, [selectedLesson, selectedCourse, api, notify]);
 
   useEffect(() => {
-    loadLessons();
-  }, [loadLessons]);
+    loadCourses();
+  }, [loadCourses]);
 
   useEffect(() => {
-    loadSubLessons();
-  }, [loadSubLessons]);
+    if (selectedCourse) loadLessons();
+  }, [loadLessons, selectedCourse]);
+
+  useEffect(() => {
+    if (selectedLesson && selectedCourse) loadSubLessons();
+  }, [loadSubLessons, selectedLesson, selectedCourse]);
 
   /* ------- FORM ------- */
   const handleAddClick = useCallback(() => {
@@ -83,6 +108,10 @@ export default function SubLessonsCRUD() {
     setOpenDialog(false);
   }, []);
 
+  const handleCourseChange = useCallback((value) => {
+    setSelectedCourse(value);
+  }, []);
+
   const handleLessonChange = useCallback((value) => {
     setSelectedLesson(value);
   }, []);
@@ -97,10 +126,15 @@ export default function SubLessonsCRUD() {
 
       try {
         if (editing) {
-          await api.updateSubLesson(selectedLesson, editing.lessonId, formData);
+          await api.updateSubLesson(
+            selectedLesson,
+            editing.lessonId,
+            formData,
+            selectedCourse
+          );
           notify("Cập nhật thành công");
         } else {
-          await api.createSubLesson(selectedLesson, formData);
+          await api.createSubLesson(selectedLesson, formData, selectedCourse);
           notify("Thêm sublesson thành công");
         }
         setOpenDialog(false);
@@ -109,7 +143,7 @@ export default function SubLessonsCRUD() {
         notify("Lỗi lưu sublesson", "error");
       }
     },
-    [selectedLesson, editing, api, notify, loadSubLessons]
+    [selectedLesson, selectedCourse, editing, api, notify, loadSubLessons]
   );
 
   /* ------- DELETE ------- */
@@ -118,17 +152,28 @@ export default function SubLessonsCRUD() {
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget || !selectedLesson || !selectedCourse) return;
 
     try {
-      await api.deleteSubLesson(selectedLesson, deleteTarget.lessonId);
+      await api.deleteSubLesson(
+        selectedLesson,
+        deleteTarget.lessonId,
+        selectedCourse
+      );
       notify("Xóa thành công");
       setDeleteTarget(null);
       loadSubLessons();
     } catch {
       notify("Lỗi xóa sublesson", "error");
     }
-  }, [deleteTarget, selectedLesson, api, notify, loadSubLessons]);
+  }, [
+    deleteTarget,
+    selectedLesson,
+    selectedCourse,
+    api,
+    notify,
+    loadSubLessons,
+  ]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteTarget(null);
@@ -139,11 +184,15 @@ export default function SubLessonsCRUD() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background:
+          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
       <SubLessonsHeader
+        courses={courses}
+        selectedCourse={selectedCourse}
+        onCourseChange={handleCourseChange}
         lessonList={lessonList}
         selectedLesson={selectedLesson}
         onLessonChange={handleLessonChange}

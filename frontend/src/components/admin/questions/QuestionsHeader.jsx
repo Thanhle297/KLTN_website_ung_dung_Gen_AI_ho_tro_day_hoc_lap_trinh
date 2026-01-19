@@ -12,6 +12,9 @@ import {
 
 const QuestionsHeader = React.memo(
   ({
+    courses,
+    selectedCourse,
+    onCourseChange,
     lessons,
     selectedLesson,
     subLessons,
@@ -46,6 +49,26 @@ const QuestionsHeader = React.memo(
           ❓ Quản lý Câu hỏi
         </Typography>
 
+        {/* Chọn Khóa học */}
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel>Chọn Khóa học</InputLabel>
+          <Select
+            label="Chọn Khóa học"
+            value={selectedCourse}
+            onChange={(e) => onCourseChange(e.target.value)}
+            sx={{
+              borderRadius: 2,
+              backgroundColor: "white",
+            }}
+          >
+            {courses?.map((c) => (
+              <MenuItem key={c.courseId} value={c.courseId}>
+                {c.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         {/* Chọn Lesson */}
         <FormControl fullWidth sx={{ mb: 3 }}>
           <InputLabel>Chọn Bài</InputLabel>
@@ -58,7 +81,7 @@ const QuestionsHeader = React.memo(
               backgroundColor: "white",
             }}
           >
-            {lessons.map((l) => (
+            {lessons?.map((l) => (
               <MenuItem key={l.lessonId} value={l.lessonId}>
                 {l.lessonId} — {l.title}
               </MenuItem>
@@ -79,7 +102,7 @@ const QuestionsHeader = React.memo(
                 backgroundColor: "white",
               }}
             >
-              {subLessons.map((s) => (
+              {subLessons?.map((s) => (
                 <MenuItem key={s.lessonId} value={s.lessonId}>
                   {s.lessonId} — {s.displayId}
                 </MenuItem>

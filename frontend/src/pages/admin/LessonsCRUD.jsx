@@ -15,6 +15,7 @@ export default function LessonsCRUD() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -38,29 +39,39 @@ export default function LessonsCRUD() {
 
   /* ============================ LOAD ============================ */
   const loadLessons = useCallback(async () => {
+    if (!selectedCourse) return;
     try {
       setLoading(true);
-      const res = await api.getLessonsByCourse(DEFAULT_COURSE_ID);
+      const res = await api.getLessonsByCourse(selectedCourse);
       setLessons(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       showMessage("Lỗi tải bài học", "error");
     } finally {
       setLoading(false);
     }
-  }, [api, showMessage]);
+  }, [api, showMessage, selectedCourse]);
 
   const loadCourses = useCallback(async () => {
     try {
       const res = await api.getCourses();
-      setCourses(Array.isArray(res.data) ? res.data : []);
+      const list = Array.isArray(res.data) ? res.data : [];
+      setCourses(list);
+      // Nếu chưa chọn course, tự động chọn course đầu tiên
+      if (!selectedCourse && list.length > 0) {
+        setSelectedCourse(list[0].courseId);
+      }
     } catch {
       showMessage("Không thể tải danh sách khóa học", "error");
     }
-  }, [api, showMessage]);
+  }, [api, showMessage, selectedCourse]);
 
   useEffect(() => {
-    loadLessons();
-  }, [loadLessons]);
+    loadCourses();
+  }, [loadCourses]);
+
+  useEffect(() => {
+    if (selectedCourse) loadLessons();
+  }, [loadLessons, selectedCourse]);
 
   /* ============================ FILTERED LIST ============================ */
   const filteredLessons = useMemo(() => {
@@ -73,20 +84,15 @@ export default function LessonsCRUD() {
   }, [lessons, filterDisplay]);
 
   /* ============================ FORM HANDLERS ============================ */
-  const handleAddClick = useCallback(async () => {
+  const handleAddClick = useCallback(() => {
     setEditing(null);
-    await loadCourses();
     setOpenDialog(true);
-  }, [loadCourses]);
+  }, []);
 
-  const handleEdit = useCallback(
-    async (lesson) => {
-      setEditing(lesson);
-      await loadCourses();
-      setOpenDialog(true);
-    },
-    [loadCourses]
-  );
+  const handleEdit = useCallback((lesson) => {
+    setEditing(lesson);
+    setOpenDialog(true);
+  }, []);
 
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
@@ -94,6 +100,10 @@ export default function LessonsCRUD() {
 
   const handleFilterChange = useCallback((value) => {
     setFilterDisplay(value);
+  }, []);
+
+  const handleCourseChange = useCallback((value) => {
+    setSelectedCourse(value);
   }, []);
 
   /* ============================ SAVE ============================ */
@@ -106,7 +116,8 @@ export default function LessonsCRUD() {
 
       try {
         if (editing) {
-          await api.updateLesson(formData.lessonId, formData);
+          // Lưu ý: truyền thêm current courseId để định vị chính xác
+          await api.updateLesson(formData.lessonId, formData, selectedCourse);
           showMessage("Cập nhật bài học thành công");
         } else {
           await api.createLesson(formData);
@@ -119,7 +130,7 @@ export default function LessonsCRUD() {
         showMessage("Lỗi lưu bài học", "error");
       }
     },
-    [editing, api, showMessage, loadLessons]
+    [editing, api, showMessage, loadLessons, selectedCourse]
   );
 
   /* ============================ DELETE ============================ */
@@ -131,14 +142,14 @@ export default function LessonsCRUD() {
     if (!deleteTarget) return;
 
     try {
-      await api.deleteLesson(deleteTarget.lessonId);
+      await api.deleteLesson(deleteTarget.lessonId, selectedCourse);
       showMessage("Xóa thành công");
       setDeleteTarget(null);
       await loadLessons();
     } catch {
       showMessage("Lỗi xóa bài học", "error");
     }
-  }, [deleteTarget, api, showMessage, loadLessons]);
+  }, [deleteTarget, api, showMessage, loadLessons, selectedCourse]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteTarget(null);
@@ -148,17 +159,21 @@ export default function LessonsCRUD() {
   const handleToggleDisplay = useCallback(
     async (lesson, next) => {
       try {
-        await api.updateLesson(lesson.lessonId, {
-          ...lesson,
-          display: next,
-        });
+        await api.updateLesson(
+          lesson.lessonId,
+          {
+            ...lesson,
+            display: next,
+          },
+          selectedCourse
+        );
         showMessage(next ? "Đã hiển thị bài học" : "Đã ẩn bài học");
         await loadLessons();
       } catch {
         showMessage("Lỗi cập nhật trạng thái hiển thị", "error");
       }
     },
-    [api, showMessage, loadLessons]
+    [api, showMessage, loadLessons, selectedCourse]
   );
 
   /* ============================ RENDER ============================ */
@@ -166,11 +181,15 @@ export default function LessonsCRUD() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background:
+          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
       <LessonsHeader
+        courses={courses}
+        selectedCourse={selectedCourse}
+        onCourseChange={handleCourseChange}
         filterDisplay={filterDisplay}
         onFilterChange={handleFilterChange}
         onAddClick={handleAddClick}
@@ -188,6 +207,7 @@ export default function LessonsCRUD() {
         open={openDialog}
         editing={editing}
         courses={courses}
+        defaultCourseId={selectedCourse}
         onClose={handleCloseDialog}
         onSave={handleSave}
       />

@@ -8,7 +8,7 @@ import useLessonQuestions from "../hook/useLessonQuestions";
 import "../styles/CodeEx.scss";
 
 export default function CodeEx() {
-  const { lessonId } = useParams();
+  const { lessonId, classId } = useParams();
   const userId = localStorage.getItem("userId");
   const [difficulty, setDifficulty] = useState(0);
 
@@ -21,7 +21,7 @@ export default function CodeEx() {
     editorStates,
     setEditorStates,
     loading,
-  } = useLessonQuestions(lessonId, userId);
+  } = useLessonQuestions(lessonId, userId, classId);
 
   // Nếu đang tải
   if (loading) return <LoadingSpinner label="Đang tải dữ liệu..." />;
