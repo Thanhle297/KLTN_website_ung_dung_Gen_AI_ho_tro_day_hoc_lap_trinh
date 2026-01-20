@@ -22,7 +22,8 @@ export default function CodeEditorSimple({
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState("");
   const [guide, setGuide] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [runningCode, setRunningCode] = useState(false);
+  const [submittingAI, setSubmittingAI] = useState(false);
   const [activeTab, setActiveTab] = useState("terminal");
   const [hasNewGuide, setHasNewGuide] = useState(false);
 
@@ -87,7 +88,7 @@ export default function CodeEditorSimple({
   const runCode = async () => {
     if (!question?.id) return;
 
-    setLoading(true);
+    setRunningCode(true);
     setOutput("⏳ Đang chạy code...\n");
 
     try {
@@ -133,7 +134,7 @@ export default function CodeEditorSimple({
     } catch (err) {
       setOutput(`❌ Lỗi: ${err.message}`);
     } finally {
-      setLoading(false);
+      setRunningCode(false);
     }
   };
 
@@ -148,7 +149,7 @@ export default function CodeEditorSimple({
       return; // Không làm gì vì nút đã bị disable
     }
 
-    setLoading(true);
+    setSubmittingAI(true);
     setGuide("⏳ AI đang chấm bài...\n");
     setHasNewGuide(false);
     setActiveTab("guide"); // Chuyển sang tab Guide để hiển thị kết quả AI
@@ -232,7 +233,7 @@ export default function CodeEditorSimple({
       setGuide(`❌ Lỗi: ${err.message}`);
       updateEditorState?.(question.id, { status: "wrong" });
     } finally {
-      setLoading(false);
+      setSubmittingAI(false);
     }
   };
 
@@ -261,15 +262,20 @@ export default function CodeEditorSimple({
       <div className="code-editor__button-group">
         <button
           onClick={runCode}
-          disabled={loading}
+          disabled={runningCode || submittingAI}
           className="code-editor__run-btn"
         >
-          {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
+          {runningCode ? <ImSpinner2 className="spinner" /> : "Chạy code"}
         </button>
 
         <button
           onClick={submitToAI}
-          disabled={loading || !output || output === "Chưa có kết quả."}
+          disabled={
+            runningCode ||
+            submittingAI ||
+            !output ||
+            output === "Chưa có kết quả."
+          }
           className="code-editor__submit-btn"
           title={
             !output || output === "Chưa có kết quả."
@@ -277,7 +283,7 @@ export default function CodeEditorSimple({
               : ""
           }
         >
-          {loading ? <ImSpinner2 className="spinner" /> : "Chấm bài"}
+          {submittingAI ? <ImSpinner2 className="spinner" /> : "Chấm bài"}
         </button>
       </div>
 
