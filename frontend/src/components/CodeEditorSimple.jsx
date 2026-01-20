@@ -82,18 +82,16 @@ export default function CodeEditorSimple({
   }, [localCode, inputText, output, guide, question?.id]);
 
   // ============================================================
-  // RUN CODE
+  // RUN CODE (Chỉ chạy code)
   // ============================================================
   const runCode = async () => {
     if (!question?.id) return;
 
     setLoading(true);
     setOutput("⏳ Đang chạy code...\n");
-    setGuide("");
-    setHasNewGuide(false);
 
     try {
-      // 1️⃣ Chạy code Python
+      // Chạy code Python
       const runResp = await fetch(
         `${process.env.REACT_APP_API_URL_B}/run_code_simple`,
         {
@@ -108,7 +106,55 @@ export default function CodeEditorSimple({
       setOutput(resultOutput);
       onChangeResult?.(resultOutput);
 
-      // 2️⃣ Gọi AI chấm bài
+      // Update state (chưa có guide và status)
+      const newState = {
+        code: localCode,
+        input: inputText,
+        result: resultOutput,
+        guide: guide || "",
+        status: editorStates?.[question.id]?.status ?? null,
+      };
+
+      updateEditorState?.(question.id, newState);
+
+      // Save ngay
+      await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          lessonId,
+          questionId: String(question.id),
+          data: newState,
+        }),
+      });
+
+      lastSavedRef.current = JSON.stringify(newState);
+    } catch (err) {
+      setOutput(`❌ Lỗi: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ============================================================
+  // SUBMIT TO AI (Gọi AI chấm bài)
+  // ============================================================
+  const submitToAI = async () => {
+    if (!question?.id) return;
+
+    // Kiểm tra nếu chưa có output (chưa chạy code)
+    if (!output || output === "Chưa có kết quả.") {
+      return; // Không làm gì vì nút đã bị disable
+    }
+
+    setLoading(true);
+    setGuide("⏳ AI đang chấm bài...\n");
+    setHasNewGuide(false);
+    setActiveTab("guide"); // Chuyển sang tab Guide để hiển thị kết quả AI
+
+    try {
+      // Gọi AI chấm bài
       const aiResp = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/simple`,
         {
@@ -122,7 +168,7 @@ export default function CodeEditorSimple({
               question?.title ||
               "Không có đề bài",
             input: inputText,
-            output: resultOutput,
+            output: output,
             difficulty,
           }),
         }
@@ -140,26 +186,25 @@ export default function CodeEditorSimple({
           : "Bài làm chưa đạt yêu cầu.";
       }
 
-      setGuide(
-        guideText
-          .replace(/^#+\s*/gm, "") // xoá # ở đầu dòng
-          .trim()
-      );
+      const cleanedGuide = guideText
+        .replace(/^#+\s*/gm, "") // xoá # ở đầu dòng
+        .trim();
 
+      setGuide(cleanedGuide);
       setHasNewGuide(true);
 
-      // 3️⃣ Update state
+      // Update state với guide và status mới
       const newState = {
         code: localCode,
         input: inputText,
-        result: resultOutput,
+        result: output,
         guide: guideText,
         status: isCorrect ? "correct" : "wrong",
       };
 
       updateEditorState?.(question.id, newState);
 
-      // 4️⃣ Save ngay
+      // Save ngay
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -173,7 +218,7 @@ export default function CodeEditorSimple({
 
       lastSavedRef.current = JSON.stringify(newState);
 
-      // 5️⃣ Callback cho parent
+      // Callback cho parent
       onExecuteResponse?.({
         success: true,
         simpleStatus: isCorrect ? "correct" : "wrong",
@@ -184,7 +229,7 @@ export default function CodeEditorSimple({
         questionId: String(question.id),
       });
     } catch (err) {
-      setOutput(`❌ Lỗi: ${err.message}`);
+      setGuide(`❌ Lỗi: ${err.message}`);
       updateEditorState?.(question.id, { status: "wrong" });
     } finally {
       setLoading(false);
@@ -213,13 +258,28 @@ export default function CodeEditorSimple({
         }}
       />
 
-      <button
-        onClick={runCode}
-        disabled={loading}
-        className="code-editor__run-btn"
-      >
-        {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
-      </button>
+      <div className="code-editor__button-group">
+        <button
+          onClick={runCode}
+          disabled={loading}
+          className="code-editor__run-btn"
+        >
+          {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
+        </button>
+
+        <button
+          onClick={submitToAI}
+          disabled={loading || !output || output === "Chưa có kết quả."}
+          className="code-editor__submit-btn"
+          title={
+            !output || output === "Chưa có kết quả."
+              ? "Vui lòng chạy code trước khi submit cho AI chấm"
+              : ""
+          }
+        >
+          {loading ? <ImSpinner2 className="spinner" /> : "Chấm bài"}
+        </button>
+      </div>
 
       <div className="code-editor__tabs">
         <div className="tabs-header">
