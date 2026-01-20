@@ -34,6 +34,7 @@ router.post("/auth/login", async (req, res) => {
       fullname: user.fullname,
       role: user.role,
       userId: user._id.toString(),
+      enrolledCourses: user.enrolledCourses || [],
     });
   } catch (err) {
     console.error(err);
