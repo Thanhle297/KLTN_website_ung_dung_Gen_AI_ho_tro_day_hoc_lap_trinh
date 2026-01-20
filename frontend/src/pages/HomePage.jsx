@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useCourses from "../hook/useCourses";
 import CourseCard from "../components/CourseCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/HomePage.scss";
 
 export default function HomePage() {
+  const [userName, setUserName] = useState("User");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("fullname");
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
+
   const fallbackCourses = [
     {
       id: 10,
@@ -22,7 +33,6 @@ export default function HomePage() {
     },
   ];
 
-  // ✅ Thay đổi endpoint để chỉ lấy courses được phân vào
   const { courses, loading } = useCourses(
     `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
     fallbackCourses
@@ -32,13 +42,24 @@ export default function HomePage() {
 
   return (
     <div className="homepage">
-      <section className="homepage__intro">
-        <h1>Chào mừng bạn đến với hệ thống học lập trình</h1>
-        <p>Khám phá và học tập với các khóa học chất lượng cao</p>
+      {/* Welcome & Intro Section */}
+      <section className="homepage__intro-section">
+        <div className="homepage__welcome">
+          <h1>Chào mừng trở lại, {userName}! 👋</h1>
+          <p>
+            "Hành trình vạn dặm bắt đầu từ một bước chân." – Hãy tiếp tục đam mê
+            của bạn ngay hôm nay.
+          </p>
+        </div>
       </section>
 
-      <section className="homepage__courses">
-        <h2>Khóa học của bạn</h2>
+      {/* My Courses Grid */}
+      <section className="homepage__courses-section">
+        <div className="section-header">
+          <h2>Khóa học của tôi</h2>
+          {/* <a href="/courses" className="view-all">Xem tất cả</a> */}
+        </div>
+
         <div className="homepage__grid">
           {courses.map((course) => (
             <CourseCard key={course.courseId || course.id} course={course} />

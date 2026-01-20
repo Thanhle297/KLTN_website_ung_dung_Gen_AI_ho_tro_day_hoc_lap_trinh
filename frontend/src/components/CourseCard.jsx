@@ -7,7 +7,17 @@ export default function CourseCard({ course }) {
   const id = course.courseId || course.id;
 
   return (
-    <div className="course-card">
+    <div
+      className="course-card"
+      onClick={() => navigate(`/course/${id}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          navigate(`/course/${id}`);
+        }
+      }}
+    >
       <div className="course-card__image">
         <img
           src={course.image || course.img}
@@ -20,8 +30,8 @@ export default function CourseCard({ course }) {
         <h3>{course.title || course.name}</h3>
         <p>{course.description || `${course.lessons?.length || 0} bài học`}</p>
         <button
-          onClick={() => navigate(`/course/${id}`)}
           className="course-card__btn"
+          tabIndex={-1} // Prevent double tab stop since card is focusable
         >
           Vào học
         </button>

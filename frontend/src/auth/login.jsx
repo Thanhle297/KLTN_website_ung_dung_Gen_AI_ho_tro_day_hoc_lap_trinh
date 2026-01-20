@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import banner from "../IMG/Banner.png";
 import logo from "../IMG/Logo_noback.png";
 import "../styles/login.scss";
@@ -7,6 +8,7 @@ import "../styles/login.scss";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +36,13 @@ export default function Login() {
       localStorage.setItem("role", data.role);
       localStorage.setItem("userId", data.userId);
 
-      navigate("/course/10");
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else if (data.enrolledCourses && data.enrolledCourses.length > 0) {
+        navigate(`/course/${data.enrolledCourses[0]}`);
+      } else {
+        navigate("/course");
+      }
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
@@ -72,17 +80,27 @@ export default function Login() {
               required
             />
           </div>
-          <div>
+          <div className="input-group">
             <label htmlFor="password">Mật khẩu</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-required="true"
-              required
-            />
+            <div className="password-wrapper">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-required="true"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
           <button type="submit" disabled={isLoading} aria-busy={isLoading}>
             {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
