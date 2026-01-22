@@ -22,6 +22,13 @@ import {
 import { Search } from "@mui/icons-material";
 import useAdminAPI from "../../../hook/useAdminAPI";
 
+// Helper to strip HTML tags
+const stripHtml = (html) => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
 export default function ImportFromBankModal({
   open,
   onClose,
@@ -189,7 +196,7 @@ export default function ImportFromBankModal({
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {q.question}
+                        {stripHtml(q.question)}
                       </TableCell>
                     </TableRow>
                   );

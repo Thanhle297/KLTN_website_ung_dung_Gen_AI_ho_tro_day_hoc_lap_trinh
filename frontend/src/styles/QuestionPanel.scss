@@ -111,15 +111,16 @@
       overflow-x: auto;
       margin: 8px 0;
     }
-  }
 
-  p {
-    font-size: 16px;
-    color: #444;
-    line-height: 1.5;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
+    // Force wrapping for long words/content
+    white-space: pre-wrap;
+    overflow-wrap: break-word; /* Wrap long words if they don't fit */
+    word-break: keep-all; /* STRICTLY prevent mid-word breaks (CJK/Mixed) */
+
+    // Explicitly target webkit to be safe
+    & > * {
+      word-break: keep-all;
+    }
   }
 
   &__io {

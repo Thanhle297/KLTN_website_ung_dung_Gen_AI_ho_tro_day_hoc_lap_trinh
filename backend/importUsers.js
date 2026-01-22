@@ -9,7 +9,7 @@ async function importUsers() {
   const db = getDB();
   const users = [];
 
-  fs.createReadStream("10T2.csv")
+  fs.createReadStream("Olympia.csv")
     .pipe(
       csv({
         separator: ",", // file dùng dấu chấm phẩy
