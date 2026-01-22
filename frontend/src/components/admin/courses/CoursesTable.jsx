@@ -14,7 +14,7 @@ import {
 import CourseRow from "./CourseRow";
 
 const CoursesTable = React.memo(
-  ({ courses, loading, onEdit, onDelete, onManageUsers }) => {
+  ({ courses, loading, onEdit, onDelete, onManageUsers, onViewReport }) => {
     if (loading) {
       return (
         <Box
@@ -101,6 +101,7 @@ const CoursesTable = React.memo(
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onManageUsers={onManageUsers}
+                  onViewReport={onViewReport}
                 />
               ))}
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box, Snackbar, Alert } from "@mui/material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
@@ -10,6 +11,7 @@ import CourseUsersDialog from "../../components/admin/courses/CourseUsersDialog"
 
 export default function CoursesCRUD() {
   const api = useAdminAPI();
+  const navigate = useNavigate();
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,6 +109,14 @@ export default function CoursesCRUD() {
     setManagingCourse(null);
   }, []);
 
+  // Handler cho View Report - navigate đến page mới
+  const handleViewReport = useCallback(
+    (course) => {
+      navigate(`/admin/course-report/${course.courseId}`);
+    },
+    [navigate]
+  );
+
   /* ==================== DELETE ==================== */
   const handleDeleteClick = useCallback((course) => {
     setDeleteTarget(course);
@@ -147,6 +157,7 @@ export default function CoursesCRUD() {
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
         onManageUsers={handleManageUsers}
+        onViewReport={handleViewReport}
       />
 
       <CourseFormDialog
