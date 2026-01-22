@@ -41,6 +41,7 @@ import SubLessonsCRUD from "./SubLessonsCRUD";
 import QuestionsCRUD from "./QuestionsCRUD";
 import QuestionBank from "./QuestionBank";
 import EnrollmentsCRUD from "./EnrollmentsCRUD";
+import CourseReportPage from "./ReportPage";
 
 const drawerWidth = 260;
 
@@ -276,6 +277,8 @@ export default function AdminDashboard() {
           background:
             "linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 50%, #E8F5E9 100%)",
           minHeight: "100vh",
+          maxWidth: "100%",
+          overflowX: "hidden",
           ml: sidebarOpen && !isMobile ? `${drawerWidth}px` : 0,
           transition: "margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
@@ -286,6 +289,10 @@ export default function AdminDashboard() {
           <Route path="users" element={<UsersCRUD />} />
           <Route path="question-bank" element={<QuestionBank />} />
           <Route path="courses" element={<CoursesCRUD />} />
+          <Route
+            path="course-report/:courseId"
+            element={<CourseReportPage />}
+          />
           <Route path="lessons" element={<LessonsCRUD />} />
           <Route path="sub-lessons" element={<SubLessonsCRUD />} />
           <Route path="questions" element={<QuestionsCRUD />} />

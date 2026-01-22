@@ -6,7 +6,10 @@ export default function AdminRoute({ children }) {
   const role = localStorage.getItem("role");
 
   if (!token) return <Navigate to="/login" />;
-  if (role !== "admin") return <Navigate to="/" />;
+  
+  // Cho phép admin và teacher truy cập dashboard
+  const allowedRoles = ["admin", "teacher"];
+  if (!allowedRoles.includes(role)) return <Navigate to="/" />;
 
   return children;
 }
