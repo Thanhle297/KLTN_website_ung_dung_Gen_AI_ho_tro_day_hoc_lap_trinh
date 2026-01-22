@@ -4,8 +4,8 @@ import "../styles/DifficultySlider.scss";
 import { FaRobot } from "react-icons/fa";
 
 export default function DifficultySlider({ onChange }) {
-  const [level, setLevel] = useState(2);
-  const colors = ["#4CAF50", "#FFC107", "#F44336"];
+  const [level, setLevel] = useState(0);
+  const colors = ["#F44336", "#FFC107", "#4CAF50"];
 
   useEffect(() => {
     if (onChange) onChange(2);
@@ -13,7 +13,7 @@ export default function DifficultySlider({ onChange }) {
 
   const handleClick = (i) => {
     setLevel(i);
-    if (onChange) onChange(i);
+    if (onChange) onChange(2 - i);
   };
 
   return (
