@@ -2,6 +2,8 @@ const express = require("express");
 const multer = require("multer");
 const { ObjectId } = require("mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
+const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
+const { getDB } = require("../config/mongodb");
 
 const router = express.Router();
 
@@ -166,5 +168,174 @@ router.get("/template", authMiddleware, adminOnly, (req, res) => {
   );
   res.send(template);
 });
+
+/* ============================================
+   GET /api/csv/export-scores/:courseId
+   Xuất điểm học sinh theo khóa học ra file CSV
+   Cho phép admin và teacher truy cập
+=============================================== */
+router.get(
+  "/export-scores/:courseId",
+  authMiddleware,
+  teacherOrAdminMiddleware,
+  async (req, res) => {
+    try {
+      const db = getDB();
+      const { courseId } = req.params;
+
+      // 1. Lấy thông tin khóa học
+      const course = await db.collection("courses").findOne({ courseId });
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khóa học",
+        });
+      }
+
+      // 2. Lấy danh sách học sinh đã enroll vào khóa học này
+      const students = await db
+        .collection("users")
+        .find({
+          enrolledCourses: courseId,
+          role: "user",
+        })
+        .project({
+          _id: 1,
+          username: 1,
+          fullname: 1,
+        })
+        .toArray();
+
+      // 3. Lấy cấu trúc bài học (lessons + subLessons)
+      const lessons = await db
+        .collection("lessons")
+        .find({ courseId })
+        .sort({ order: 1 })
+        .toArray();
+
+      // Tạo danh sách tất cả subLessons
+      const structure = [];
+      for (const lesson of lessons) {
+        if (Array.isArray(lesson.subLessons)) {
+          for (const sub of lesson.subLessons) {
+            structure.push({
+              lessonId: lesson.lessonId,
+              lessonTitle: lesson.title,
+              subLessonId: sub.lessonId,
+              subLessonTitle: sub.title,
+              order: sub.order || 0,
+            });
+          }
+        }
+      }
+
+      // Sắp xếp theo thứ tự
+      structure.sort((a, b) => a.order - b.order);
+
+      // 4. Lấy tiến độ của tất cả học sinh
+      const studentIds = students.map((s) => s._id.toString());
+      const allProgress = await db
+        .collection("sublesson_progress")
+        .find({
+          userId: { $in: studentIds },
+          courseId: courseId,
+        })
+        .toArray();
+
+      // Tạo map để tra cứu nhanh
+      const progressMap = {};
+      for (const p of allProgress) {
+        const key = `${p.userId}_${p.subLessonId}`;
+        progressMap[key] = p;
+      }
+
+      // 5. Tạo CSV content
+      // Header: MSSV, Họ tên, [Bài 1.1], [Bài 1.2], ..., Trung bình
+      const headers = ["MSSV", "Ho ten"];
+      for (const sub of structure) {
+        // Tạo tên cột ngắn gọn, loại bỏ dấu tiếng Việt
+        const colName = `${sub.lessonTitle} - ${sub.subLessonTitle}`
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D");
+        headers.push(colName);
+      }
+      headers.push("Trung binh (%)");
+
+      let csvContent = headers.join(",") + "\n";
+
+      // Sắp xếp học sinh theo tên
+      students.sort((a, b) =>
+        (a.fullname || a.username).localeCompare(
+          b.fullname || b.username,
+          "vi"
+        )
+      );
+
+      // Dữ liệu từng học sinh
+      for (const student of students) {
+        const row = [];
+
+        // MSSV
+        row.push(student.username);
+
+        // Họ tên (loại bỏ dấu để tránh lỗi encoding)
+        const fullname = (student.fullname || student.username)
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D");
+        row.push(`"${fullname}"`);
+
+        // Điểm từng bài
+        let totalProgress = 0;
+        for (const sub of structure) {
+          const key = `${student._id.toString()}_${sub.subLessonId}`;
+          const progressDoc = progressMap[key];
+          const progress = progressDoc?.progress || 0;
+          row.push(progress);
+          totalProgress += progress;
+        }
+
+        // Trung bình
+        const average =
+          structure.length > 0
+            ? Math.round(totalProgress / structure.length)
+            : 0;
+        row.push(average);
+
+        csvContent += row.join(",") + "\n";
+      }
+
+      // 6. Tạo tên file
+      const courseName = course.title
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/[^a-zA-Z0-9]/g, "_");
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `Diem_${courseName}_${timestamp}.csv`;
+
+      // 7. Trả về file CSV
+      // Thêm BOM để Excel hiển thị đúng UTF-8
+      const BOM = "\uFEFF";
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.send(BOM + csvContent);
+    } catch (error) {
+      console.error("❌ Export scores CSV error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi server khi xuất CSV",
+        error: error.message,
+      });
+    }
+  }
+);
 
 module.exports = router;
