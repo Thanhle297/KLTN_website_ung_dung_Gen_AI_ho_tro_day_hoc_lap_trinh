@@ -90,7 +90,7 @@ export default function Header() {
                   <strong>{user.fullname}</strong>
                 </div>
 
-                {user.role === "admin" && (
+                {(user.role === "admin" || user.role === "teacher") && (
                   <li>
                     <Link to="/admin">
                       <i className="fas fa-user-shield"></i> Quản trị
