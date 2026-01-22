@@ -102,7 +102,10 @@ export default function ReviewPage() {
               </div>
 
               <div className="q-content">
-                <p className="q-text">{q.text}</p>
+                <div
+                  className="q-text"
+                  dangerouslySetInnerHTML={{ __html: q.question || q.text }}
+                />
                 {q.image && <img src={q.image} alt="Question" />}
               </div>
 

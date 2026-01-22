@@ -4,7 +4,10 @@ export default function QuestionPanel({ current }) {
   return (
     <div className="question-panel">
       {/* <h2>Câu hỏi</h2> */}
-      <pre className="question-text">{current.question}</pre>
+      <div 
+        className="question-text"
+        dangerouslySetInnerHTML={{ __html: current.question }}
+      />
 
       <div className="question-panel__io">
         <h3>Ví dụ: </h3>

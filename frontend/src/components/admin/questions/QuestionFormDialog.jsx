@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import {
   Dialog,
   DialogTitle,
@@ -21,6 +23,15 @@ const QuestionFormDialog = ({ open, editing, onClose, onSave }) => {
     topic: "",
     courseId: "10",
   });
+
+  const modules = {
+    toolbar: [
+      ["bold", "italic", "underline"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["code-block", "blockquote"],
+      ["clean"],
+    ],
+  };
 
   useEffect(() => {
     if (editing) {
@@ -113,18 +124,31 @@ const QuestionFormDialog = ({ open, editing, onClose, onSave }) => {
       <DialogContent dividers>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* CÂU HỎI */}
-          <TextField
-            label="Câu hỏi"
-            value={form.question}
-            onChange={(e) => handleChange("question", e.target.value)}
-            fullWidth
-            multiline
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
-          />
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
+              Câu hỏi
+            </Typography>
+            <ReactQuill
+              theme="snow"
+              value={form.question}
+              onChange={(value) => handleChange("question", value)}
+              modules={modules}
+              style={{
+                borderRadius: 8,
+              }}
+            />
+            <style>{`
+              .ql-container {
+                border-bottom-left-radius: 8px;
+                border-bottom-right-radius: 8px;
+                min-height: 100px;
+              }
+              .ql-toolbar {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+              }
+            `}</style>
+          </Box>
 
           {/* CATEGORY (New) */}
           <TextField

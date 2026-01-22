@@ -19,7 +19,37 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign }) => {
       <TableCell sx={{ color: "#2d3748" }}>
         {question.category || "—"}
       </TableCell>
-      <TableCell sx={{ fontWeight: 500 }}>{question.question}</TableCell>
+      <TableCell
+        sx={{
+          fontWeight: 500,
+          maxWidth: 400,
+          "& p": {
+            margin: 0,
+            padding: 0,
+            lineHeight: 1.5,
+          },
+          "& ul, & ol": {
+            margin: "4px 0",
+            paddingLeft: "40px",
+            listStylePosition: "outside",
+          },
+          "& ol": {
+            listStyleType: "decimal",
+          },
+          "& ul": {
+            listStyleType: "disc",
+          },
+          "& li": {
+            margin: "2px 0",
+            paddingLeft: "4px",
+          },
+          "& strong": {
+            fontWeight: 700,
+            color: "#1a202c",
+          },
+        }}
+        dangerouslySetInnerHTML={{ __html: question.question }}
+      />
       <TableCell>{question.ex?.length || 0}</TableCell>
       <TableCell>{question.testcase?.length || 0}</TableCell>
       <TableCell>{question.echo_input ? "Có" : "Không"}</TableCell>

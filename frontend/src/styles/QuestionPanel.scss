@@ -24,8 +24,93 @@
     background: #f9f9f9;
     padding: 12px;
     border-radius: 8px;
-    white-space: pre-wrap;
     font-family: "Roboto", sans-serif;
+
+    // Reset margins for standard elements
+    p {
+      margin: 0 0 8px 0;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    // Styling for strong/bold text
+    strong,
+    b {
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    // Styling for italic text
+    em,
+    i {
+      font-style: italic;
+    }
+
+    // Styling for underline text
+    u {
+      text-decoration: underline;
+    }
+
+    ul,
+    ol {
+      margin: 8px 0 8px 0;
+      padding-left: 40px;
+      list-style-position: outside;
+
+      li {
+        margin-bottom: 4px;
+        padding-left: 4px;
+      }
+    }
+
+    ol {
+      list-style-type: decimal;
+    }
+
+    ul {
+      list-style-type: disc;
+    }
+
+    // Code block (pre tag)
+    pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: "Consolas", "Monaco", "Courier New", monospace;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    // Inline code
+    code {
+      background-color: #e0e0e0;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: "Consolas", "Monaco", "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    // Blockquote
+    blockquote {
+      border-left: 4px solid #667eea;
+      margin: 8px 0;
+      padding-left: 16px;
+      color: #555;
+      font-style: italic;
+    }
+
+    // Quill specific classes
+    .ql-syntax {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: "Consolas", "Monaco", "Courier New", monospace;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
   }
 
   p {
