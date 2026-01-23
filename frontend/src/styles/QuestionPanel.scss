@@ -17,6 +17,9 @@
     margin-bottom: 8px;
   }
 
+  /* =========================
+     QUESTION CONTENT (HTML)
+     ========================= */
   .question-text {
     font-size: 16px;
     color: #333;
@@ -26,7 +29,12 @@
     border-radius: 8px;
     font-family: "Roboto", sans-serif;
 
-    // Reset margins for standard elements
+    /* ===== Base text handling (FIX NGẮT DÒNG) ===== */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+
+    /* ===== Paragraph ===== */
     p {
       margin: 0 0 8px 0;
       &:last-child {
@@ -34,27 +42,28 @@
       }
     }
 
-    // Styling for strong/bold text
+    /* ===== Strong / Bold ===== */
     strong,
     b {
       font-weight: 700;
       color: #1a202c;
     }
 
-    // Styling for italic text
+    /* ===== Italic ===== */
     em,
     i {
       font-style: italic;
     }
 
-    // Styling for underline text
+    /* ===== Underline ===== */
     u {
       text-decoration: underline;
     }
 
+    /* ===== Lists ===== */
     ul,
     ol {
-      margin: 8px 0 8px 0;
+      margin: 8px 0;
       padding-left: 40px;
       list-style-position: outside;
 
@@ -72,57 +81,54 @@
       list-style-type: disc;
     }
 
-    // Code block (pre tag)
+    /* ===== Code Block ===== */
     pre {
       background-color: #2d2d2d;
       color: #f8f8f2;
       padding: 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: "Consolas", "Monaco", "Courier New", monospace;
       overflow-x: auto;
       margin: 8px 0;
+      white-space: pre-wrap;
     }
 
-    // Inline code
+    /* ===== Inline Code ===== */
     code {
       background-color: #e0e0e0;
-      padding: 2px 4px;
+      padding: 2px 6px;
       border-radius: 4px;
       font-family: "Consolas", "Monaco", "Courier New", monospace;
       font-size: 0.9em;
     }
 
-    // Blockquote
+    /* ===== Blockquote ===== */
     blockquote {
       border-left: 4px solid #667eea;
       margin: 8px 0;
       padding-left: 16px;
       color: #555;
       font-style: italic;
+      background: #f3f4ff;
+      border-radius: 4px;
     }
 
-    // Quill specific classes
+    /* ===== Quill Syntax ===== */
     .ql-syntax {
       background-color: #2d2d2d;
       color: #f8f8f2;
       padding: 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: "Consolas", "Monaco", "Courier New", monospace;
       overflow-x: auto;
       margin: 8px 0;
-    }
-
-    // Force wrapping for long words/content
-    white-space: pre-wrap;
-    overflow-wrap: break-word; /* Wrap long words if they don't fit */
-    word-break: keep-all; /* STRICTLY prevent mid-word breaks (CJK/Mixed) */
-
-    // Explicitly target webkit to be safe
-    & > * {
-      word-break: keep-all;
+      white-space: pre-wrap;
     }
   }
 
+  /* =========================
+     INPUT / OUTPUT PANEL
+     ========================= */
   &__io {
     h3 {
       font-size: 18px;
@@ -135,13 +141,14 @@
       border-collapse: collapse;
       font-size: 14px;
       border-radius: 8px;
-      overflow: hidden; // để bo góc có hiệu lực với bảng
+      overflow: hidden;
 
       th,
       td {
         border: 1px solid #ccc;
         padding: 8px;
         text-align: left;
+        vertical-align: top;
       }
 
       th {
@@ -151,9 +158,9 @@
 
       pre {
         margin: 0;
-        font-family: monospace;
+        font-family: "Consolas", "Monaco", monospace;
         white-space: pre-wrap;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
       }
 
       tr:nth-child(even) {

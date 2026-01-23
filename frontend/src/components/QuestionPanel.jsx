@@ -1,12 +1,19 @@
 import "../styles/QuestionPanel.scss";
+import { useEffect } from "react";
 
 export default function QuestionPanel({ current }) {
+  useEffect(() => {
+    console.log("QUESTION HTML:", current.question);
+  }, [current]);
+
   return (
     <div className="question-panel">
       {/* <h2>Câu hỏi</h2> */}
-      <div 
+      <div
         className="question-text"
-        dangerouslySetInnerHTML={{ __html: current.question }}
+        dangerouslySetInnerHTML={{
+          __html: current.question.replace(/&nbsp;/g, " "),
+        }}
       />
 
       <div className="question-panel__io">
@@ -21,8 +28,12 @@ export default function QuestionPanel({ current }) {
           <tbody>
             {current.ex.map((t, idx) => (
               <tr key={idx}>
-                <td><pre>{t.input}</pre></td>
-                <td><pre>{t.output}</pre></td>
+                <td>
+                  <pre>{t.input}</pre>
+                </td>
+                <td>
+                  <pre>{t.output}</pre>
+                </td>
               </tr>
             ))}
           </tbody>
