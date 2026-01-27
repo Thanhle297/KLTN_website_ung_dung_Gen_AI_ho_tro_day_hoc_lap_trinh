@@ -25,21 +25,37 @@ export default function FETestPopup({ data, onClose }) {
     // Nếu không ở chế độ hướng dẫn thì thêm quiz và answer
     if (data.mode !== "instruct_only") {
       data.quizzes?.forEach((quiz) => {
-        const qMatch = quiz.match(/<question>([\s\S]*?)<\/question>/);
-        const question = qMatch ? qMatch[1].trim() : "";
+        // Kiểm tra format: JSON mới hay XML cũ
+        if (typeof quiz === "object" && quiz.question) {
+          // FORMAT MỚI (JSON từ callPromtSimple) - đã có sẵn cấu trúc
+          seq.push({
+            type: "quiz",
+            question: quiz.question,
+            answers: quiz.answers || [],
+            correctIndex: quiz.correctIndex ?? 0,
+          });
+        } else if (typeof quiz === "string") {
+          // FORMAT CŨ (XML từ callpromt.js) - cần parse
+          const qMatch = quiz.match(/<question>([\s\S]*?)<\/question>/);
+          const question = qMatch ? qMatch[1].trim() : "";
 
-        const ansMatches = [...quiz.matchAll(/<ans>([\s\S]*?)<\/ans>/g)];
-        const answers = ansMatches.map((m) => m[1].trim());
+          const ansMatches = [...quiz.matchAll(/<ans>([\s\S]*?)<\/ans>/g)];
+          const answers = ansMatches.map((m) => m[1].trim());
 
-        const correctIndex = answers.findIndex((a) => a.includes("<correct>"));
-        const cleanAnswers = answers.map((a) => a.replace(/<\/?correct>/g, ""));
+          const correctIndex = answers.findIndex((a) =>
+            a.includes("<correct>")
+          );
+          const cleanAnswers = answers.map((a) =>
+            a.replace(/<\/?correct>/g, "")
+          );
 
-        seq.push({
-          type: "quiz",
-          question,
-          answers: cleanAnswers,
-          correctIndex,
-        });
+          seq.push({
+            type: "quiz",
+            question,
+            answers: cleanAnswers,
+            correctIndex,
+          });
+        }
       });
 
       data.answers?.forEach((ans) => seq.push({ type: "answer", value: ans }));

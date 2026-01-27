@@ -37,6 +37,7 @@ export default function Layout({
       <div className="layout__left">
         <div className={`left-content ${popupData ? "blur" : ""}`}>
           <QuestionList
+            currentId={current.id}
             questions={questions}
             setCurrent={setCurrent}
             editorStates={editorStates}

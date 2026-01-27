@@ -177,6 +177,7 @@ export default function CodeEditorSimple({
 
       const aiData = await aiResp.json();
       const isCorrect = !!aiData.isCorrect;
+      const quizzes = aiData.quizzes || [];
 
       let guideText = aiData.guide || "";
 
@@ -227,6 +228,7 @@ export default function CodeEditorSimple({
           difficulty === 2
             ? [guideText]
             : guideText.split("\n").filter(Boolean),
+        quizzes: quizzes,
         questionId: String(question.id),
       });
     } catch (err) {

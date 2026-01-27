@@ -12,15 +12,16 @@ router.post("/simple", async (req, res) => {
 
     res.json({
       success: aiRes.success,
-      isCorrect : aiRes.isCorrect,
+      isCorrect: aiRes.isCorrect,
       guide: aiRes.guide,
-      // raw: aiRes.raw,
+      quizzes: aiRes.quizzes || [],
     });
   } catch (err) {
     console.error("❌ Lỗi /api/ai/simple:", err);
     res.status(500).json({
       success: false,
       guide: "Không thể gọi AI để phân tích code.",
+      quizzes: [],
     });
   }
 });

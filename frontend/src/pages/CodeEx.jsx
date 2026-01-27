@@ -1,16 +1,18 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import DifficultySlider from "../components/DifficultySlider";
 import SubmitButton from "../components/SubmitButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import useLessonQuestions from "../hook/useLessonQuestions";
+import { HeaderContext } from "../context/HeaderContext";
 import "../styles/CodeEx.scss";
 
 export default function CodeEx() {
   const { lessonId, classId } = useParams();
   const userId = localStorage.getItem("userId");
   const [difficulty, setDifficulty] = useState(0);
+  const { showHeader, setShowHeader } = useContext(HeaderContext);
 
   // ✅ Dùng custom hook
   const {
@@ -36,9 +38,30 @@ export default function CodeEx() {
   };
 
   return (
-    <>
+    <div className="code-ex-page">
       <div className="top-bar">
-        <div className="left">
+        <div
+          className="left"
+          style={{ display: "flex", alignItems: "center", gap: "15px" }}
+        >
+          <button
+            onClick={() => setShowHeader(!showHeader)}
+            className="toggle-header-btn"
+            title={showHeader ? "Ẩn Header" : "Hiện Header"}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "1.2rem",
+              color: "#555",
+            }}
+          >
+            <i
+              className={`fas ${
+                showHeader ? "fa-compress-arrows-alt" : "fa-expand-arrows-alt"
+              }`}
+            ></i>
+          </button>
           <DifficultySlider onChange={setDifficulty} />
         </div>
         <div className="right">
@@ -63,6 +86,6 @@ export default function CodeEx() {
         lessonId={lessonId}
         userId={userId}
       />
-    </>
+    </div>
   );
 }

@@ -34,22 +34,45 @@
       border-color: #3399ff;
     }
 
+    // Trạng thái ĐÚNG
     &.correct {
-      border-color: #4caf50;
-      color: #4caf50;
-      background: #e8f5e9;
+      border-color: #2e7d32;
+      color: #2e7d32;
+      background-color: #e8f5e9;
+
+      &.active {
+        background-color: #2e7d32;
+        color: #ffffff;
+        border-color: #1b5e20;
+      }
     }
 
+    // Trạng thái SAI
     &.wrong {
-      border-color: #e53935;
-      color: #e53935;
-      background: #ffebee;
+      border-color: #d32f2f;
+      color: #d32f2f;
+      background-color: #ffebee;
+
+      &.active {
+        background-color: #d32f2f;
+        color: #ffffff;
+        border-color: #b71c1c;
+      }
     }
 
+    // Trạng thái ĐANG CHỌN (nhưng chưa có kết quả hoặc đang làm)
+    &.active:not(.correct):not(.wrong) {
+      background-color: #1976d2; // Màu xanh dương sậm
+      color: #ffffff;
+      border-color: #1565c0;
+      font-weight: 700;
+    }
+
+    // Hiệu ứng chung khi active
     &.active {
-      background: #3399ff;
-      color: #fff;
-      border-color: #267acc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      z-index: 2;
     }
   }
 }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { HeaderProvider, HeaderContext } from "./context/HeaderContext";
 import {
   BrowserRouter as Router,
   Routes,
@@ -75,13 +76,43 @@ function resetActivityTimer(onTimeout, onWarning) {
 // ====================
 // Component chính trong Router
 // ====================
+
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
-  const hideHeader =
+  const { showHeader, setShowHeader } = useContext(HeaderContext);
+
+  // Logic cũ: hideHeader dựa trên path
+  // Logic mới: Sync showHeader với path NHƯNG cho phép override
+  // Tuy nhiên, để đơn giản và tránh loop:
+  // Mỗi khi đổi route, ta reset showHeader về default cho route đó.
+
+  useEffect(() => {
+    // Các trang luôn ẩn header (Login, Admin)
+    const isAlwaysHidden =
+      location.pathname === "/login" || location.pathname.startsWith("/admin");
+
+    // Các trang mặc định ẩn (Lesson) nhưng có thể bật lại
+    const isDefaultHidden =
+      location.pathname.includes("/lesson/") ||
+      location.pathname.includes("/lesson-simple/");
+
+    if (isAlwaysHidden) {
+      setShowHeader(false);
+    } else if (isDefaultHidden) {
+      // Chỉ set false khi mới vào trang, nếu user bật rồi thì giữ nguyên?
+      // Theo yêu cầu "tùy ý người dùng", reset về false mỗi lần navigate vào trang bài học là hợp lý
+      setShowHeader(false);
+    } else {
+      setShowHeader(true);
+    }
+  }, [location.pathname, setShowHeader]);
+
+  // Force hide nếu là trang bắt buộc ẩn (để an toàn UI)
+  const forceHide =
     location.pathname === "/login" || location.pathname.startsWith("/admin");
 
   useEffect(() => {
@@ -126,7 +157,7 @@ function AppContent() {
 
   return (
     <>
-      {!hideHeader && <Header />}
+      {showHeader && !forceHide && <Header />}
 
       {showWarning && (
         <SessionWarning
@@ -212,7 +243,7 @@ function AppContent() {
         />
       </Routes>
 
-      {!hideHeader && <Footer />}
+      {showHeader && !forceHide && <Footer />}
     </>
   );
 }
@@ -223,9 +254,11 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Router>
-        <AppContent />
-      </Router>
+      <HeaderProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </HeaderProvider>
     </ThemeProvider>
   );
 }

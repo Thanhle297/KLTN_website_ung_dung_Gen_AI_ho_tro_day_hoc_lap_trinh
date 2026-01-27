@@ -1,3 +1,4 @@
+// routes/callPromtSimple.js
 const OpenAI = require("openai");
 require("dotenv").config();
 
@@ -5,32 +6,59 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-function extractResult(text) {
-  const m = text.match(/<result>(PASS|FAIL)<\/result>/);
-  return m ? m[1] === "PASS" : false;
-}
+// JSON Schema cho response - đảm bảo output ổn định
+const codeEvaluationSchema = {
+  type: "object",
+  properties: {
+    result: {
+      type: "string",
+      enum: ["PASS", "FAIL"],
+      description: "PASS nếu bài làm đúng yêu cầu, FAIL nếu sai hoặc thiếu",
+    },
+    instructs: {
+      type: "array",
+      items: { type: "string" },
+      description: "Danh sách hướng dẫn cho học sinh (tiếng Việt, ngắn gọn)",
+    },
+    quizzes: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          question: {
+            type: "string",
+            description: "Câu hỏi trắc nghiệm gợi mở giúp học sinh tự tìm ra lỗi",
+          },
+          answers: {
+            type: "array",
+            items: { type: "string" },
+            description: "3 đáp án lựa chọn",
+          },
+          correctIndex: {
+            type: "integer",
+            description: "Index của đáp án đúng (0, 1, hoặc 2)",
+          },
+        },
+        required: ["question", "answers", "correctIndex"],
+        additionalProperties: false,
+      },
+      description: "Câu hỏi trắc nghiệm gợi mở (chỉ khi bài sai và được phép)",
+    },
+  },
+  required: ["result", "instructs", "quizzes"],
+  additionalProperties: false,
+};
 
-function extractInstructs(text) {
-  const instructs = [];
-  const regex = /<instruct>([\s\S]*?)<\/instruct>/g;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    instructs.push(match[1].trim());
-  }
-
-  // ✅ LỌC RÁC SAU KHI EXTRACT
-  return instructs.filter(
-    (s) =>
-      s.length > 0 &&
-      s !== "." &&
-      s !== "**." &&
-      s !== "**" &&
-      s !== ":" &&
-      s !== "**:"
-  );
-}
-
+/**
+ * Gọi OpenAI để đánh giá bài làm Python của học sinh
+ * @param {Object} params - Tham số đầu vào
+ * @param {string} params.code - Mã nguồn Python của học sinh
+ * @param {string} params.question - Đề bài
+ * @param {string} params.input - Input test
+ * @param {string} params.output - Output thực tế từ code
+ * @param {number} params.difficulty - Mức độ gợi ý (0=dễ, 1=vừa, 2=khó)
+ * @returns {Object} Kết quả đánh giá
+ */
 async function callPromptSimple({
   code,
   question,
@@ -38,31 +66,49 @@ async function callPromptSimple({
   output,
   difficulty = 2,
 }) {
+  // Quy tắc theo difficulty level
   let difficultyRule = "";
+  let quizRule = "";
 
   if (difficulty === 0) {
+    // DỄ: Hướng dẫn chi tiết + Quiz gợi mở
     difficultyRule = `
 - Chỉ rõ học sinh đang thiếu yêu cầu nào của đề bài.
 - Có thể nêu ví dụ mô tả (KHÔNG được đưa code hoàn chỉnh).
-- Gợi ý rõ ràng nhưng vẫn mang tính hướng dẫn.
-`;
+- Gợi ý rõ ràng nhưng vẫn mang tính hướng dẫn.`;
+    quizRule = `
+- Nếu bài SAI (FAIL), hãy tạo 1-2 câu hỏi trắc nghiệm gợi mở trong mảng "quizzes".
+- Mỗi câu hỏi có đúng 3 đáp án, correctIndex là index đáp án đúng (0, 1, hoặc 2).
+- Câu hỏi giúp học sinh tự nhận ra lỗi sai.
+- Nếu bài ĐÚNG (PASS), để mảng "quizzes" rỗng.`;
   } else if (difficulty === 1) {
+    // VỪA: Hướng dẫn định hướng, không quiz
     difficultyRule = `
 - Không nói thẳng học sinh sai ở đâu.
 - Dùng câu định hướng như: "hãy kiểm tra lại...", "hãy xem lại yêu cầu...".
-- Không nêu ví dụ cụ thể.
-`;
+- Không nêu ví dụ cụ thể.`;
+    quizRule = `
+- KHÔNG tạo câu hỏi trắc nghiệm, để mảng "quizzes" rỗng [].`;
   } else {
+    // KHÓ: Chỉ kết luận PASS/FAIL
     difficultyRule = `
 - Chỉ đánh giá đạt / chưa đạt.
-`;
+- Không đưa ra bất kỳ hướng dẫn nào.`;
+    quizRule = `
+- KHÔNG tạo hướng dẫn, để mảng "instructs" rỗng [].
+- KHÔNG tạo câu hỏi trắc nghiệm, để mảng "quizzes" rỗng [].`;
   }
 
   const prompt = `
-Bạn là giáo viên Tin học Việt Nam.
+Bạn là giáo viên Tin học Việt Nam. Đánh giá bài làm Python của học sinh.
 
+QUY TẮC ĐÁNH GIÁ:
 ${difficultyRule}
-Học sinh vừa làm bài Python theo đề sau:
+
+QUY TẮC VỀ QUIZ:
+${quizRule}
+
+---
 
 ĐỀ BÀI:
 ${question || "Không có đề"}
@@ -76,78 +122,112 @@ INPUT: ${input || "Không có input"}
 OUTPUT THỰC TẾ: ${output || "Không có output"}
 
 ---
-Hãy đánh giá bài làm theo 3 bước:
 
-1️⃣ **Phân tích yêu cầu của đề bài**:  
-   - Học sinh cần in ra hoặc thực hiện những thông tin, kết quả nào?  
-   - Liệt kê các yêu cầu cụ thể (ví dụ: phải in ra tên, tuổi, nghề nghiệp...).
+ĐÁNH GIÁ THEO 3 BƯỚC:
 
-2️⃣ **Đối chiếu đầu ra**:  
-   - So sánh OUTPUT của học sinh với yêu cầu trên.  
-   - Nếu học sinh chỉ in ra một phần (ví dụ: chỉ có tên mà thiếu tuổi hoặc nghề nghiệp), phải coi là **CHƯA ĐẠT YÊU CẦU**.
+1. **Phân tích yêu cầu đề bài**:
+   - Học sinh cần thực hiện những gì?
+   - Liệt kê các yêu cầu cụ thể.
 
-3️⃣ **Đưa ra hướng dẫn hoặc nhận xét trong thẻ <instruct>**:
-   - Nếu học sinh **đáp ứng đầy đủ yêu cầu và đầu ra hợp lý** →  
-     <instruct>Code của bạn chạy đúng và đáp ứng đầy đủ yêu cầu. Chúc mừng!</instruct>
-   - Nếu học sinh **thiếu hoặc sai bất kỳ phần nào** →  
-     <instruct>Hãy kiểm tra lại: bạn cần in ra đủ tất cả thông tin theo đề bài. Gợi ý chỉnh sửa: ...</instruct>
-   - Nếu có lỗi logic, cú pháp, hoặc sai cách nhập/xuất →  
-     <instruct>Mô tả lỗi và hướng dẫn cụ thể để sửa.</instruct>
+2. **Đối chiếu đầu ra**:
+   - So sánh OUTPUT của học sinh với yêu cầu.
+   - Nếu thiếu bất kỳ phần nào → FAIL.
 
-⚠️ Lưu ý:
-- Trả lời **ngắn gọn bằng tiếng Việt**.
-- Chỉ dùng thẻ <instruct> cho mỗi hướng dẫn, không thêm ký hiệu khác.
-- Nếu đề bài có nhiều yêu cầu, phải kiểm tra đủ **từng phần**.
-- Không hướng dẫn quá chi tiết đến mức gần như cho học sinh toàn bộ đáp án.
-
-Cuối cùng, hãy kết luận:
-- ĐÚNG → <result>PASS</result>
-- SAI / THIẾU → <result>FAIL</result>
+3. **Kết luận**:
+   - ĐÚNG → result = "PASS"
+   - SAI/THIẾU → result = "FAIL"
 
 ---
 
-Bắt đầu đánh giá.
+TRẢ VỀ JSON với cấu trúc:
+{
+  "result": "PASS" hoặc "FAIL",
+  "instructs": ["hướng dẫn 1", "hướng dẫn 2", ...],
+  "quizzes": [
+    {
+      "question": "Câu hỏi gợi mở?",
+      "answers": ["Đáp án A", "Đáp án B", "Đáp án C"],
+      "correctIndex": 0
+    }
+  ]
+}
+
+LƯU Ý:
+- Trả lời bằng tiếng Việt.
+- Hướng dẫn ngắn gọn, dễ hiểu.
+- KHÔNG đưa code hoàn chỉnh cho học sinh.
+- Mỗi câu quiz có ĐÚNG 3 đáp án.
 `;
 
   try {
-    // 🔍 Log đề bài gửi đi
-    // console.log("📘 ĐỀ BÀI GỬI LÊN AI:");
-    // console.log(question);
-    // console.log("---------------------------------------");
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt,
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.4,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "code_evaluation",
+          strict: true,
+          schema: codeEvaluationSchema,
+        },
+      },
     });
 
-    const text =
-      response.output_text ||
-      response.candidates?.[0]?.content?.[0]?.text ||
-      "Không có phản hồi từ AI.";
+    const rawContent = response.choices[0].message.content || "{}";
 
-    const instructs = extractInstructs(text);
+    // Log token usage
+    if (response.usage) {
+      console.log("🔢 Token usage:");
+      console.log("  Prompt:", response.usage.prompt_tokens);
+      console.log("  Completion:", response.usage.completion_tokens);
+      console.log("  Total:", response.usage.total_tokens);
+    }
+
+    // Parse JSON response
+    let parsed;
+    try {
+      parsed = JSON.parse(rawContent);
+    } catch (parseErr) {
+      console.error("❌ Lỗi parse JSON từ AI:", parseErr.message);
+      console.error("Raw content:", rawContent);
+      return {
+        success: false,
+        isCorrect: false,
+        guide: "Lỗi xử lý phản hồi từ AI.",
+        quizzes: [],
+        raw: rawContent,
+      };
+    }
+
+    // Xây dựng kết quả theo difficulty
+    const isCorrect = parsed.result === "PASS";
     const guide =
-      instructs.length > 0
-        ? instructs.join("\n\n")
-        : text || "AI không phản hồi.";
-
-    const isCorrect = extractResult(text); // ✅ DÒNG QUYẾT ĐỊNH
+      difficulty === 2
+        ? "" // Không guide cho difficulty 2
+        : (parsed.instructs || []).join("\n\n");
+    const quizzes =
+      difficulty === 0
+        ? parsed.quizzes || [] // Chỉ trả quiz cho difficulty 0
+        : [];
 
     return {
       success: true,
       isCorrect,
-      guide: difficulty === 2 ? "" : guide,
-      raw: text,
+      guide,
+      quizzes,
+      raw: rawContent,
     };
   } catch (err) {
-    console.error("❌ Lỗi gọi OpenAI simple:", err);
+    console.error("❌ Lỗi gọi OpenAI:", err.message);
     return {
       success: false,
+      isCorrect: false,
       guide: "Lỗi khi gọi AI để phân tích code.",
+      quizzes: [],
       raw: "",
     };
   }
 }
 
-// ✅ BẮT BUỘC PHẢI CÓ DÒNG NÀY
 module.exports = { callPromptSimple };

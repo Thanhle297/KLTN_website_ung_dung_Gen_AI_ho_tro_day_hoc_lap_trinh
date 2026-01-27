@@ -35,6 +35,8 @@
     resize: vertical;
     background: #fefefe;
     transition: 0.2s;
+    flex-shrink: 0; // ✅ Ngăn bị co lại
+    min-height: 80px; // ✅ Đảm bảo chiều cao tối thiểu
 
     &:focus {
       outline: none;

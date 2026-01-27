@@ -17,29 +17,49 @@ export default function LayoutSimple({
 }) {
   const [popupData, setPopupData] = useState(null);
 
-
   if (!current) return null;
   const currentIndex = questions.findIndex((q) => q.id === current.id);
 
   const handleExecuteResponse = (result) => {
     if (!result) return;
 
-    // ✅ Level 2: chỉ kết luận
-    if (difficulty === 2) {
+    const isCorrect = result.simpleStatus === "correct";
+
+    // Nếu làm ĐÚNG: tất cả difficulty đều hiển thị thông báo PASS
+    if (isCorrect) {
       setPopupData({
         mode: "instruct_only",
-        instructs:
-          result.simpleStatus === "correct"
-            ? ["✅ Bài làm đạt yêu cầu."]
-            : ["❌ Bài làm chưa đạt yêu cầu."],
+        instructs: ["✅ Bài làm đạt yêu cầu."],
       });
       return;
     }
 
-    // Level 0–1: giữ logic cũ
+    // Từ đây trở xuống là xử lý khi làm SAI
+
+    // Level 2: chỉ kết luận FAIL
+    if (difficulty === 2) {
+      setPopupData({
+        mode: "instruct_only",
+        instructs: ["❌ Bài làm chưa đạt yêu cầu."],
+      });
+      return;
+    }
+
+    // Level 1: chỉ hướng dẫn, không quiz
+    if (difficulty === 1) {
+      setPopupData({
+        mode: "instruct_only",
+        instructs: result.instructs || [],
+      });
+      return;
+    }
+
+    // Level 0: hướng dẫn + quiz (nếu có)
+    const hasQuizzes = result.quizzes && result.quizzes.length > 0;
     setPopupData({
-      mode: "instruct_only",
+      mode: hasQuizzes ? "full" : "instruct_only",
       instructs: result.instructs || [],
+      quizzes: result.quizzes || [],
     });
   };
 
@@ -47,6 +67,7 @@ export default function LayoutSimple({
     <div className="layout">
       <div className="layout__left">
         <QuestionList
+          currentId={current.id}
           questions={questions}
           setCurrent={setCurrent}
           editorStates={editorStates}

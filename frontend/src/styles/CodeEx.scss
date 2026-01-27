@@ -1,12 +1,25 @@
+.code-ex-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .layout {
+    flex: 1;
+    overflow: hidden; // Để layout xử lý scroll bên trong
+  }
+}
+
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-//   margin-bottom: 20px;
   padding: 10px 20px;
   background: #f9f9f9;
-  border-radius: 8px;
+  border-radius: 0; // Bỏ border radius để full width đẹp hơn nếu cần
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex: 0 0 auto; // Không co giãn
+  z-index: 100; // Đảm bảo nổi lên trên
 
   .left {
     flex: 1;

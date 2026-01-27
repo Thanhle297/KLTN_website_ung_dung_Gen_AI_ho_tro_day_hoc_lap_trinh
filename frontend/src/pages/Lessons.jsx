@@ -48,8 +48,8 @@ export default function Lessons() {
         }
 
         const myCourses = await res.json();
-        console.log("MY COURSES:", myCourses);
-        console.log("CLASS ID:", classId);
+        // console.log("MY COURSES:", myCourses);
+        // console.log("CLASS ID:", classId);
         const hasAccess = myCourses.some(
           (course) => String(course.courseId) === String(classId)
         );
