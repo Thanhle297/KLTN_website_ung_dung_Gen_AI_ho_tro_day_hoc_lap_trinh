@@ -21,6 +21,7 @@ const DeleteConfirmDialog = ({
     <Dialog
       open={open}
       onClose={onCancel}
+      disableRestoreFocus
       maxWidth="sm"
       fullWidth
       PaperProps={{

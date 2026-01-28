@@ -19,6 +19,7 @@ export default function useAdminAPI() {
       /* ===== USER ===== */
       getUsers: () => API.get("/users"),
       getUser: (id) => API.get(`/users/${id}`),
+      getTeachers: () => API.get("/users/teachers"),
       createUser: (data) => API.post("/users", data),
       updateUser: (id, data) => API.put(`/users/${id}`, data),
       deleteUser: (id) => API.delete(`/users/${id}`),
@@ -33,10 +34,24 @@ export default function useAdminAPI() {
       updateCourse: (courseId, data) => API.put(`/courses/${courseId}`, data),
       deleteCourse: (courseId) => API.delete(`/courses/${courseId}`),
 
+      /* ===== COURSE TEACHERS ===== */
+      getCourseTeachers: (courseId) => API.get(`/courses/${courseId}/teachers`),
+      setCourseTeachers: (courseId, teacherIds) =>
+        API.post(`/courses/${courseId}/teachers`, { teacherIds }),
+      addCourseTeacher: (courseId, teacherId) =>
+        API.put(`/courses/${courseId}/teachers/add`, { teacherId }),
+      removeCourseTeacher: (courseId, teacherId) =>
+        API.put(`/courses/${courseId}/teachers/remove`, { teacherId }),
+
+      /* ===== COURSE - Edit Permission ===== */
+      canEditCourse: (courseId) => API.get(`/courses/${courseId}/can-edit`),
+
       /* ===== LESSON ===== */
       getLessonsByCourse: (courseId) => API.get(`/lessons/course/${courseId}`),
       getLesson: (lessonId, courseId) =>
         API.get(`/lessons/${lessonId}`, { params: { courseId } }),
+      getLessonDetail: (lessonId, courseId) =>
+        API.get(`/lessons/detail/${lessonId}`, { params: { courseId } }),
       createLesson: (data) => API.post("/lessons", data),
       updateLesson: (lessonId, data, courseId) =>
         API.put(`/lessons/${lessonId}`, data, {
@@ -44,6 +59,8 @@ export default function useAdminAPI() {
         }),
       deleteLesson: (lessonId, courseId) =>
         API.delete(`/lessons/${lessonId}`, { params: { courseId } }),
+      reorderLessons: (courseId, lessonIds) =>
+        API.put("/lessons/reorder/batch", { courseId, lessonIds }),
 
       /* ===== SUBLESSON ===== */
       getSubLessons: (lessonId, courseId) =>
@@ -56,6 +73,10 @@ export default function useAdminAPI() {
         }),
       deleteSubLesson: (lessonId, subId, courseId) =>
         API.delete(`/sublessons/${lessonId}/sub/${subId}`, {
+          params: { courseId },
+        }),
+      reorderSubLessons: (lessonId, subLessonIds, courseId) =>
+        API.put(`/sublessons/${lessonId}/reorder`, { subLessonIds }, {
           params: { courseId },
         }),
 
@@ -74,6 +95,8 @@ export default function useAdminAPI() {
           targetLessonId,
           courseId,
         }),
+      reorderQuestions: (questionIds) =>
+        API.put("/questions/reorder/batch", { questionIds }),
 
       /* ===== ENROLLMENT ===== */
       enrollUserToCourse: (userId, courseId) =>

@@ -43,6 +43,31 @@ router.get("/me", authMiddleware, async (req, res) => {
 });
 
 /* ============================================
+   GET ALL TEACHERS – ADMIN/TEACHER
+   Endpoint: GET /api/users/teachers
+   Trả về danh sách users có role="teacher"
+=============================================== */
+router.get("/teachers", authMiddleware, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    
+    const teachers = await db
+      .collection("users")
+      .find(
+        { role: "teacher" },
+        { projection: { _id: 1, username: 1, fullname: 1, email: 1 } }
+      )
+      .sort({ fullname: 1, username: 1 })
+      .toArray();
+
+    res.json(teachers);
+  } catch (error) {
+    console.error("❌ Get teachers error:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+});
+
+/* ============================================
    GET ALL USERS – ADMIN
 =============================================== */
 router.get("/", authMiddleware, adminOnly, async (req, res) => {

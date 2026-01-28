@@ -118,4 +118,38 @@ router.delete("/:lessonId", async (req, res) => {
   res.json({ message: "Lesson deleted", deletedCount: result.deletedCount });
 });
 
+/* -------- REORDER LESSONS -------- */
+// Cập nhật thứ tự lessons theo mảng lessonIds
+router.put("/reorder/batch", async (req, res) => {
+  try {
+    const { courseId, lessonIds } = req.body;
+
+    if (!courseId || !Array.isArray(lessonIds)) {
+      return res.status(400).json({
+        message: "Thiếu courseId hoặc lessonIds",
+      });
+    }
+
+    const db = getDB();
+    const bulkOps = lessonIds.map((lessonId, index) => ({
+      updateOne: {
+        filter: { lessonId, courseId },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    if (bulkOps.length > 0) {
+      await db.collection("lessons").bulkWrite(bulkOps);
+    }
+
+    res.json({
+      message: "Cập nhật thứ tự thành công",
+      count: bulkOps.length,
+    });
+  } catch (err) {
+    console.error("❌ Reorder lessons error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

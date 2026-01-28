@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,34 +7,102 @@ import {
   TextField,
   Button,
   Box,
+  Autocomplete,
+  Chip,
+  CircularProgress,
 } from "@mui/material";
+import { School } from "@mui/icons-material";
+import useAdminAPI from "../../../hook/useAdminAPI";
 
 const CourseFormDialog = ({ open, editing, onClose, onSave }) => {
+  const api = useAdminAPI();
+
   const [form, setForm] = useState({
     courseId: "",
     title: "",
     description: "",
+    teacherIds: [],
   });
 
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeachers, setSelectedTeachers] = useState([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+  // Load danh sách teachers khi dialog mở
   useEffect(() => {
-    if (editing) {
-      setForm({
-        courseId: editing.courseId,
-        title: editing.title,
-        description: editing.description,
-      });
-    } else {
-      setForm({
-        courseId: "",
-        title: "",
-        description: "",
-      });
+    const loadTeachers = async () => {
+      if (!open) return;
+
+      try {
+        setLoadingTeachers(true);
+        const res = await api.getTeachers();
+        setTeachers(res.data);
+      } catch (err) {
+        console.error("❌ Lỗi tải danh sách giáo viên:", err);
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    loadTeachers();
+  }, [open, api]);
+
+  // Load dữ liệu course và teachers đã gán
+  useEffect(() => {
+    const loadData = async () => {
+      if (editing) {
+        // Nếu đang edit, load teachers của course
+        try {
+          const res = await api.getCourseTeachers(editing.courseId);
+          const courseTeachers = res.data;
+
+          setForm({
+            courseId: editing.courseId,
+            title: editing.title,
+            description: editing.description,
+            teacherIds: courseTeachers.map((t) => t._id),
+          });
+
+          setSelectedTeachers(courseTeachers);
+        } catch (err) {
+          console.error("❌ Lỗi tải giáo viên của khóa học:", err);
+          // Fallback nếu lỗi
+          setForm({
+            courseId: editing.courseId,
+            title: editing.title,
+            description: editing.description,
+            teacherIds: editing.teacherIds || [],
+          });
+          setSelectedTeachers([]);
+        }
+      } else {
+        // Reset form khi tạo mới
+        setForm({
+          courseId: "",
+          title: "",
+          description: "",
+          teacherIds: [],
+        });
+        setSelectedTeachers([]);
+      }
+    };
+
+    if (open) {
+      loadData();
     }
-  }, [editing, open]);
+  }, [editing, open, api]);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handleTeachersChange = useCallback((event, newValue) => {
+    setSelectedTeachers(newValue);
+    setForm((prev) => ({
+      ...prev,
+      teacherIds: newValue.map((t) => t._id),
+    }));
+  }, []);
 
   const handleSubmit = () => {
     onSave(form);
@@ -100,6 +168,70 @@ const CourseFormDialog = ({ open, editing, onClose, onSave }) => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
+              },
+            }}
+          />
+
+          {/* Autocomplete multi-select cho teachers */}
+          <Autocomplete
+            multiple
+            options={teachers}
+            value={selectedTeachers}
+            onChange={handleTeachersChange}
+            getOptionLabel={(option) =>
+              `${option.fullname || option.username} (${option.username})`
+            }
+            isOptionEqualToValue={(option, value) =>
+              option._id === value._id
+            }
+            loading={loadingTeachers}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Giáo viên"
+                placeholder="Chọn giáo viên..."
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <School sx={{ ml: 1, mr: 0.5, color: "action.active" }} />
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingTeachers ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  key={option._id}
+                  label={option.fullname || option.username}
+                  size="small"
+                  sx={{
+                    background: "rgba(102, 126, 234, 0.1)",
+                    color: "#667eea",
+                    fontWeight: 600,
+                  }}
+                />
+              ))
+            }
+            sx={{
+              "& .MuiAutocomplete-tag": {
+                margin: "2px",
               },
             }}
           />

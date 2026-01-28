@@ -8,6 +8,7 @@ import CoursesTable from "../../components/admin/courses/CoursesTable";
 import CourseFormDialog from "../../components/admin/courses/CourseFormDialog";
 import DeleteConfirmDialog from "../../components/admin/courses/DeleteConfirmDialog";
 import CourseUsersDialog from "../../components/admin/courses/CourseUsersDialog";
+import CourseTeachersDialog from "../../components/admin/courses/CourseTeachersDialog";
 
 export default function CoursesCRUD() {
   const api = useAdminAPI();
@@ -21,6 +22,9 @@ export default function CoursesCRUD() {
 
   const [openUsersDialog, setOpenUsersDialog] = useState(false);
   const [managingCourse, setManagingCourse] = useState(null);
+
+  const [openTeachersDialog, setOpenTeachersDialog] = useState(false);
+  const [managingTeachersCourse, setManagingTeachersCourse] = useState(null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -109,6 +113,16 @@ export default function CoursesCRUD() {
     setManagingCourse(null);
   }, []);
 
+  // ✅ Thêm handlers cho CourseTeachersDialog
+  const handleManageTeachers = useCallback((course) => {
+    setManagingTeachersCourse(course);
+    setOpenTeachersDialog(true);
+  }, []);
+  const handleCloseTeachersDialog = useCallback(() => {
+    setOpenTeachersDialog(false);
+    setManagingTeachersCourse(null);
+  }, []);
+
   // Handler cho View Report - navigate đến page mới
   const handleViewReport = useCallback(
     (course) => {
@@ -157,6 +171,7 @@ export default function CoursesCRUD() {
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
         onManageUsers={handleManageUsers}
+        onManageTeachers={handleManageTeachers}
         onViewReport={handleViewReport}
       />
 
@@ -183,6 +198,15 @@ export default function CoursesCRUD() {
           loadCourses();
         }}
         api={api}
+      />
+
+      <CourseTeachersDialog
+        open={openTeachersDialog}
+        course={managingTeachersCourse}
+        onClose={handleCloseTeachersDialog}
+        onTeachersChanged={() => {
+          showMessage("Cập nhật giáo viên thành công");
+        }}
       />
 
       <Snackbar

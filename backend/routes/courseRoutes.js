@@ -199,6 +199,228 @@ router.get(
   }
 );
 
+/* ============================================
+   GET /api/courses/:courseId/can-edit
+   Kiểm tra user có quyền edit khóa học hay không
+   - Admin: luôn có quyền
+   - Teacher: chỉ khi được gán vào teacherIds
+   - User: không có quyền
+=============================================== */
+router.get("/:courseId/can-edit", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Admin luôn có quyền edit
+    if (userRole === "admin") {
+      return res.json({ canEdit: true, role: "admin" });
+    }
+
+    // Lấy thông tin course
+    const course = await db.collection("courses").findOne({ courseId });
+    if (!course) {
+      return res.status(404).json({
+        canEdit: false,
+        role: userRole,
+        message: "Không tìm thấy khóa học",
+      });
+    }
+
+    // Teacher: kiểm tra có trong teacherIds không
+    if (userRole === "teacher") {
+      const teacherIds = course.teacherIds || [];
+      const isTeacherOfCourse = teacherIds.includes(userId);
+
+      return res.json({
+        canEdit: isTeacherOfCourse,
+        role: "teacher",
+        isTeacherOfCourse,
+      });
+    }
+
+    // User thường: không có quyền edit
+    return res.json({ canEdit: false, role: userRole || "user" });
+  } catch (error) {
+    console.error("❌ Check can-edit error:", error);
+    res.status(500).json({
+      canEdit: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
+/* ============================================
+   GET /api/courses/:courseId/teachers
+   Lấy danh sách teachers được gán cho khóa học
+   - Admin: xem tất cả
+   - Teacher: chỉ xem nếu là teacher của course đó
+=============================================== */
+router.get("/:courseId/teachers", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+
+    // Lấy thông tin course
+    const course = await db.collection("courses").findOne({ courseId });
+    if (!course) {
+      return res.status(404).json({
+        message: "Không tìm thấy khóa học",
+      });
+    }
+
+    const teacherIds = course.teacherIds || [];
+
+    // Lấy thông tin chi tiết các teachers
+    const teachers = await db
+      .collection("users")
+      .find(
+        { _id: { $in: teacherIds.map((id) => new ObjectId(id)) } },
+        { projection: { _id: 1, username: 1, fullname: 1, email: 1, role: 1 } }
+      )
+      .toArray();
+
+    res.json(teachers);
+  } catch (error) {
+    console.error("❌ Get course teachers error:", error);
+    res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
+/* ============================================
+   POST /api/courses/:courseId/teachers
+   Gán danh sách teachers cho khóa học (thay thế toàn bộ)
+   - Admin only
+=============================================== */
+router.post("/:courseId/teachers", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+    const { teacherIds } = req.body;
+
+    // Chỉ admin mới có quyền
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Chỉ admin mới có quyền gán giáo viên cho khóa học",
+      });
+    }
+
+    if (!Array.isArray(teacherIds)) {
+      return res.status(400).json({
+        message: "teacherIds phải là mảng",
+      });
+    }
+
+    // Cập nhật teacherIds cho course
+    await db.collection("courses").updateOne(
+      { courseId },
+      { $set: { teacherIds } }
+    );
+
+    res.json({
+      message: "Cập nhật danh sách giáo viên thành công",
+      teacherIds,
+    });
+  } catch (error) {
+    console.error("❌ Set course teachers error:", error);
+    res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
+/* ============================================
+   PUT /api/courses/:courseId/teachers/add
+   Thêm 1 teacher vào khóa học
+   - Admin only
+=============================================== */
+router.put("/:courseId/teachers/add", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+    const { teacherId } = req.body;
+
+    // Chỉ admin mới có quyền
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Chỉ admin mới có quyền thêm giáo viên",
+      });
+    }
+
+    if (!teacherId) {
+      return res.status(400).json({
+        message: "teacherId là bắt buộc",
+      });
+    }
+
+    // Thêm teacherId vào mảng (không trùng)
+    await db.collection("courses").updateOne(
+      { courseId },
+      { $addToSet: { teacherIds: teacherId } }
+    );
+
+    res.json({
+      message: "Thêm giáo viên thành công",
+      teacherId,
+    });
+  } catch (error) {
+    console.error("❌ Add course teacher error:", error);
+    res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
+/* ============================================
+   PUT /api/courses/:courseId/teachers/remove
+   Xóa 1 teacher khỏi khóa học
+   - Admin only
+=============================================== */
+router.put("/:courseId/teachers/remove", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+    const { teacherId } = req.body;
+
+    // Chỉ admin mới có quyền
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Chỉ admin mới có quyền xóa giáo viên",
+      });
+    }
+
+    if (!teacherId) {
+      return res.status(400).json({
+        message: "teacherId là bắt buộc",
+      });
+    }
+
+    // Xóa teacherId khỏi mảng
+    await db.collection("courses").updateOne(
+      { courseId },
+      { $pull: { teacherIds: teacherId } }
+    );
+
+    res.json({
+      message: "Xóa giáo viên thành công",
+      teacherId,
+    });
+  } catch (error) {
+    console.error("❌ Remove course teacher error:", error);
+    res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+});
+
 // DELETE - ✅ Cập nhật để xóa courseId khỏi enrolledCourses của users
 router.delete("/:courseId", async (req, res) => {
   const db = getDB();

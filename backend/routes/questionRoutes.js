@@ -123,4 +123,38 @@ router.delete("/:id", async (req, res) => {
   res.json({ message: "Question deleted" });
 });
 
+/* ------------ REORDER QUESTIONS ------------ */
+// Cập nhật thứ tự questions theo mảng questionIds
+router.put("/reorder/batch", async (req, res) => {
+  try {
+    const { questionIds } = req.body;
+
+    if (!Array.isArray(questionIds)) {
+      return res.status(400).json({
+        message: "Thiếu questionIds",
+      });
+    }
+
+    const db = getDB();
+    const bulkOps = questionIds.map((qId, index) => ({
+      updateOne: {
+        filter: { id: Number(qId) },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    if (bulkOps.length > 0) {
+      await db.collection("question").bulkWrite(bulkOps);
+    }
+
+    res.json({
+      message: "Cập nhật thứ tự câu hỏi thành công",
+      count: bulkOps.length,
+    });
+  } catch (err) {
+    console.error("❌ Reorder questions error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

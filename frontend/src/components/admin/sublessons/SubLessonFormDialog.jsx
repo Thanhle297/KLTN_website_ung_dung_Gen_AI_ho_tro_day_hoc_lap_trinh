@@ -60,6 +60,7 @@ const SubLessonFormDialog = ({ open, editing, onClose, onSave }) => {
     <Dialog
       open={open}
       onClose={onClose}
+      disableRestoreFocus
       fullWidth
       maxWidth="sm"
       PaperProps={{

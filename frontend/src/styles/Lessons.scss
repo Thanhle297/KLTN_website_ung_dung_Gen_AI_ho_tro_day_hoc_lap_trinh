@@ -112,6 +112,39 @@
         box-shadow: 0 4px 12px rgba(32, 37, 74, 0.3);
       }
     }
+
+    // Hidden lesson (display=false) - chỉ hiện khi Edit Mode
+    &.hidden-lesson {
+      border: 2px dashed #9ca3af;
+      background: #f9fafb;
+      opacity: 0.8;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 10px,
+          rgba(156, 163, 175, 0.05) 10px,
+          rgba(156, 163, 175, 0.05) 20px
+        );
+        pointer-events: none;
+        border-radius: 16px;
+      }
+
+      .lesson-item__info h3 {
+        color: #6b7280;
+      }
+
+      .lesson-item__info p {
+        color: #9ca3af;
+      }
+    }
   }
 
   /* ==================================================
@@ -157,6 +190,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   margin: 16px 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 
   // Animation for appearance
   opacity: 0;
@@ -172,6 +206,39 @@
     transform: translateX(8px) translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
       0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  }
+
+  // Hidden sublesson (display=false) - chỉ hiện khi Edit Mode
+  &.hidden-sublesson {
+    border: 2px dashed #9ca3af;
+    background: #f9fafb;
+    opacity: 0.8;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(156, 163, 175, 0.05) 10px,
+        rgba(156, 163, 175, 0.05) 20px
+      );
+      pointer-events: none;
+      border-radius: 14px;
+    }
+
+    .sub-lesson__info h4 {
+      color: #6b7280;
+    }
+
+    .sub-lesson__info p {
+      color: #9ca3af;
+    }
   }
 }
 
