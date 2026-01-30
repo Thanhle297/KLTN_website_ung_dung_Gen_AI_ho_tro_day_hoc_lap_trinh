@@ -23,9 +23,14 @@ router.post("/auth/login", async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: "Sai mật khẩu" });
 
     const token = jwt.sign(
-      { id: user._id.toString(), username: user.username, role: user.role },
+      { 
+        id: user._id.toString(),
+        username: user.username,
+        role: user.role,
+        fullname: user.fullname,
+      },
       JWT_SECRET,
-      { expiresIn: "2h" }
+      { expiresIn: "2h" },
     );
 
     res.json({
