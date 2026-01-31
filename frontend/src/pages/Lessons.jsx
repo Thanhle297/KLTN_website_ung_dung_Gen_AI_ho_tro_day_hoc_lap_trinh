@@ -2,8 +2,9 @@
 // Trang hiển thị danh sách bài học của một khóa học
 // Hỗ trợ Edit Mode cho Teacher/Admin: CRUD lessons/sublessons và Drag & Drop
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "../styles/Lessons.scss";
 
 // MUI Components
@@ -15,13 +16,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import {
-  Add,
-  Edit,
-  Delete,
-  DragIndicator,
-  Quiz,
-} from "@mui/icons-material";
+import { Add, Edit, Delete, DragIndicator, Quiz } from "@mui/icons-material";
 
 // Drag and Drop
 import {
@@ -86,16 +81,42 @@ function LessonsContent() {
   const [historyTarget, setHistoryTarget] = useState(null);
 
   // State cho dialogs
-  const [lessonDialog, setLessonDialog] = useState({ open: false, editing: null });
-  const [subLessonDialog, setSubLessonDialog] = useState({ open: false, editing: null, parentLessonId: null });
-  const [questionManager, setQuestionManager] = useState({ open: false, subLesson: null });
-  const [deleteTarget, setDeleteTarget] = useState({ open: false, type: null, item: null });
+  const [lessonDialog, setLessonDialog] = useState({
+    open: false,
+    editing: null,
+  });
+  const [subLessonDialog, setSubLessonDialog] = useState({
+    open: false,
+    editing: null,
+    parentLessonId: null,
+  });
+  const [questionManager, setQuestionManager] = useState({
+    open: false,
+    subLesson: null,
+  });
+  const [deleteTarget, setDeleteTarget] = useState({
+    open: false,
+    type: null,
+    item: null,
+  });
 
   // State cho snackbar
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
+
+  const userId = useMemo(() => {
+    if (!token) return null;
+    try {
+      return jwtDecode(token).id;
+    } catch {
+      return null;
+    }
+  }, [token]);
 
   // Helper để hiển thị thông báo
   const showMessage = useCallback((message, severity = "success") => {
@@ -121,18 +142,18 @@ function LessonsContent() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
-        if (!res.ok) {
-          setAccessDenied(true);
-          setLoading(false);
+        if (res.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
           return;
         }
 
         const myCourses = await res.json();
         const hasAccess = myCourses.some(
-          (course) => String(course.courseId) === String(classId)
+          (course) => String(course.courseId) === String(classId),
         );
 
         if (!hasAccess) {
@@ -158,7 +179,9 @@ function LessonsContent() {
       .then((res) => res.json())
       .then((data) => {
         // Sắp xếp theo order
-        const sorted = [...data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const sorted = [...data].sort(
+          (a, b) => (a.order ?? 0) - (b.order ?? 0),
+        );
         setLessons(sorted);
       })
       .catch((err) => console.error("❌ Lỗi tải bài học:", err))
@@ -169,7 +192,7 @@ function LessonsContent() {
     if (!userId) return;
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/progress/sublesson/${userId}/${subLessonId}`
+        `${process.env.REACT_APP_API_URL}/api/progress/sublesson/${userId}/${subLessonId}`,
       );
       if (!res.ok) return;
       const data = await res.json();
@@ -199,23 +222,23 @@ function LessonsContent() {
     if (!subLessons[lessonId]) {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}?courseId=${classId}`
+          `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}?courseId=${classId}`,
         );
         const data = await res.json();
         if (data.subLessons) {
           // Sắp xếp theo order
-          const sorted = [...data.subLessons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-          setSubLessons((prev) => ({ ...prev, [lessonId]: sorted }));
-          sorted.forEach((sub) =>
-            fetchSublessonProgress(sub.lessonId)
+          const sorted = [...data.subLessons].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
           );
+          setSubLessons((prev) => ({ ...prev, [lessonId]: sorted }));
+          sorted.forEach((sub) => fetchSublessonProgress(sub.lessonId));
         }
       } catch (err) {
         console.error("❌ Lỗi tải bài con:", err);
       }
     } else {
       subLessons[lessonId].forEach((sub) =>
-        fetchSublessonProgress(sub.lessonId)
+        fetchSublessonProgress(sub.lessonId),
       );
     }
   };
@@ -234,22 +257,33 @@ function LessonsContent() {
     setDeleteTarget({ open: true, type: "lesson", item: lesson });
   }, []);
 
-  const handleSaveLesson = useCallback(async (formData) => {
-    try {
-      if (lessonDialog.editing) {
-        await api.updateLesson(lessonDialog.editing.lessonId, formData, classId);
-        showMessage("Cập nhật bài học thành công!");
-      } else {
-        await api.createLesson({ ...formData, courseId: classId });
-        showMessage("Thêm bài học thành công!");
+  const handleSaveLesson = useCallback(
+    async (formData) => {
+      try {
+        if (lessonDialog.editing) {
+          await api.updateLesson(
+            lessonDialog.editing.lessonId,
+            formData,
+            classId,
+          );
+          showMessage("Cập nhật bài học thành công!");
+        } else {
+          await api.createLesson({ ...formData, courseId: classId });
+          showMessage("Thêm bài học thành công!");
+        }
+        setLessonDialog({ open: false, editing: null });
+        fetchLessons();
+      } catch (err) {
+        console.error("❌ Lỗi lưu bài học:", err);
+        showMessage(
+          "Lỗi khi lưu bài học: " +
+            (err.response?.data?.message || err.message),
+          "error",
+        );
       }
-      setLessonDialog({ open: false, editing: null });
-      fetchLessons();
-    } catch (err) {
-      console.error("❌ Lỗi lưu bài học:", err);
-      showMessage("Lỗi khi lưu bài học: " + (err.response?.data?.message || err.message), "error");
-    }
-  }, [lessonDialog.editing, api, classId, fetchLessons, showMessage]);
+    },
+    [lessonDialog.editing, api, classId, fetchLessons, showMessage],
+  );
 
   // ==================== SUBLESSON CRUD ====================
 
@@ -261,38 +295,58 @@ function LessonsContent() {
     setSubLessonDialog({ open: true, editing: subLesson, parentLessonId });
   }, []);
 
-  const handleDeleteSubLessonClick = useCallback((subLesson, parentLessonId) => {
-    setDeleteTarget({ open: true, type: "sublesson", item: { ...subLesson, parentLessonId } });
-  }, []);
+  const handleDeleteSubLessonClick = useCallback(
+    (subLesson, parentLessonId) => {
+      setDeleteTarget({
+        open: true,
+        type: "sublesson",
+        item: { ...subLesson, parentLessonId },
+      });
+    },
+    [],
+  );
 
-  const handleSaveSubLesson = useCallback(async (formData) => {
-    const { parentLessonId } = subLessonDialog;
-    try {
-      if (subLessonDialog.editing) {
-        await api.updateSubLesson(
-          parentLessonId,
-          subLessonDialog.editing.lessonId,
-          formData,
-          classId
+  const handleSaveSubLesson = useCallback(
+    async (formData) => {
+      const { parentLessonId } = subLessonDialog;
+      try {
+        if (subLessonDialog.editing) {
+          await api.updateSubLesson(
+            parentLessonId,
+            subLessonDialog.editing.lessonId,
+            formData,
+            classId,
+          );
+          showMessage("Cập nhật bài học con thành công!");
+        } else {
+          await api.createSubLesson(parentLessonId, formData, classId);
+          showMessage("Thêm bài học con thành công!");
+        }
+        setSubLessonDialog({
+          open: false,
+          editing: null,
+          parentLessonId: null,
+        });
+
+        // Refresh subLessons cho lesson này
+        const res = await api.getLessonDetail(parentLessonId, classId);
+        if (res.data.subLessons) {
+          const sorted = [...res.data.subLessons].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
+          );
+          setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
+        }
+      } catch (err) {
+        console.error("❌ Lỗi lưu bài học con:", err);
+        showMessage(
+          "Lỗi khi lưu bài học con: " +
+            (err.response?.data?.message || err.message),
+          "error",
         );
-        showMessage("Cập nhật bài học con thành công!");
-      } else {
-        await api.createSubLesson(parentLessonId, formData, classId);
-        showMessage("Thêm bài học con thành công!");
       }
-      setSubLessonDialog({ open: false, editing: null, parentLessonId: null });
-
-      // Refresh subLessons cho lesson này
-      const res = await api.getLessonDetail(parentLessonId, classId);
-      if (res.data.subLessons) {
-        const sorted = [...res.data.subLessons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
-      }
-    } catch (err) {
-      console.error("❌ Lỗi lưu bài học con:", err);
-      showMessage("Lỗi khi lưu bài học con: " + (err.response?.data?.message || err.message), "error");
-    }
-  }, [subLessonDialog, api, classId, showMessage]);
+    },
+    [subLessonDialog, api, classId, showMessage],
+  );
 
   // ==================== DELETE HANDLER ====================
 
@@ -310,14 +364,19 @@ function LessonsContent() {
         // Refresh subLessons
         const res = await api.getLessonDetail(item.parentLessonId, classId);
         if (res.data.subLessons) {
-          const sorted = [...res.data.subLessons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          const sorted = [...res.data.subLessons].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
+          );
           setSubLessons((prev) => ({ ...prev, [item.parentLessonId]: sorted }));
         }
       }
       setDeleteTarget({ open: false, type: null, item: null });
     } catch (err) {
       console.error("❌ Lỗi xóa:", err);
-      showMessage("Lỗi khi xóa: " + (err.response?.data?.message || err.message), "error");
+      showMessage(
+        "Lỗi khi xóa: " + (err.response?.data?.message || err.message),
+        "error",
+      );
     }
   }, [deleteTarget, api, classId, fetchLessons, showMessage]);
 
@@ -330,11 +389,15 @@ function LessonsContent() {
   const handleQuestionsChanged = useCallback(() => {
     // Refresh question count cho subLesson hiện tại
     if (questionManager.subLesson) {
-      const parentLessonId = findParentLessonId(questionManager.subLesson.lessonId);
+      const parentLessonId = findParentLessonId(
+        questionManager.subLesson.lessonId,
+      );
       if (parentLessonId) {
         api.getLessonDetail(parentLessonId, classId).then((res) => {
           if (res.data.subLessons) {
-            const sorted = [...res.data.subLessons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            const sorted = [...res.data.subLessons].sort(
+              (a, b) => (a.order ?? 0) - (b.order ?? 0),
+            );
             setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
           }
         });
@@ -343,14 +406,17 @@ function LessonsContent() {
   }, [questionManager.subLesson, api, classId]);
 
   // Helper để tìm parent lesson
-  const findParentLessonId = useCallback((subLessonId) => {
-    for (const [lessonId, subs] of Object.entries(subLessons)) {
-      if (subs.some((s) => s.lessonId === subLessonId)) {
-        return lessonId;
+  const findParentLessonId = useCallback(
+    (subLessonId) => {
+      for (const [lessonId, subs] of Object.entries(subLessons)) {
+        if (subs.some((s) => s.lessonId === subLessonId)) {
+          return lessonId;
+        }
       }
-    }
-    return null;
-  }, [subLessons]);
+      return null;
+    },
+    [subLessons],
+  );
 
   // ==================== DRAG & DROP ====================
 
@@ -362,59 +428,71 @@ function LessonsContent() {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
-  const handleLessonDragEnd = useCallback(async (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleLessonDragEnd = useCallback(
+    async (event) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    const oldIndex = lessons.findIndex((l) => l.lessonId === active.id);
-    const newIndex = lessons.findIndex((l) => l.lessonId === over.id);
+      const oldIndex = lessons.findIndex((l) => l.lessonId === active.id);
+      const newIndex = lessons.findIndex((l) => l.lessonId === over.id);
 
-    const newLessons = arrayMove(lessons, oldIndex, newIndex);
-    setLessons(newLessons);
+      const newLessons = arrayMove(lessons, oldIndex, newIndex);
+      setLessons(newLessons);
 
-    // Lưu thứ tự mới lên server
-    try {
-      const lessonIds = newLessons.map((l) => l.lessonId);
-      await api.reorderLessons(classId, lessonIds);
-      showMessage("Cập nhật thứ tự bài học thành công!");
-    } catch (err) {
-      console.error("❌ Lỗi cập nhật thứ tự:", err);
-      showMessage("Lỗi khi cập nhật thứ tự", "error");
-      // Rollback
-      fetchLessons();
-    }
-  }, [lessons, api, classId, fetchLessons, showMessage]);
-
-  const handleSubLessonDragEnd = useCallback(async (event, parentLessonId) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const currentSubLessons = subLessons[parentLessonId] || [];
-    const oldIndex = currentSubLessons.findIndex((s) => s.lessonId === active.id);
-    const newIndex = currentSubLessons.findIndex((s) => s.lessonId === over.id);
-
-    const newSubLessons = arrayMove(currentSubLessons, oldIndex, newIndex);
-    setSubLessons((prev) => ({ ...prev, [parentLessonId]: newSubLessons }));
-
-    // Lưu thứ tự mới lên server
-    try {
-      const subLessonIds = newSubLessons.map((s) => s.lessonId);
-      await api.reorderSubLessons(parentLessonId, subLessonIds, classId);
-      showMessage("Cập nhật thứ tự bài học con thành công!");
-    } catch (err) {
-      console.error("❌ Lỗi cập nhật thứ tự:", err);
-      showMessage("Lỗi khi cập nhật thứ tự", "error");
-      // Rollback
-      const res = await api.getLessonDetail(parentLessonId, classId);
-      if (res.data.subLessons) {
-        const sorted = [...res.data.subLessons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
+      // Lưu thứ tự mới lên server
+      try {
+        const lessonIds = newLessons.map((l) => l.lessonId);
+        await api.reorderLessons(classId, lessonIds);
+        showMessage("Cập nhật thứ tự bài học thành công!");
+      } catch (err) {
+        console.error("❌ Lỗi cập nhật thứ tự:", err);
+        showMessage("Lỗi khi cập nhật thứ tự", "error");
+        // Rollback
+        fetchLessons();
       }
-    }
-  }, [subLessons, api, classId, showMessage]);
+    },
+    [lessons, api, classId, fetchLessons, showMessage],
+  );
+
+  const handleSubLessonDragEnd = useCallback(
+    async (event, parentLessonId) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const currentSubLessons = subLessons[parentLessonId] || [];
+      const oldIndex = currentSubLessons.findIndex(
+        (s) => s.lessonId === active.id,
+      );
+      const newIndex = currentSubLessons.findIndex(
+        (s) => s.lessonId === over.id,
+      );
+
+      const newSubLessons = arrayMove(currentSubLessons, oldIndex, newIndex);
+      setSubLessons((prev) => ({ ...prev, [parentLessonId]: newSubLessons }));
+
+      // Lưu thứ tự mới lên server
+      try {
+        const subLessonIds = newSubLessons.map((s) => s.lessonId);
+        await api.reorderSubLessons(parentLessonId, subLessonIds, classId);
+        showMessage("Cập nhật thứ tự bài học con thành công!");
+      } catch (err) {
+        console.error("❌ Lỗi cập nhật thứ tự:", err);
+        showMessage("Lỗi khi cập nhật thứ tự", "error");
+        // Rollback
+        const res = await api.getLessonDetail(parentLessonId, classId);
+        if (res.data.subLessons) {
+          const sorted = [...res.data.subLessons].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
+          );
+          setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
+        }
+      }
+    },
+    [subLessons, api, classId, showMessage],
+  );
 
   // ==================== RENDER ====================
 
@@ -473,7 +551,9 @@ function LessonsContent() {
           mb: 2,
         }}
       >
-        <h1 className="lessons-list__title">Danh sách bài học - Lớp {classId}</h1>
+        <h1 className="lessons-list__title">
+          Danh sách bài học - Lớp {classId}
+        </h1>
         <EditModeToggle />
       </Box>
 
@@ -551,7 +631,13 @@ function LessonsContent() {
       <SubLessonFormDialog
         open={subLessonDialog.open}
         editing={subLessonDialog.editing}
-        onClose={() => setSubLessonDialog({ open: false, editing: null, parentLessonId: null })}
+        onClose={() =>
+          setSubLessonDialog({
+            open: false,
+            editing: null,
+            parentLessonId: null,
+          })
+        }
         onSave={handleSaveSubLesson}
       />
 
@@ -565,7 +651,9 @@ function LessonsContent() {
         }
         itemType={deleteTarget.type === "lesson" ? "bài học" : "bài học con"}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget({ open: false, type: null, item: null })}
+        onCancel={() =>
+          setDeleteTarget({ open: false, type: null, item: null })
+        }
       />
 
       {/* Question Manager Dialog */}
@@ -683,7 +771,9 @@ function SortableLessonItem({
           <h3>
             {lesson.title}
             {isHidden && editMode && (
-              <span style={{ color: "#999", fontSize: "0.8rem", marginLeft: 8 }}>
+              <span
+                style={{ color: "#999", fontSize: "0.8rem", marginLeft: 8 }}
+              >
                 (Ẩn)
               </span>
             )}
@@ -702,10 +792,12 @@ function SortableLessonItem({
                   onEditLesson(lesson);
                 }}
                 sx={{
-                  background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                  background:
+                    "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
                   color: "white",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
+                    background:
+                      "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
                   },
                 }}
               >
@@ -720,10 +812,12 @@ function SortableLessonItem({
                   onDeleteLesson(lesson);
                 }}
                 sx={{
-                  background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                  background:
+                    "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
                   color: "white",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                    background:
+                      "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
                   },
                 }}
               >
@@ -782,7 +876,12 @@ function SortableLessonItem({
                   key={sub.lessonId}
                   sub={sub}
                   index={index}
-                  prog={subProgress[sub.lessonId] || { progress: 0, completed: false }}
+                  prog={
+                    subProgress[sub.lessonId] || {
+                      progress: 0,
+                      completed: false,
+                    }
+                  }
                   editMode={editMode}
                   classId={classId}
                   parentLessonId={lesson.lessonId}
@@ -889,7 +988,9 @@ function SortableSubLessonItem({
             {sub.displayId ? `${sub.displayId}: ` : ""}
             {sub.title}
             {isHidden && editMode && (
-              <span style={{ color: "#999", fontSize: "0.75rem", marginLeft: 8 }}>
+              <span
+                style={{ color: "#999", fontSize: "0.75rem", marginLeft: 8 }}
+              >
                 (Ẩn)
               </span>
             )}
@@ -907,10 +1008,12 @@ function SortableSubLessonItem({
                   size="small"
                   onClick={() => onOpenQuestionManager(sub)}
                   sx={{
-                    background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+                    background:
+                      "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
                     color: "white",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #38ef7d 0%, #11998e 100%)",
+                      background:
+                        "linear-gradient(135deg, #38ef7d 0%, #11998e 100%)",
                     },
                   }}
                 >
@@ -922,10 +1025,12 @@ function SortableSubLessonItem({
                   size="small"
                   onClick={() => onEdit(sub, parentLessonId)}
                   sx={{
-                    background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                    background:
+                      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
                     color: "white",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
+                      background:
+                        "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
                     },
                   }}
                 >
@@ -937,10 +1042,12 @@ function SortableSubLessonItem({
                   size="small"
                   onClick={() => onDelete(sub, parentLessonId)}
                   sx={{
-                    background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                    background:
+                      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
                     color: "white",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                      background:
+                        "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
                     },
                   }}
                 >
@@ -956,7 +1063,7 @@ function SortableSubLessonItem({
               onNavigate(
                 sub.mode === "simple"
                   ? `/course/${classId}/lesson-simple/${sub.lessonId}`
-                  : `/course/${classId}/lesson/${sub.lessonId}`
+                  : `/course/${classId}/lesson/${sub.lessonId}`,
               )
             }
           >

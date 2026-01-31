@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import useCourses from "../hook/useCourses";
 import CourseCard from "../components/CourseCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -10,11 +11,20 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedName = localStorage.getItem("fullname");
-    if (storedName) {
-      setUserName(storedName);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  }, []);
+
+    try {
+      const decoded = jwtDecode(token);
+      setUserName(decoded.fullname || decoded.username || "User");
+    } catch {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const fallbackCourses = [
     {
@@ -35,7 +45,7 @@ export default function HomePage() {
 
   const { courses, loading } = useCourses(
     `${process.env.REACT_APP_API_URL}/api/courses/my-courses`,
-    fallbackCourses
+    fallbackCourses,
   );
 
   if (loading) return <LoadingSpinner text="Đang tải dữ liệu..." />;

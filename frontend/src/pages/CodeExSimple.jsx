@@ -1,5 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import LayoutSimple from "../components/LayoutSimple";
 import DifficultySlider from "../components/DifficultySlider";
 import SubmitButton from "../components/SubmitButton";
@@ -10,7 +11,15 @@ import "../styles/CodeEx.scss";
 
 export default function CodeExSimple() {
   const { lessonId, classId } = useParams();
-  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+  const userId = useMemo(() => {
+    if (!token) return null;
+    try {
+      return jwtDecode(token).id;
+    } catch {
+      return null;
+    }
+  }, [token]);
   const {
     lesson,
     questions,
