@@ -1,16 +1,19 @@
-﻿import React, { useState, useContext, useMemo } from "react";
+import React, { useState, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Layout from "../components/Layout";
+import LayoutMobile from "../components/LayoutMobile";
 import DifficultySlider from "../components/DifficultySlider";
 import SubmitButton from "../components/SubmitButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import useLessonQuestions from "../hook/useLessonQuestions";
+import useIsMobile from "../hook/useIsMobile";
 import { HeaderContext } from "../context/HeaderContext";
 import "../styles/CodeEx.scss";
 
 export default function CodeEx() {
   const { lessonId, classId } = useParams();
+  const isMobile = useIsMobile();
   const token = localStorage.getItem("token");
   const userId = useMemo(() => {
     if (!token) return null;
@@ -85,16 +88,29 @@ export default function CodeEx() {
         </div>
       </div>
 
-      <Layout
-        questions={questions}
-        current={current}
-        editorStates={editorStates}
-        setCurrent={setCurrent}
-        updateEditorState={updateEditorState}
-        difficulty={difficulty}
-        lessonId={lessonId}
-        userId={userId}
-      />
+      {isMobile ? (
+        <LayoutMobile
+          questions={questions}
+          current={current}
+          editorStates={editorStates}
+          setCurrent={setCurrent}
+          updateEditorState={updateEditorState}
+          difficulty={difficulty}
+          lessonId={lessonId}
+          userId={userId}
+        />
+      ) : (
+        <Layout
+          questions={questions}
+          current={current}
+          editorStates={editorStates}
+          setCurrent={setCurrent}
+          updateEditorState={updateEditorState}
+          difficulty={difficulty}
+          lessonId={lessonId}
+          userId={userId}
+        />
+      )}
     </div>
   );
 }

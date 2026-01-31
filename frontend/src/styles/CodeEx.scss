@@ -31,3 +31,23 @@
     margin-right: 2%;
   }
 }
+
+// --- Responsive ---
+@media (max-width: 768px) {
+  .top-bar {
+    padding: 8px 12px;
+    
+    .left {
+      gap: 8px !important;
+      
+      .toggle-header-btn {
+        font-size: 1rem !important;
+      }
+    }
+    
+    .right {
+      margin-right: 0;
+    }
+  }
+}
+

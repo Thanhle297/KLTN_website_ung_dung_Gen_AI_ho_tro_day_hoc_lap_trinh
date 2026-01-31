@@ -2,15 +2,18 @@ import React, { useState, useContext, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import LayoutSimple from "../components/LayoutSimple";
+import LayoutSimpleMobile from "../components/LayoutSimpleMobile";
 import DifficultySlider from "../components/DifficultySlider";
 import SubmitButton from "../components/SubmitButton";
 import LoadingSpinner from "../components/LoadingSpinner";
 import useLessonQuestions from "../hook/useLessonQuestions";
+import useIsMobile from "../hook/useIsMobile";
 import { HeaderContext } from "../context/HeaderContext";
 import "../styles/CodeEx.scss";
 
 export default function CodeExSimple() {
   const { lessonId, classId } = useParams();
+  const isMobile = useIsMobile();
   const token = localStorage.getItem("token");
   const userId = useMemo(() => {
     if (!token) return null;
@@ -75,18 +78,34 @@ export default function CodeExSimple() {
         </div>
       </div>
 
-      <LayoutSimple
-        questions={questions}
-        current={current}
-        setCurrent={setCurrent}
-        editorStates={editorStates}
-        updateEditorState={(id, s) =>
-          setEditorStates((prev) => ({ ...prev, [id]: { ...prev[id], ...s } }))
-        }
-        difficulty={difficulty}
-        lessonId={lessonId}
-        userId={userId}
-      />
+      {isMobile ? (
+        <LayoutSimpleMobile
+          questions={questions}
+          current={current}
+          setCurrent={setCurrent}
+          editorStates={editorStates}
+          updateEditorState={(id, s) =>
+            setEditorStates((prev) => ({ ...prev, [id]: { ...prev[id], ...s } }))
+          }
+          difficulty={difficulty}
+          lessonId={lessonId}
+          userId={userId}
+        />
+      ) : (
+        <LayoutSimple
+          questions={questions}
+          current={current}
+          setCurrent={setCurrent}
+          editorStates={editorStates}
+          updateEditorState={(id, s) =>
+            setEditorStates((prev) => ({ ...prev, [id]: { ...prev[id], ...s } }))
+          }
+          difficulty={difficulty}
+          lessonId={lessonId}
+          userId={userId}
+        />
+      )}
     </div>
   );
 }
+
