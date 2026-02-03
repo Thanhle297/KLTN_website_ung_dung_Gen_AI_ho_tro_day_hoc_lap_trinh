@@ -2,9 +2,9 @@ import "../styles/QuestionPanel.scss";
 import { useEffect } from "react";
 
 export default function QuestionPanel({ current }) {
-  useEffect(() => {
-    console.log("QUESTION HTML:", current.question);
-  }, [current]);
+  // useEffect(() => {
+  //   console.log("QUESTION HTML:", current.question);
+  // }, [current]);
 
   return (
     <div className="question-panel">
