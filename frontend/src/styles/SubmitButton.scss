@@ -89,7 +89,8 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
   padding: 32px 24px; // ⬇️ Giảm padding cho thanh thoát
   border-radius: 20px; // Bo góc vừa phải
   text-align: center;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
   z-index: 10001;
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -144,6 +145,103 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
         &:hover {
           background: #f1f5f9;
           color: #1e293b;
+        }
+      }
+    }
+  }
+}
+
+// ============================================================
+// RESULT POPUP (POPUP KẾT QUẢ ĐIỂM)
+// ============================================================
+.result-popup {
+  max-width: 420px; // Rộng hơn popup xác nhận một chút
+  .popup-header {
+    margin-bottom: 28px;
+    .result-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+
+      &.pass {
+        background: rgba(5, 150, 105, 0.1); // Xanh lá nhạt
+        color: $success-active;
+      }
+      &.fail {
+        background: rgba(220, 38, 38, 0.1); // Đỏ nhạt
+        color: $danger-text;
+      }
+      svg {
+        font-size: 40px;
+      }
+    }
+    h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: $text-title;
+      margin-bottom: 16px;
+    }
+    .score-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 15px;
+      color: $text-body;
+      .score-detail,
+      .score-percentage {
+        strong {
+          color: $text-title;
+          font-weight: 700;
+          font-size: 16px;
+        }
+      }
+      .badge {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        &.pass {
+          background: rgba(5, 150, 105, 0.12);
+          color: $success-active;
+        }
+        &.fail {
+          background: rgba(220, 38, 38, 0.12);
+          color: $danger-text;
+        }
+      }
+    }
+  }
+  .popup-actions {
+    flex-direction: column; // ⬇️ Nút xếp dọc cho dễ bấm
+    button {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 15px;
+      &.btn-primary {
+        background: $primary-blue;
+        color: white;
+        border: 2px solid $primary-blue;
+        order: 1; // Nút chính ở trên
+        &:hover {
+          background: darken($primary-blue, 8%);
+          border-color: darken($primary-blue, 8%);
+        }
+      }
+      &.btn-secondary {
+        background: transparent;
+        color: $text-body;
+        border: 2px solid #e2e8f0;
+        order: 2; // Nút phụ ở dưới
+        &:hover {
+          background: #f8fafc;
+          color: $text-title;
+          border-color: #cbd5e1;
         }
       }
     }

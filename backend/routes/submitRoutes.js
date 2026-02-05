@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
       .toArray();
 
     // 3️⃣ LƯU LỊCH SỬ (KHÔNG GHI ĐÈ)
-    await db.collection("submit_history").insertOne({
+    const insertResult = await db.collection("submit_history").insertOne({
       userId,
       lessonId, // chính là subLessonId
       courseId,
@@ -56,6 +56,8 @@ router.post("/", async (req, res) => {
       questions: questionsSnapshot, // ✅ Lưu snapshot câu hỏi
       createdAt: new Date(),
     });
+
+    const submissionId = insertResult.insertedId.toString();
 
     // 4️⃣ LƯU BEST RESULT VÀO sublesson_progress
     const old = await db.collection("sublesson_progress").findOne({
@@ -81,14 +83,7 @@ router.post("/", async (req, res) => {
       );
     }
 
-    // // 🧠 FIX QUYỀN TRUY CẬP COURSE — CỰC KỲ QUAN TRỌNG
-    // await db.collection("users").updateOne(
-    //   { _id: new ObjectId(userId) },
-    //   {
-    //     $addToSet: { enrolledCourses: courseId },
-    //     $set: { updatedAt: new Date() },
-    //   }
-    // );
+    
 
     return res.json({
       success: true,
@@ -98,6 +93,7 @@ router.post("/", async (req, res) => {
       progress,
       requiredProgress,
       completed,
+      submissionId,
       bestProgress: old ? Math.max(progress, old.progress) : progress,
       improved: !old || progress > old.progress,
     });
