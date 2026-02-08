@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
 import { HeaderProvider, HeaderContext } from "./context/HeaderContext";
 import {
   BrowserRouter as Router,
@@ -41,9 +42,8 @@ function isTokenExpired() {
   const token = localStorage.getItem("token");
   if (!token) return true;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const now = Date.now() / 1000;
-    return payload.exp < now;
+    const decode = jwtDecode(token);
+    return decode.exp*1000 < Date.now();
   } catch {
     return true;
   }
