@@ -53,7 +53,7 @@ export default function ReviewPage() {
   return (
     <div className="review-page-container">
       <div className="review-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
+        <button className="back-btn" onClick={() => navigate(`/course/${submission.courseId}`)}>
           <FaArrowLeft /> Quay lại
         </button>
         <h1>
