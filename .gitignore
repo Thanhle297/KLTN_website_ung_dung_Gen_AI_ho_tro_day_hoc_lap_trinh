@@ -7,5 +7,8 @@ frontend/node_modules/
 backend/node_modules/
 backend/*.csv
 .agent
+.agents
+.opencode
 .temp
 *.md
+draw
