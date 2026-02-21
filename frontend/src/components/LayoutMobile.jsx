@@ -14,6 +14,7 @@ export default function LayoutMobile({
   difficulty,
   lessonId,
   userId,
+  lessonNumber,
 }) {
   const [activeTab, setActiveTab] = useState("question"); // question, code
   const [popupData, setPopupData] = useState(null);
@@ -88,6 +89,7 @@ export default function LayoutMobile({
                     updateEditorState(current.id, { result: newResult })
                 }
                 onExecuteResponse={handleExecuteResponse}
+                lessonNumber={lessonNumber}
             />
         </div>
       </div>

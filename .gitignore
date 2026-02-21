@@ -12,3 +12,5 @@ backend/*.csv
 .temp
 *.md
 draw
+backup*/
+backend/scripts*/

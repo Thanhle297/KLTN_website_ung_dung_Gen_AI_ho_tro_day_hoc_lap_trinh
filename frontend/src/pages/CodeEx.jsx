@@ -98,6 +98,7 @@ export default function CodeEx() {
           difficulty={difficulty}
           lessonId={lessonId}
           userId={userId}
+          lessonNumber={lesson?.lessonNumber}
         />
       ) : (
         <Layout
@@ -109,6 +110,7 @@ export default function CodeEx() {
           difficulty={difficulty}
           lessonId={lessonId}
           userId={userId}
+          lessonNumber={lesson?.lessonNumber}
         />
       )}
     </div>

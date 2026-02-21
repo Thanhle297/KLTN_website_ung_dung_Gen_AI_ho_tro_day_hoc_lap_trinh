@@ -37,13 +37,39 @@ async function callPromptAI({
   error,
   testcase,
   mode = "full",
+  lessonNumber,
 }) {
+  // Validation lessonNumber
+  if (!lessonNumber || lessonNumber < 16 || lessonNumber > 28) {
+    throw new Error(`lessonNumber không hợp lệ:${lessonNumber}`);
+  }
   let prompt = "";
 
   // ---------------- FULL PROMPT (DỄ) ----------------
   if (mode === "full") {
     prompt = `
-Bạn là một giáo viên Tin học ở Việt Nam. Nhiệm vụ chính của bạn là: 
+Bạn là một giáo viên Tin học ở Việt Nam.Học sinh học lập trình python
+theo thứ tự nội dung các bài như sau:
+Bài 16: Học về câu lệnh print đơn giản
+Bài 17: Học về biến và các lệnh gán
+Bài 18: Học về các câu lệnh vào ra đơn giản
+Bài 19: Học về câu lệnh rẽ nhánh if
+Bài 20: Học về câu lệnh lặp for
+Bài 21: Học về câu lệnh lặp while
+Bài 22: Học về kiểu dữ liệu danh sách
+Bài 23: Học về các lệnh làm việc với dữ liệu danh sách
+Bài 24: Học về xâu kí tự
+Bài 25: Học về các lệnh làm việc với xâu kí tự
+Bài 26: Học về hàm trong python
+Bài 27: Học về tham số của hàm
+Bài 28: Học về phạm vi của biến
+Học sinh hiện tại đang học bài: ${lessonNumber}
+**QUAN TRỌNG - GIỚI HẠN KIẾN THỨC**:
+- Học sinh CHỈ được học đến bài ${lessonNumber}.
+- TUYỆT ĐỐI KHÔNG gợi ý sử dụng kiến thức, cú pháp, hoặc khái niệm từ các bài sau bài ${lessonNumber}.
+- Chỉ sử dụng các khái niệm từ bài 16 đến bài ${lessonNumber} để hướng dẫn.
+- Nếu code học sinh sử dụng kiến thức vượt quá bài ${lessonNumber}, hãy nhắc em dùng cách đơn giản hơn phù hợp với trình độ.
+Nhiệm vụ chính của bạn là:
 1. Nhận code và kết quả thông báo từ ide do học sinh lập trình bằng Python. 
 2. Chấm điểm dựa trên các tiêu chí sau: 
 - Tính đúng đắn (Correctness): code có chạy đúng với yêu cầu đề bài không? 
@@ -98,6 +124,23 @@ Expected: ${testcase.expected}
   else if (mode === "instruct_only") {
     prompt = `
 Bạn là giáo viên Tin học ở Việt Nam. 
+Học sinh đang học bài ${lessonNumber} (chuỗi bài 16-28).
+**QUAN TRỌNG**: Chỉ gợi ý dùng kiến thức từ bài 16-${lessonNumber}. KHÔNG đề cập các khái niệm từ bài sau.
+
+Danh sách bài học:
+- Bài 16: print đơn giản
+- Bài 17: biến và lệnh gán
+- Bài 18: vào ra đơn giản
+- Bài 19: if rẽ nhánh
+- Bài 20: vòng lặp for
+- Bài 21: vòng lặp while
+- Bài 22: danh sách (list)
+- Bài 23: làm việc với danh sách
+- Bài 24: xâu kí tự
+- Bài 25: làm việc với xâu
+- Bài 26: hàm
+- Bài 27: tham số hàm
+- Bài 28: phạm vi biến
 Hãy chỉ trả về hướng dẫn trong **một hoặc nhiều thẻ <instruct>**, 
 và tuyệt đối KHÔNG được tạo ra bất kỳ thẻ <quiz>, <answer>, <correct>, <question>, <ans> nào.
 Nếu trong câu trả lời có chứa các thẻ đó thì hãy **bỏ qua hoàn toàn**, chỉ xuất <instruct>.

@@ -13,14 +13,37 @@ const PYTHON_SERVICE_URL =
 const normalizeString = (str) => str.replace(/\r/g, "").trim();
 
 router.post("/execute", async (req, res) => {
-  const { code, testcases, question, difficulty, lessonId, echo_input } =
-    req.body;
+  const {
+    code,
+    testcases,
+    question,
+    difficulty,
+    lessonId,
+    lessonNumber,
+    echo_input,
+  } = req.body;
 
   try {
     if (!code || !testcases || testcases.length === 0) {
       return res
         .status(400)
         .json({ success: false, error: "Missing code or testcases" });
+    }
+
+    // Validation lessonNumber
+    if (lessonNumber === undefined || lessonNumber === null) {
+      return res.status(400).json({
+        success: false,
+        error: "lessonNumber là bắt buộc",
+      });
+    }
+
+    const lessonNum = Number(lessonNumber);
+    if (isNaN(lessonNum) || lessonNum < 16 || lessonNum > 28) {
+      return res.status(400).json({
+        success: false,
+        error: `lessonNumber không hợp lệ:${lessonNumber}. Phải là số từ 16-28`,
+      });
     }
 
     // =====================
@@ -41,7 +64,7 @@ router.post("/execute", async (req, res) => {
     const pythonResponse = await axios.post(
       `${PYTHON_SERVICE_URL}/execute`,
       pythonPayload,
-      { timeout: 30000 }
+      { timeout: 30000 },
     );
 
     const executionResults = pythonResponse.data.results;
@@ -100,6 +123,7 @@ router.post("/execute", async (req, res) => {
           testcase: failedCase,
           mode: "instruct_only",
           lessonId,
+          lessonNumber: lessonNum,
         });
         return res.json({
           success: true,
@@ -117,6 +141,7 @@ router.post("/execute", async (req, res) => {
         testcase: failedCase,
         mode: "full",
         lessonId,
+        lessonNumber: lessonNum,
       });
       return res.json({
         success: true,

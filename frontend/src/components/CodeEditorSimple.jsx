@@ -17,6 +17,7 @@ export default function CodeEditorSimple({
   difficulty,
   userId,
   lessonId,
+  lessonNumber,
 }) {
   const [localCode, setLocalCode] = useState("");
   const [inputText, setInputText] = useState("");
@@ -171,6 +172,7 @@ export default function CodeEditorSimple({
             input: inputText,
             output: output,
             difficulty,
+            lessonNumber,
           }),
         }
       );

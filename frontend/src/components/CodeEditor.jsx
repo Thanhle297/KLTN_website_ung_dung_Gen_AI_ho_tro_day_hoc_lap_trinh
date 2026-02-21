@@ -17,6 +17,7 @@ export default function CodeEditor({
   difficulty,
   userId,
   lessonId,
+  lessonNumber,
 }) {
   const [results, setResults] = useState([]);
   const [guide, setGuide] = useState(null);
@@ -138,6 +139,7 @@ export default function CodeEditor({
           difficulty,
           echo_input: question.echo_input ?? false,
           lessonId,
+          lessonNumber,
         }),
       });
 

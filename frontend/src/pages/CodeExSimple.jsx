@@ -90,6 +90,7 @@ export default function CodeExSimple() {
           difficulty={difficulty}
           lessonId={lessonId}
           userId={userId}
+          lessonNumber={lesson?.lessonNumber}
         />
       ) : (
         <LayoutSimple
@@ -103,6 +104,7 @@ export default function CodeExSimple() {
           difficulty={difficulty}
           lessonId={lessonId}
           userId={userId}
+          lessonNumber={lesson?.lessonNumber}
         />
       )}
     </div>

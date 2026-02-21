@@ -4,11 +4,11 @@ const { callPromptSimple } = require("./callPromtSimple");
 const router = express.Router();
 
 router.post("/simple", async (req, res) => {
-  const { code, question, input, output, difficulty } = req.body;
+  const { code, question, input, output, difficulty, lessonNumber } = req.body;
 
   try {
     console.log("🤖 Gọi AI (mode simple)...");
-    const aiRes = await callPromptSimple({ code, question, input, output,difficulty });
+    const aiRes = await callPromptSimple({ code, question, input, output,difficulty, lessonNumber });
 
     res.json({
       success: aiRes.success,

@@ -14,6 +14,7 @@ export default function LayoutSimpleMobile({
   difficulty,
   lessonId,
   userId,
+  lessonNumber,
 }) {
   const [activeTab, setActiveTab] = useState("question"); // question, code
   const [popupData, setPopupData] = useState(null);
@@ -105,6 +106,7 @@ export default function LayoutSimpleMobile({
                 onChangeInput={(v) => updateEditorState(current.id, { input: v })}
                 onChangeResult={(v) => updateEditorState(current.id, { result: v })}
                 onExecuteResponse={handleExecuteResponse}
+                lessonNumber={lessonNumber}
             />
         </div>
       </div>

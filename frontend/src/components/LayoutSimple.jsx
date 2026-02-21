@@ -14,6 +14,7 @@ export default function LayoutSimple({
   difficulty,
   lessonId,
   userId,
+  lessonNumber,
 }) {
   const [popupData, setPopupData] = useState(null);
 
@@ -91,6 +92,7 @@ export default function LayoutSimple({
           onChangeInput={(v) => updateEditorState(current.id, { input: v })}
           onChangeResult={(v) => updateEditorState(current.id, { result: v })}
           onExecuteResponse={handleExecuteResponse}
+          lessonNumber={lessonNumber}
         />
       </div>
     </div>

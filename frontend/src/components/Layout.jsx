@@ -15,6 +15,7 @@ export default function Layout({
   difficulty, // 🔹 nhận thêm prop từ CodeEx
   lessonId,
   userId,
+  lessonNumber,
 }) {
   const [popupData, setPopupData] = useState(null);
 
@@ -67,6 +68,7 @@ export default function Layout({
             updateEditorState(current.id, { result: newResult })
           }
           onExecuteResponse={handleExecuteResponse}
+          lessonNumber={lessonNumber}
         />
       </div>
     </div>

@@ -65,7 +65,15 @@ async function callPromptSimple({
   input,
   output,
   difficulty = 2,
+  lessonNumber,
 }) {
+  // Validation lessonNumber - chỉ bắt buộc khi cần gợi ý AI (difficulty 0, 1)
+  if (difficulty !== 2) {
+    if (!lessonNumber || lessonNumber < 16 || lessonNumber > 28) {
+      throw new Error(`lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`);
+    }
+  }
+
   // Quy tắc theo difficulty level
   let difficultyRule = "";
   let quizRule = "";
@@ -99,9 +107,34 @@ async function callPromptSimple({
 - KHÔNG tạo câu hỏi trắc nghiệm, để mảng "quizzes" rỗng [].`;
   }
 
+  // Đoạn giới hạn kiến thức - chỉ thêm khi difficulty !== 2
+  const knowledgeLimit = difficulty !== 2 ? `
+Học sinh hiện tại đang học bài: ${lessonNumber}
+**QUAN TRỌNG - GIỚI HẠN KIẾN THỨC**:
+- Học sinh CHỈ được học đến bài ${lessonNumber}.
+- TUYỆT ĐỐI KHÔNG gợi ý sử dụng kiến thức, cú pháp, hoặc khái niệm từ các bài sau bài ${lessonNumber}.
+- Chỉ sử dụng các khái niệm từ bài 16 đến bài ${lessonNumber} để hướng dẫn.
+- Nếu code học sinh sử dụng kiến thức vượt quá bài ${lessonNumber}, hãy nhắc em dùng cách đơn giản hơn phù hợp với trình độ.
+
+Danh sách bài học:
+- Bài 16: print đơn giản
+- Bài 17: biến và lệnh gán
+- Bài 18: vào ra đơn giản
+- Bài 19: if rẽ nhánh
+- Bài 20: vòng lặp for
+- Bài 21: vòng lặp while
+- Bài 22: danh sách (list)
+- Bài 23: làm việc với danh sách
+- Bài 24: xâu kí tự
+- Bài 25: làm việc với xâu
+- Bài 26: hàm
+- Bài 27: tham số hàm
+- Bài 28: phạm vi biến
+` : "";
+
   const prompt = `
 Bạn là giáo viên Tin học Việt Nam. Đánh giá bài làm Python của học sinh.
-
+${knowledgeLimit}
 QUY TẮC ĐÁNH GIÁ:
 ${difficultyRule}
 
