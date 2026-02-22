@@ -73,6 +73,13 @@ router.post(
             continue;
           }
 
+          // Chỉ cho phép import enrollment cho students
+          if (user.role === "teacher") {
+            errorCount++;
+            errors.push(`${username} là giáo viên, không thể enroll. Hãy dùng chức năng phân công giáo viên`);
+            continue;
+          }
+
           // Kiểm tra course tồn tại
           const course = await db.collection("courses").findOne({ courseId });
           if (!course) {

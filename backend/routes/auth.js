@@ -33,14 +33,22 @@ router.post("/auth/login", async (req, res) => {
       { expiresIn: "2h" },
     );
 
-    res.json({
+    // Trả về field phù hợp theo role
+    const responseData = {
       message: "Đăng nhập thành công",
       token,
       fullname: user.fullname,
       role: user.role,
       userId: user._id.toString(),
-      enrolledCourses: user.enrolledCourses || [],
-    });
+    };
+
+    if (user.role === "teacher") {
+      responseData.teachingCourses = user.teachingCourses || [];
+    } else {
+      responseData.enrolledCourses = user.enrolledCourses || [];
+    }
+
+    res.json(responseData);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Lỗi server" });

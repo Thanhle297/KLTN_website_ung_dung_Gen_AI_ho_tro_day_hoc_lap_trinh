@@ -37,6 +37,13 @@ router.post("/enroll", authMiddleware, adminOnly, async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy user" });
     }
 
+    // Chỉ cho phép enroll students, teacher dùng teachingCourses
+    if (user.role === "teacher") {
+      return res.status(400).json({
+        message: "Không thể enroll giáo viên. Hãy dùng chức năng phân công giáo viên",
+      });
+    }
+
     // Kiểm tra course tồn tại
     const course = await db.collection("courses").findOne({ courseId });
     if (!course) {
@@ -191,7 +198,9 @@ router.get(
         return res.status(404).json({ message: "Không tìm thấy user" });
       }
 
-      const enrolledCourses = user.enrolledCourses || [];
+      const enrolledCourses = user.role === "teacher"
+        ? (user.teachingCourses || [])
+        : (user.enrolledCourses || []);
 
       // Lấy thông tin chi tiết các courses
       const courses = await db

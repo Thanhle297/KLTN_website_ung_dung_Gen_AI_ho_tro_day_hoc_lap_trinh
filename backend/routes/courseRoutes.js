@@ -28,12 +28,15 @@ router.get("/my-courses", authMiddleware, async (req, res) => {
       _id: new ObjectId(userId),
     });
 
-    const enrolledCourses = user?.enrolledCourses || [];
+    // Teacher dùng teachingCourses, student dùng enrolledCourses
+    const courseIds = req.user.role === "teacher"
+      ? (user?.teachingCourses || [])
+      : (user?.enrolledCourses || []);
 
     // Lấy thông tin chi tiết các courses
     const courses = await db
       .collection("courses")
-      .find({ courseId: { $in: enrolledCourses } })
+      .find({ courseId: { $in: courseIds } })
       .toArray();
 
     res.json(courses);
@@ -63,7 +66,7 @@ router.put("/:courseId", authMiddleware, async (req, res) => {
     const db = getDB();
     const { courseId } = req.params;
 
-    // Nếu có teacherIds trong body, đồng bộ enrolledCourses
+    // Nếu có teacherIds trong body, đồng bộ teachingCourses
     if (Array.isArray(req.body.teacherIds)) {
       const course = await db.collection("courses").findOne({ courseId });
       const oldTeacherIds = course?.teacherIds || [];
@@ -77,7 +80,7 @@ router.put("/:courseId", authMiddleware, async (req, res) => {
         await db.collection("users").updateMany(
           { _id: { $in: addedTeachers.map((id) => new ObjectId(id)) } },
           {
-            $addToSet: { enrolledCourses: courseId },
+            $addToSet: { teachingCourses: courseId },
             $set: { updatedAt: new Date() },
           },
         );
@@ -91,7 +94,7 @@ router.put("/:courseId", authMiddleware, async (req, res) => {
         await db.collection("users").updateMany(
           { _id: { $in: removedTeachers.map((id) => new ObjectId(id)) } },
           {
-            $pull: { enrolledCourses: courseId },
+            $pull: { teachingCourses: courseId },
             $set: { updatedAt: new Date() },
           },
         );
@@ -370,8 +373,8 @@ router.post("/:courseId/teachers", authMiddleware, async (req, res) => {
       .collection("courses")
       .updateOne({ courseId }, { $set: { teacherIds } });
 
-    // Đồng bộ enrolledCourses:
-    // Giáo viên MỚI được thêm → thêm courseId vào enrolledCourses
+    // Đồng bộ teachingCourses:
+    // Giáo viên MỚI được thêm → thêm courseId vào teachingCourses
     const addedTeachers = teacherIds.filter(
       (id) => !oldTeacherIds.includes(id),
     );
@@ -379,13 +382,13 @@ router.post("/:courseId/teachers", authMiddleware, async (req, res) => {
       await db.collection("users").updateMany(
         { _id: { $in: addedTeachers.map((id) => new ObjectId(id)) } },
         {
-          $addToSet: { enrolledCourses: courseId },
+          $addToSet: { teachingCourses: courseId },
           $set: { updatedAt: new Date() },
         },
       );
     }
 
-    // Giáo viên BỊ XÓA → xóa courseId khỏi enrolledCourses
+    // Giáo viên BỊ XÓA → xóa courseId khỏi teachingCourses
     const removedTeachers = oldTeacherIds.filter(
       (id) => !teacherIds.includes(id),
     );
@@ -393,7 +396,7 @@ router.post("/:courseId/teachers", authMiddleware, async (req, res) => {
       await db.collection("users").updateMany(
         { _id: { $in: removedTeachers.map((id) => new ObjectId(id)) } },
         {
-          $pull: { enrolledCourses: courseId },
+          $pull: { teachingCourses: courseId },
           $set: { updatedAt: new Date() },
         },
       );
@@ -444,7 +447,7 @@ router.put("/:courseId/teachers/add", authMiddleware, async (req, res) => {
     await db.collection("users").updateOne(
       { _id: new ObjectId(teacherId) },
       {
-        $addToSet: { enrolledCourses: courseId },
+        $addToSet: { teachingCourses: courseId },
         $set: { updatedAt: new Date() },
       },
     );
@@ -491,11 +494,11 @@ router.put("/:courseId/teachers/remove", authMiddleware, async (req, res) => {
       .collection("courses")
       .updateOne({ courseId }, { $pull: { teacherIds: teacherId } });
 
-    // Đồng bộ: xóa courseId khỏi enrolledCourses của giáo viên
+    // Đồng bộ: xóa courseId khỏi teachingCourses của giáo viên
     await db.collection("users").updateOne(
       { _id: new ObjectId(teacherId) },
       {
-        $pull: { enrolledCourses: courseId },
+        $pull: { teachingCourses: courseId },
         $set: { updatedAt: new Date() },
       },
     );
@@ -513,7 +516,7 @@ router.put("/:courseId/teachers/remove", authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE - ✅ Cập nhật để xóa courseId khỏi enrolledCourses của users
+// DELETE - Cập nhật để xóa courseId khỏi enrolledCourses của students và teachingCourses của teachers
 router.delete("/:courseId", async (req, res) => {
   const db = getDB();
   const { courseId } = req.params;
@@ -521,12 +524,20 @@ router.delete("/:courseId", async (req, res) => {
   // Xóa course
   await db.collection("courses").deleteOne({ courseId });
 
-  // ⚠️ QUAN TRỌNG: Xóa courseId khỏi enrolledCourses của tất cả user
+  // Xóa courseId khỏi enrolledCourses của students
   await db
     .collection("users")
     .updateMany(
       { enrolledCourses: courseId },
       { $pull: { enrolledCourses: courseId } },
+    );
+
+  // Xóa courseId khỏi teachingCourses của teachers
+  await db
+    .collection("users")
+    .updateMany(
+      { teachingCourses: courseId },
+      { $pull: { teachingCourses: courseId } },
     );
 
   res.json({ message: "Course deleted" });

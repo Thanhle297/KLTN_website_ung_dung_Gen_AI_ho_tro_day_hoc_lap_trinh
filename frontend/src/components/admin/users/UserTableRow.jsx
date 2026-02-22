@@ -66,7 +66,10 @@ const UserTableRow = ({
   onManageCourses,
 }) => {
   const roleConfig = getRoleConfig(user.role);
-  const courseCount = user.enrolledCourses?.length || 0;
+  // Teacher dùng teachingCourses, student dùng enrolledCourses
+  const courseCount = user.role === "teacher"
+    ? (user.teachingCourses?.length || 0)
+    : (user.enrolledCourses?.length || 0);
 
   return (
     <Fade in={true} style={{ transitionDelay: `${index * 30}ms` }}>
@@ -280,7 +283,9 @@ const areEqual = (prevProps, nextProps) => {
     prevProps.user.email === nextProps.user.email &&
     prevProps.user.username === nextProps.user.username &&
     prevProps.user.enrolledCourses?.length ===
-      nextProps.user.enrolledCourses?.length // ✅ Thêm check enrolledCourses
+      nextProps.user.enrolledCourses?.length &&
+    prevProps.user.teachingCourses?.length ===
+      nextProps.user.teachingCourses?.length
   );
 };
 
