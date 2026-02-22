@@ -58,11 +58,53 @@ router.post("/", async (req, res) => {
 });
 
 // UPDATE
-router.put("/:courseId", async (req, res) => {
-  await getDB()
-    .collection("courses")
-    .updateOne({ courseId: req.params.courseId }, { $set: req.body });
-  res.json({ message: "Course updated" });
+router.put("/:courseId", authMiddleware, async (req, res) => {
+  try {
+    const db = getDB();
+    const { courseId } = req.params;
+
+    // Nếu có teacherIds trong body, đồng bộ enrolledCourses
+    if (Array.isArray(req.body.teacherIds)) {
+      const course = await db.collection("courses").findOne({ courseId });
+      const oldTeacherIds = course?.teacherIds || [];
+      const newTeacherIds = req.body.teacherIds;
+
+      // Giáo viên MỚI được thêm
+      const addedTeachers = newTeacherIds.filter(
+        (id) => !oldTeacherIds.includes(id),
+      );
+      if (addedTeachers.length > 0) {
+        await db.collection("users").updateMany(
+          { _id: { $in: addedTeachers.map((id) => new ObjectId(id)) } },
+          {
+            $addToSet: { enrolledCourses: courseId },
+            $set: { updatedAt: new Date() },
+          },
+        );
+      }
+
+      // Giáo viên BỊ XÓA
+      const removedTeachers = oldTeacherIds.filter(
+        (id) => !newTeacherIds.includes(id),
+      );
+      if (removedTeachers.length > 0) {
+        await db.collection("users").updateMany(
+          { _id: { $in: removedTeachers.map((id) => new ObjectId(id)) } },
+          {
+            $pull: { enrolledCourses: courseId },
+            $set: { updatedAt: new Date() },
+          },
+        );
+      }
+    }
+
+    await db.collection("courses").updateOne({ courseId }, { $set: req.body });
+
+    res.json({ message: "Cập nhật khóa học thành công" });
+  } catch (error) {
+    console.error("❌ Update course error:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
 });
 
 /* ============================================
@@ -196,7 +238,7 @@ router.get(
         error: error.message,
       });
     }
-  }
+  },
 );
 
 /* ============================================
@@ -278,7 +320,7 @@ router.get("/:courseId/teachers", authMiddleware, async (req, res) => {
       .collection("users")
       .find(
         { _id: { $in: teacherIds.map((id) => new ObjectId(id)) } },
-        { projection: { _id: 1, username: 1, fullname: 1, email: 1, role: 1 } }
+        { projection: { _id: 1, username: 1, fullname: 1, email: 1, role: 1 } },
       )
       .toArray();
 
@@ -316,11 +358,46 @@ router.post("/:courseId/teachers", authMiddleware, async (req, res) => {
       });
     }
 
+    // Lấy danh sách giáo viên cũ để so sánh
+    const course = await db.collection("courses").findOne({ courseId });
+    if (!course) {
+      return res.status(404).json({ message: "Không tìm thấy khóa học" });
+    }
+    const oldTeacherIds = course.teacherIds || [];
+
     // Cập nhật teacherIds cho course
-    await db.collection("courses").updateOne(
-      { courseId },
-      { $set: { teacherIds } }
+    await db
+      .collection("courses")
+      .updateOne({ courseId }, { $set: { teacherIds } });
+
+    // Đồng bộ enrolledCourses:
+    // Giáo viên MỚI được thêm → thêm courseId vào enrolledCourses
+    const addedTeachers = teacherIds.filter(
+      (id) => !oldTeacherIds.includes(id),
     );
+    if (addedTeachers.length > 0) {
+      await db.collection("users").updateMany(
+        { _id: { $in: addedTeachers.map((id) => new ObjectId(id)) } },
+        {
+          $addToSet: { enrolledCourses: courseId },
+          $set: { updatedAt: new Date() },
+        },
+      );
+    }
+
+    // Giáo viên BỊ XÓA → xóa courseId khỏi enrolledCourses
+    const removedTeachers = oldTeacherIds.filter(
+      (id) => !teacherIds.includes(id),
+    );
+    if (removedTeachers.length > 0) {
+      await db.collection("users").updateMany(
+        { _id: { $in: removedTeachers.map((id) => new ObjectId(id)) } },
+        {
+          $pull: { enrolledCourses: courseId },
+          $set: { updatedAt: new Date() },
+        },
+      );
+    }
 
     res.json({
       message: "Cập nhật danh sách giáo viên thành công",
@@ -360,9 +437,16 @@ router.put("/:courseId/teachers/add", authMiddleware, async (req, res) => {
     }
 
     // Thêm teacherId vào mảng (không trùng)
-    await db.collection("courses").updateOne(
-      { courseId },
-      { $addToSet: { teacherIds: teacherId } }
+    await db
+      .collection("courses")
+      .updateOne({ courseId }, { $addToSet: { teacherIds: teacherId } });
+
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(teacherId) },
+      {
+        $addToSet: { enrolledCourses: courseId },
+        $set: { updatedAt: new Date() },
+      },
     );
 
     res.json({
@@ -403,9 +487,17 @@ router.put("/:courseId/teachers/remove", authMiddleware, async (req, res) => {
     }
 
     // Xóa teacherId khỏi mảng
-    await db.collection("courses").updateOne(
-      { courseId },
-      { $pull: { teacherIds: teacherId } }
+    await db
+      .collection("courses")
+      .updateOne({ courseId }, { $pull: { teacherIds: teacherId } });
+
+    // Đồng bộ: xóa courseId khỏi enrolledCourses của giáo viên
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(teacherId) },
+      {
+        $pull: { enrolledCourses: courseId },
+        $set: { updatedAt: new Date() },
+      },
     );
 
     res.json({
@@ -434,7 +526,7 @@ router.delete("/:courseId", async (req, res) => {
     .collection("users")
     .updateMany(
       { enrolledCourses: courseId },
-      { $pull: { enrolledCourses: courseId } }
+      { $pull: { enrolledCourses: courseId } },
     );
 
   res.json({ message: "Course deleted" });
