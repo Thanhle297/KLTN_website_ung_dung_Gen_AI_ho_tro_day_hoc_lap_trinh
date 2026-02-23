@@ -98,6 +98,16 @@ const LessonsTable = React.memo(
                     fontSize: "0.95rem",
                   }}
                 >
+                  Số bài (SGK)
+                </TableCell>
+                <TableCell
+                  width={110}
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
                   Chế độ
                 </TableCell>
                 <TableCell
@@ -138,7 +148,7 @@ const LessonsTable = React.memo(
 
               {lessons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                     <Typography variant="h6" color="text.secondary">
                       😔 Không có bài học nào
                     </Typography>

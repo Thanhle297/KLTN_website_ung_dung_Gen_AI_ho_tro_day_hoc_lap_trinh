@@ -80,8 +80,31 @@ router.get("/detail/:lessonId", async (req, res) => {
 
 /* -------- CREATE -------- */
 router.post("/", async (req, res) => {
-  await getDB().collection("lessons").insertOne(req.body);
-  res.json({ message: "Lesson created" });
+  try {
+    const { lessonNumber } = req.body;
+
+    // Validation lessonNumber
+    if (lessonNumber === undefined || lessonNumber === null || lessonNumber === "") {
+      return res.status(400).json({
+        message: "Thiếu trường lessonNumber (Số bài học SGK)",
+      });
+    }
+
+    const num = Number(lessonNumber);
+    if (isNaN(num) || num < 16 || num > 28) {
+      return res.status(400).json({
+        message: `lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`,
+      });
+    }
+
+    // Đảm bảo lessonNumber lưu dạng Number
+    const data = { ...req.body, lessonNumber: num };
+    await getDB().collection("lessons").insertOne(data);
+    res.json({ message: "Lesson created" });
+  } catch (err) {
+    console.error("❌ Tạo lesson lỗi:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
 });
 
 /* -------- UPDATE -------- */

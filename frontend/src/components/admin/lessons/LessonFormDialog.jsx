@@ -16,6 +16,23 @@ import {
   Typography,
 } from "@mui/material";
 
+// Mapping lessonNumber -> tên bài trong SGK
+const LESSON_NUMBER_OPTIONS = [
+  { value: 16, label: "Bài 16 - Lệnh print" },
+  { value: 17, label: "Bài 17 - Biến và lệnh gán" },
+  { value: 18, label: "Bài 18 - Câu lệnh vào ra đơn giản" },
+  { value: 19, label: "Bài 19 - Câu lệnh rẽ nhánh if" },
+  { value: 20, label: "Bài 20 - Câu lệnh lặp for" },
+  { value: 21, label: "Bài 21 - Câu lệnh lặp while" },
+  { value: 22, label: "Bài 22 - Kiểu dữ liệu danh sách" },
+  { value: 23, label: "Bài 23 - Lệnh làm việc với danh sách" },
+  { value: 24, label: "Bài 24 - Xâu kí tự" },
+  { value: 25, label: "Bài 25 - Lệnh làm việc với xâu kí tự" },
+  { value: 26, label: "Bài 26 - Hàm trong Python" },
+  { value: 27, label: "Bài 27 - Tham số của hàm" },
+  { value: 28, label: "Bài 28 - Phạm vi của biến" },
+];
+
 const LessonFormDialog = ({
   open,
   editing,
@@ -32,6 +49,7 @@ const LessonFormDialog = ({
     order: 1,
     mode: "group",
     display: true,
+    lessonNumber: "",
   });
 
   useEffect(() => {
@@ -44,6 +62,7 @@ const LessonFormDialog = ({
         order: editing.order ?? 1,
         mode: editing.mode || "group",
         display: editing.display ?? true,
+        lessonNumber: editing.lessonNumber ?? "",
       });
     } else {
       setForm({
@@ -54,6 +73,7 @@ const LessonFormDialog = ({
         order: 1,
         mode: "group",
         display: true,
+        lessonNumber: "",
       });
     }
   }, [editing, open, defaultCourseId]);
@@ -118,6 +138,21 @@ const LessonFormDialog = ({
               {courses.map((c) => (
                 <MenuItem key={c.courseId} value={c.courseId}>
                   {c.title} ({c.courseId})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel>Số bài học (SGK)</InputLabel>
+            <Select
+              label="Số bài học (SGK)"
+              value={form.lessonNumber}
+              onChange={(e) => handleChange("lessonNumber", e.target.value)}
+            >
+              {LESSON_NUMBER_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
                 </MenuItem>
               ))}
             </Select>

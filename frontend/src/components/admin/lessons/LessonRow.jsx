@@ -6,8 +6,9 @@ import {
   Stack,
   Switch,
   Tooltip,
+  Chip,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Warning } from "@mui/icons-material";
 
 const LessonRow = React.memo(
   ({ lesson, onEdit, onDelete, onToggleDisplay }) => {
@@ -27,6 +28,24 @@ const LessonRow = React.memo(
         <TableCell>{lesson.courseId}</TableCell>
         <TableCell sx={{ fontWeight: 500 }}>{lesson.title}</TableCell>
         <TableCell>{lesson.order}</TableCell>
+        <TableCell>
+          {lesson.lessonNumber ? (
+            <Chip
+              label={`Bài ${lesson.lessonNumber}`}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                background:
+                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+              }}
+            />
+          ) : (
+            <Tooltip title="Chưa gán số bài học (SGK)">
+              <Warning sx={{ color: "#f59e0b", fontSize: 20 }} />
+            </Tooltip>
+          )}
+        </TableCell>
         <TableCell>{lesson.mode}</TableCell>
 
         <TableCell align="center">
