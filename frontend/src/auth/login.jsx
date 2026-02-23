@@ -54,12 +54,12 @@ export default function Login() {
   return (
     <div className="login">
       <section className="login__image">
-        <img src={banner} alt="Hệ thống học lập trình trực tuyến" />
+        <img src={banner} alt="Hệ thống học lập trình trực tuyến" width={600} height={400} />
       </section>
 
       <section className="login__form">
         <form className="form" onSubmit={handleSubmit} autoComplete="on">
-          <img src={logo} alt="TEdu Logo" className="logo" />
+          <img src={logo} alt="TEdu Logo" className="logo" width={80} height={80} />
           <h2>Đăng nhập hệ thống</h2>
 
           {error && <p className="form__error">{error}</p>}
@@ -94,6 +94,7 @@ export default function Login() {
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>

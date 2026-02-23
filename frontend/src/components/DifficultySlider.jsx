@@ -6,6 +6,7 @@ import { FaRobot } from "react-icons/fa";
 export default function DifficultySlider({ onChange }) {
   const [level, setLevel] = useState(0);
   const colors = ["#F44336", "#FFC107", "#4CAF50"];
+  const labels = ["Khó", "Trung bình", "Dễ"];
 
   useEffect(() => {
     if (onChange) onChange(2);
@@ -30,8 +31,10 @@ export default function DifficultySlider({ onChange }) {
         {[0, 1, 2].map((i) => (
           <button
             key={i}
+            type="button"
             className={`slider-btn ${level === i ? "active" : ""}`}
             onClick={() => handleClick(i)}
+            aria-label={labels[i]}
           >
             <FaRobot
               size={22}

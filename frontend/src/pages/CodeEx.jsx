@@ -57,9 +57,11 @@ export default function CodeEx() {
           style={{ display: "flex", alignItems: "center", gap: "15px" }}
         >
           <button
+            type="button"
             onClick={() => setShowHeader(!showHeader)}
             className="toggle-header-btn"
             title={showHeader ? "Ẩn Header" : "Hiện Header"}
+            aria-label={showHeader ? "Ẩn thanh điều hướng" : "Hiện thanh điều hướng"}
             style={{
               background: "none",
               border: "none",

@@ -1,31 +1,8 @@
 /* ==========================================================================
-   CourseCard - Modern Education Design with Gradient White-Blue Theme
-   Matches HomePage gradient theme
+   CourseCard - Deep Ocean & Coral Design System
    ========================================================================== */
 
-/* Import Inter font (consistent with HomePage) */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
-/* ==========================================================================
-   Color Variables - Consistent with HomePage
-   ========================================================================== */
-
-$bg-primary: #ffffff;
-$bg-gradient-light: #f0f9ff;
-$bg-gradient-start: #e0f2fe;
-
-$blue-primary: #2563eb;
-$blue-secondary: #1d4ed8;
-$blue-light: #dbeafe;
-$blue-education: #0ea5e9;
-$blue-accent: #3b82f6;
-
-$text-primary: #0f172a;
-$text-secondary: #334155;
-$text-muted: #64748b;
-
-$border-light: #e2e8f0;
-$border-blue: rgba(37, 99, 235, 0.2);
+@import "./design-tokens";
 
 /* ==========================================================================
    Course Card Component
@@ -33,39 +10,34 @@ $border-blue: rgba(37, 99, 235, 0.2);
 
 .course-card {
   /* Glass effect with gradient */
-  background: linear-gradient(
-    to bottom right,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(240, 249, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0.9) 100%
-  );
+  background: var(--bg-gradient-card);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: $radius-xl;
 
   /* Layered shadows for depth */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(37, 99, 235, 0.08),
-    0 0 0 1px rgba(37, 99, 235, 0.04);
+  box-shadow: var(--shadow-sm);
 
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform $transition-smooth,
+              box-shadow $transition-smooth,
+              border-color $transition-smooth;
   display: flex;
   flex-direction: column;
   height: 100%;
   cursor: pointer;
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-family);
 
   /* Hover effect - lift and glow */
   &:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.06),
-      0 16px 32px rgba(37, 99, 235, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
+    border-color: rgba(59, 130, 246, 0.3);
   }
 
   /* Focus state for accessibility */
   &:focus-visible {
-    outline: 3px solid $blue-accent;
+    outline: 3px solid var(--border-focus);
     outline-offset: 2px;
   }
 
@@ -76,23 +48,23 @@ $border-blue: rgba(37, 99, 235, 0.2);
   &__image {
     position: relative;
     width: 100%;
-    height: 140px; /* Reduced from 200px */
-    background: linear-gradient(
+    height: 140px;
+    background: var(--card-image-bg, linear-gradient(
       135deg,
       rgba(224, 242, 254, 0.3) 0%,
       rgba(240, 249, 255, 0.5) 100%
-    );
+    ));
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: background 0.3s ease;
+    transition: background $transition-smooth;
 
     img {
       max-width: 85%;
       max-height: 85%;
       object-fit: contain;
-      transition: transform 0.3s ease;
+      transition: transform $transition-smooth;
       filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
     }
 
@@ -108,24 +80,22 @@ $border-blue: rgba(37, 99, 235, 0.2);
       right: 8px;
       background: linear-gradient(
         135deg,
-        $blue-primary 0%,
-        $blue-secondary 100%
+        var(--color-blue) 0%,
+        var(--color-blue-hover) 100%
       );
-      color: #ffffff;
+      color: var(--text-inverse);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       padding: 4px 8px;
-      border-radius: 6px;
+      border-radius: $radius-sm;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3),
-        0 4px 8px rgba(37, 99, 235, 0.15);
-      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow $transition-smooth, transform $transition-smooth;
 
       /* Glow effect on hover */
       .course-card:hover & {
-        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4),
-          0 8px 16px rgba(37, 99, 235, 0.25);
+        box-shadow: var(--shadow-md), var(--shadow-glow-blue);
         transform: translateY(-2px);
       }
     }
@@ -143,12 +113,12 @@ $border-blue: rgba(37, 99, 235, 0.2);
     gap: 6px;
 
     h3 {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: var(--font-size-base);
+      font-weight: $font-weight-semibold;
       margin: 0;
       line-height: 1.4;
-      color: $text-primary;
-      transition: color 0.2s ease;
+      color: var(--text-primary);
+      transition: color $transition-fast;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       line-clamp: 2;
@@ -159,8 +129,8 @@ $border-blue: rgba(37, 99, 235, 0.2);
       .course-card:hover & {
         background: linear-gradient(
           135deg,
-          $blue-primary 0%,
-          $blue-education 100%
+          var(--color-blue) 0%,
+          var(--color-accent) 100%
         );
         background-clip: text;
         -webkit-background-clip: text;
@@ -169,10 +139,10 @@ $border-blue: rgba(37, 99, 235, 0.2);
     }
 
     p {
-      font-size: 13px;
-      color: $text-muted;
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
       margin: 0;
-      line-height: 1.5;
+      line-height: $line-height-normal;
       flex-grow: 1;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -184,41 +154,55 @@ $border-blue: rgba(37, 99, 235, 0.2);
     /* Call-to-Action Button */
     .course-card__btn {
       margin-top: 10px;
-      width: 100%; /* Make button full width for compact cards */
+      width: 100%;
       align-self: center;
       background: linear-gradient(
         135deg,
-        $blue-primary 0%,
-        $blue-secondary 100%
+        var(--color-blue) 0%,
+        var(--color-blue-hover) 100%
       );
-      color: #ffffff;
+      color: var(--text-inverse);
       border: none;
-      border-radius: 8px;
+      border-radius: $radius-md;
       padding: 8px 16px;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: var(--font-size-xs);
+      font-weight: $font-weight-semibold;
       font-family: inherit;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2),
-        0 4px 8px rgba(37, 99, 235, 0.1);
+      transition: background $transition-fast,
+                  transform $transition-fast,
+                  box-shadow $transition-fast;
+      box-shadow: var(--shadow-sm);
 
       &:hover {
-        background: linear-gradient(135deg, $blue-secondary 0%, #1e40af 100%);
+        background: linear-gradient(135deg, var(--color-blue-hover) 0%, #{$blue-700} 100%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3),
-          0 8px 16px rgba(37, 99, 235, 0.2);
+        box-shadow: var(--shadow-md);
       }
 
       &:active {
         transform: translateY(0);
       }
 
-      /* Focus state for keyboard navigation */
-      &:focus-visible {
-        outline: 3px solid $blue-accent;
-        outline-offset: 2px;
-      }
+      @include focus-visible;
+    }
+  }
+}
+
+/* ==========================================================================
+   Dark mode - CourseCard specific
+   ========================================================================== */
+
+html[data-theme="dark"] {
+  .course-card {
+    --card-image-bg: linear-gradient(
+      135deg,
+      rgba(30, 41, 59, 0.5) 0%,
+      rgba(15, 23, 42, 0.5) 100%
+    );
+
+    &__image img {
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     }
   }
 }
@@ -231,7 +215,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
 @media (min-width: 1440px) {
   .course-card {
     &__image {
-      height: 160px; /* Slightly larger on huge screens */
+      height: 160px;
     }
 
     &__body {
@@ -242,12 +226,10 @@ $border-blue: rgba(37, 99, 235, 0.2);
   }
 }
 
-/* Desktop (1024px - 1439px) - default styles work well */
-
 /* Tablet (768px - 1023px) */
-@media (max-width: 1023px) and (min-width: 768px) {
+@media (max-width: 1023px) and (min-width: $bp-md) {
   .course-card {
-    border-radius: 14px;
+    border-radius: $radius-lg;
 
     &__image {
       height: 180px;
@@ -282,7 +264,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
 /* Mobile (480px - 767px) */
 @media (max-width: 767px) and (min-width: 480px) {
   .course-card {
-    border-radius: 12px;
+    border-radius: $radius-lg;
 
     &__image {
       height: 160px;
@@ -311,7 +293,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
         margin-left: 0;
         padding: 10px 18px;
         font-size: 14px;
-        border-radius: 8px;
+        border-radius: $radius-md;
       }
     }
 
@@ -325,7 +307,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
 /* Small Mobile (320px - 479px) */
 @media (max-width: 479px) {
   .course-card {
-    border-radius: 12px;
+    border-radius: $radius-lg;
 
     &__image {
       height: 150px;
@@ -335,7 +317,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
         padding: 4px 8px;
         bottom: 8px;
         right: 8px;
-        border-radius: 6px;
+        border-radius: $radius-sm;
       }
     }
 
@@ -355,7 +337,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
         margin-left: 0;
         padding: 9px 16px;
         font-size: 13px;
-        border-radius: 8px;
+        border-radius: $radius-md;
       }
     }
 
@@ -370,7 +352,7 @@ $border-blue: rgba(37, 99, 235, 0.2);
    Accessibility Features
    ========================================================================== */
 
-/* Reduced motion for accessibility */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .course-card,
   .course-card__image img,
@@ -389,19 +371,19 @@ $border-blue: rgba(37, 99, 235, 0.2);
   .course-card__body h3 {
     .course-card:hover & {
       background: none;
-      -webkit-text-fill-color: $blue-primary;
+      -webkit-text-fill-color: var(--color-blue);
     }
   }
 }
 
-/* High contrast mode support */
+/* High contrast mode */
 @media (prefers-contrast: high) {
   .course-card {
     border-width: 2px;
-    border-color: $blue-primary;
+    border-color: var(--color-blue);
 
     &__body .course-card__btn {
-      border: 2px solid $bg-primary;
+      border: 2px solid var(--bg-primary);
     }
   }
 }

@@ -6,8 +6,11 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { EditorView } from "@uiw/react-codemirror";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { useThemeMode } from "../context/ThemeContext";
 
 export default function ReviewPage() {
+  const { isDark } = useThemeMode();
   const { submissionId } = useParams();
   const navigate = useNavigate();
   const [submission, setSubmission] = useState(null);
@@ -29,8 +32,9 @@ export default function ReviewPage() {
           setQuestions(subData.questions);
         } else if (subData.lessonId) {
           // 2. Fetch câu hỏi gốc (bao gồm đáp án đúng) - Fallback cho bài cũ
+          const courseParam = subData.courseId ? `&courseId=${subData.courseId}` : "";
           const resQ = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/questions?lessonId=${subData.lessonId}`
+            `${process.env.REACT_APP_API_URL}/api/questions?lessonId=${subData.lessonId}${courseParam}`
           );
           const qData = await resQ.json();
           setQuestions(qData);
@@ -53,7 +57,7 @@ export default function ReviewPage() {
   return (
     <div className="review-page-container">
       <div className="review-header">
-        <button className="back-btn" onClick={() => navigate(`/course/${submission.courseId}`)}>
+        <button type="button" className="back-btn" onClick={() => navigate(`/course/${submission.courseId}`)}>
           <FaArrowLeft /> Quay lại
         </button>
         <h1>
@@ -87,7 +91,7 @@ export default function ReviewPage() {
               }`}
             >
               <div className="q-header">
-                <h3>Câu {index + 1}:</h3>
+                <h2>Câu {index + 1}:</h2>
                 <span className={`status-badge ${isCorrect ? "ok" : "err"}`}>
                   {isCorrect ? (
                     <>
@@ -106,7 +110,7 @@ export default function ReviewPage() {
                   className="q-text"
                   dangerouslySetInnerHTML={{ __html: q.question || q.text }}
                 />
-                {q.image && <img src={q.image} alt="Question" />}
+                {q.image && <img src={q.image} alt={`Hình ảnh câu ${index + 1}`} />}
               </div>
 
               <div className="q-answers">
@@ -123,7 +127,7 @@ export default function ReviewPage() {
                         height="auto"
                         extensions={[python(), EditorView.editable.of(false)]}
                         readOnly={true}
-                        theme="light"
+                        theme={isDark ? oneDark : "light"}
                         basicSetup={{
                           lineNumbers: true,
                           foldGutter: false,

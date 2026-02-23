@@ -1,3 +1,5 @@
+@import "./design-tokens";
+
 .layout {
   display: flex;
   height: 100%;
@@ -5,8 +7,8 @@
 
   &__left {
     flex: 1;
-    padding: 20px;
-    border-right: 1px solid #ddd;
+    padding: $spacing-5;
+    border-right: 1px solid var(--border-light);
     overflow-y: auto;
     position: relative;
     // Ẩn thanh scroll cho gọn (tùy chọn)
@@ -15,15 +17,14 @@
       width: 6px; // thanh scroll dọc
     }
     &::-webkit-scrollbar-thumb {
-      background: #bbb;
-      border-radius: 3px;
+      background: var(--border-medium);
+      border-radius: $radius-full;
     }
   }
 
   &__right {
     flex: 2;
-    // height: 500p;
-    padding: 20px;
+    padding: $spacing-5;
     overflow-y: auto;
     // Ẩn thanh scroll cho gọn (tùy chọn)
     &::-webkit-scrollbar {
@@ -31,8 +32,8 @@
       width: 6px; // thanh scroll dọc
     }
     &::-webkit-scrollbar-thumb {
-      background: #bbb;
-      border-radius: 3px;
+      background: var(--border-medium);
+      border-radius: $radius-full;
     }
   }
 }
@@ -43,8 +44,8 @@
   left: 0;
   right: 0;   // phủ toàn bộ cột trái thôi
   bottom: 0;
-  z-index: 10;
-  background: rgba(0,0,0,0.4);
+  z-index: $z-dropdown;
+  background: var(--bg-overlay);
   display: flex;
   justify-content: center;
   align-items: center;

@@ -3,6 +3,7 @@ import "../styles/Profile.scss";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
+  const [snackMsg, setSnackMsg] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -13,7 +14,7 @@ export default function Profile() {
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
-      .catch(() => alert("Không thể tải thông tin người dùng"));
+      .catch(() => setSnackMsg("Không thể tải thông tin người dùng"));
   }, [token]);
 
   const handleChange = (e) => {
@@ -34,7 +35,7 @@ export default function Profile() {
     });
 
     const data = await res.json();
-    alert(data.message || "Cập nhật thành công");
+    setSnackMsg(data.message || "Cập nhật thành công");
   };
 
   if (!user) return <p>Đang tải...</p>;
@@ -42,7 +43,7 @@ export default function Profile() {
   return (
     <div className="profile-container">
       <div className="profile-card">
-        <h2>Thông tin tài khoản</h2>
+        <h1>Thông tin tài khoản</h1>
 
         <div className="profile-info">
           <label>
@@ -81,9 +82,15 @@ export default function Profile() {
           </label>
         </div>
 
-        <button className="save-btn" onClick={handleSave}>
+        <button type="button" className="save-btn" onClick={handleSave}>
           Lưu thay đổi
         </button>
+
+        {snackMsg && (
+          <div className="profile-snackbar" role="alert" onClick={() => setSnackMsg("")}>
+            {snackMsg}
+          </div>
+        )}
       </div>
     </div>
   );

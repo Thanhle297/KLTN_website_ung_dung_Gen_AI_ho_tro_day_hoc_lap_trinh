@@ -60,6 +60,7 @@ export default function SubmitButton({
   return (
     <>
       <button
+        type="button"
         className={`submit-btn ${loading ? "disabled" : ""}`}
         onClick={() => setShowPopup(true)}
         disabled={loading}
@@ -75,10 +76,11 @@ export default function SubmitButton({
             <div
               className="popup-overlay"
               onClick={() => setShowPopup(false)}
+              onKeyDown={(e) => { if (e.key === "Escape") setShowPopup(false); }}
             />
-            <div className="popup-card">
+            <div className="popup-card" role="dialog" aria-modal="true" aria-labelledby="confirm-popup-title">
               <div className="popup-header">
-                <h3>Xác nhận nộp bài?</h3>
+                <h3 id="confirm-popup-title">Xác nhận nộp bài?</h3>
                 <p>
                   Hệ thống sẽ ghi nhận kết quả cuối cùng. Bạn không thể chỉnh
                   sửa sau khi nộp.
@@ -86,12 +88,14 @@ export default function SubmitButton({
               </div>
               <div className="popup-actions">
                 <button
+                  type="button"
                   onClick={() => setShowPopup(false)}
                   className="btn-secondary"
                 >
                   Hủy
                 </button>
                 <button
+                  type="button"
                   onClick={handleSubmit}
                   className="btn-primary"
                   disabled={loading}
@@ -109,7 +113,7 @@ export default function SubmitButton({
         ReactDOM.createPortal(
           <div className="modern-popup-root">
             <div className="popup-overlay" />
-            <div className="popup-card result-popup">
+            <div className="popup-card result-popup" role="dialog" aria-modal="true" aria-labelledby="result-popup-title">
               <div className="popup-header">
                 {/* Icon Đạt/Chưa đạt */}
                 <div
@@ -122,7 +126,7 @@ export default function SubmitButton({
                   )}
                 </div>
                 {/* Tiêu đề */}
-                <h3>Kết quả nộp bài</h3>
+                <h3 id="result-popup-title">Kết quả nộp bài</h3>
                 {/* Thông tin điểm */}
                 <div className="score-info">
                   <div className="score-detail">
@@ -144,10 +148,10 @@ export default function SubmitButton({
                 </div>
               </div>
               <div className="popup-actions">
-                <button onClick={handleViewDetail} className="btn-primary">
+                <button type="button" onClick={handleViewDetail} className="btn-primary">
                   Xem lại chi tiết
                 </button>
-                <button onClick={handleGoToCourse} className="btn-secondary">
+                <button type="button" onClick={handleGoToCourse} className="btn-secondary">
                   Về khóa học
                 </button>
               </div>

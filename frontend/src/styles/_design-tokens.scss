@@ -1,0 +1,445 @@
+// =============================================================================
+// DESIGN TOKENS - H\u1ec7 th\u1ed1ng m\u00e0u Deep Ocean & Coral
+// File n\u00e0y l\u00e0 ngu\u1ed3n duy nh\u1ea5t (single source of truth) cho to\u00e0n b\u1ed9 bi\u1ebfn m\u00e0u,
+// typography, spacing, shadow, v\u00e0 animation c\u1ee7a d\u1ef1 \u00e1n.
+//
+// C\u00c1CH D\u00d9NG:
+//   - Trong SCSS: @use '../styles/design-tokens' as *;  ho\u1eb7c  @import './design-tokens';
+//   - Trong CSS: d\u00f9ng var(--color-primary), var(--shadow-md), v.v.
+//
+// DARK MODE:
+//   CSS custom properties t\u1ef1 \u0111\u1ed9ng thay \u0111\u1ed5i khi html[data-theme="dark"]
+//   SCSS variables ($blue-primary, ...) ch\u1ec9 d\u00f9ng cho fallback / static context.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// 1. FONT IMPORT (ch\u1ec9 import M\u1ed8T L\u1ea6N \u1edf \u0111\u00e2y, x\u00f3a t\u1ea5t c\u1ea3 @import font trong c\u00e1c file kh\u00e1c)
+// ---------------------------------------------------------------------------
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+// ---------------------------------------------------------------------------
+// 2. SCSS STATIC VARIABLES (d\u00f9ng cho calc, mixins, ho\u1eb7c n\u01a1i kh\u00f4ng h\u1ed7 tr\u1ee3 CSS vars)
+// ---------------------------------------------------------------------------
+
+// --- Deep Ocean Palette ---
+$navy-950: #020617;
+$navy-900: #0f172a;
+$navy-800: #1e293b;
+$navy-700: #334155;
+$navy-600: #475569;
+$navy-500: #64748b;
+$navy-400: #94a3b8;
+$navy-300: #cbd5e1;
+$navy-200: #e2e8f0;
+$navy-100: #f1f5f9;
+$navy-50: #f8fafc;
+
+// --- Coral (Secondary) ---
+$coral-600: #e11d48;
+$coral-500: #f43f5e;
+$coral-400: #fb7185;
+$coral-300: #fda4af;
+$coral-200: #fecdd3;
+$coral-100: #ffe4e6;
+$coral-50: #fff1f2;
+
+// --- Teal (Accent) ---
+$teal-700: #0f766e;
+$teal-600: #0d9488;
+$teal-500: #14b8a6;
+$teal-400: #2dd4bf;
+$teal-300: #5eead4;
+$teal-200: #99f6e4;
+$teal-100: #ccfbf1;
+$teal-50: #f0fdfa;
+
+// --- Blue (Education / Info - gi\u1eef t\u01b0\u01a1ng th\u00edch v\u1edbi c\u00e1c file c\u0169) ---
+$blue-700: #1d4ed8;
+$blue-600: #2563eb;
+$blue-500: #3b82f6;
+$blue-400: #60a5fa;
+$blue-300: #93c5fd;
+$blue-200: #bfdbfe;
+$blue-100: #dbeafe;
+$blue-50: #eff6ff;
+
+// --- Success / Warning / Error ---
+$success-600: #059669;
+$success-500: #10b981;
+$success-400: #34d399;
+$warning-500: #f59e0b;
+$warning-400: #fbbf24;
+$error-600: #dc2626;
+$error-500: #ef4444;
+$error-400: #f87171;
+
+// --- Typography ---
+$font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  Roboto, sans-serif;
+$font-family-code: "JetBrains Mono", "Fira Code", "Cascadia Code",
+  "SF Mono", Consolas, monospace;
+
+// Font sizes (rem)
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-md: 1.125rem;   // 18px
+$font-size-lg: 1.25rem;    // 20px
+$font-size-xl: 1.5rem;     // 24px
+$font-size-2xl: 1.875rem;  // 30px
+$font-size-3xl: 2.25rem;   // 36px
+$font-size-4xl: 3rem;      // 48px
+
+// Font weights
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+// Line heights
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+
+// --- Spacing ---
+$spacing-1: 0.25rem;  // 4px
+$spacing-2: 0.5rem;   // 8px
+$spacing-3: 0.75rem;  // 12px
+$spacing-4: 1rem;     // 16px
+$spacing-5: 1.25rem;  // 20px
+$spacing-6: 1.5rem;   // 24px
+$spacing-8: 2rem;     // 32px
+$spacing-10: 2.5rem;  // 40px
+$spacing-12: 3rem;    // 48px
+$spacing-16: 4rem;    // 64px
+$spacing-20: 5rem;    // 80px
+
+// --- Border Radius ---
+$radius-sm: 0.375rem;   // 6px
+$radius-md: 0.5rem;     // 8px
+$radius-lg: 0.75rem;    // 12px
+$radius-xl: 1rem;       // 16px
+$radius-2xl: 1.5rem;    // 24px
+$radius-full: 9999px;
+
+// --- Z-index ---
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-fixed: 300;
+$z-modal-backdrop: 400;
+$z-modal: 500;
+$z-popover: 600;
+$z-tooltip: 700;
+
+// --- Transition ---
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// --- Breakpoints ---
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
+$bp-2xl: 1536px;
+
+// ---------------------------------------------------------------------------
+// 3. CSS CUSTOM PROPERTIES (cho runtime theming + dark mode)
+// ---------------------------------------------------------------------------
+
+:root {
+  // === Color Primitives ===
+  --color-primary: #{$navy-900};
+  --color-primary-light: #{$navy-800};
+  --color-primary-lighter: #{$navy-700};
+  --color-secondary: #{$coral-500};
+  --color-secondary-hover: #{$coral-600};
+  --color-secondary-light: #{$coral-100};
+  --color-accent: #{$teal-500};
+  --color-accent-hover: #{$teal-600};
+  --color-accent-light: #{$teal-100};
+
+  // === Blue (gi\u1eef cho educational context) ===
+  --color-blue: #{$blue-600};
+  --color-blue-hover: #{$blue-700};
+  --color-blue-light: #{$blue-100};
+  --color-blue-50: #{$blue-50};
+
+  // === Backgrounds ===
+  --bg-primary: #ffffff;
+  --bg-secondary: #{$navy-50};
+  --bg-tertiary: #{$navy-100};
+  --bg-elevated: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --bg-glass-strong: rgba(255, 255, 255, 0.95);
+  --bg-overlay: rgba(15, 23, 42, 0.6);
+  --bg-overlay-heavy: rgba(2, 6, 17, 0.8);
+
+  // === Gradient backgrounds ===
+  --bg-gradient-page: linear-gradient(135deg, #{$navy-50} 0%, #{$blue-50} 50%, #{$coral-50} 100%);
+  --bg-gradient-hero: linear-gradient(135deg, #ffffff 0%, #{$blue-50} 50%, #{$teal-50} 100%);
+  --bg-gradient-card: linear-gradient(135deg, #ffffff 0%, #{$navy-50} 100%);
+  --bg-gradient-header: linear-gradient(180deg, #ffffff 0%, #{$navy-50} 100%);
+
+  // === Text ===
+  --text-primary: #{$navy-900};
+  --text-secondary: #{$navy-600};
+  --text-muted: #{$navy-500};
+  --text-disabled: #{$navy-400};
+  --text-inverse: #ffffff;
+  --text-link: #{$blue-600};
+  --text-link-hover: #{$blue-700};
+
+  // === Borders ===
+  --border-light: #{$navy-200};
+  --border-medium: #{$navy-300};
+  --border-focus: #{$blue-500};
+  --border-accent: #{$coral-400};
+
+  // === Shadows (nh\u1eb9 nh\u00e0ng cho light mode) ===
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-glow-coral: 0 0 20px rgba(244, 63, 94, 0.15);
+  --shadow-glow-teal: 0 0 20px rgba(20, 184, 166, 0.15);
+  --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.15);
+
+  // === Status ===
+  --color-success: #{$success-500};
+  --color-success-bg: #ecfdf5;
+  --color-warning: #{$warning-500};
+  --color-warning-bg: #fffbeb;
+  --color-error: #{$error-500};
+  --color-error-bg: #fef2f2;
+  --color-error-border: #{$error-400};
+  --color-error-text: #{$error-600};
+
+  // === Typography ===
+  --font-family: #{$font-family-base};
+  --font-family-code: #{$font-family-code};
+
+  --font-size-xs: #{$font-size-xs};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-base: #{$font-size-base};
+  --font-size-md: #{$font-size-md};
+  --font-size-lg: #{$font-size-lg};
+  --font-size-xl: #{$font-size-xl};
+  --font-size-2xl: #{$font-size-2xl};
+  --font-size-3xl: #{$font-size-3xl};
+  --font-size-4xl: #{$font-size-4xl};
+
+  // === Spacing ===
+  --spacing-1: #{$spacing-1};
+  --spacing-2: #{$spacing-2};
+  --spacing-3: #{$spacing-3};
+  --spacing-4: #{$spacing-4};
+  --spacing-5: #{$spacing-5};
+  --spacing-6: #{$spacing-6};
+  --spacing-8: #{$spacing-8};
+  --spacing-10: #{$spacing-10};
+  --spacing-12: #{$spacing-12};
+  --spacing-16: #{$spacing-16};
+  --spacing-20: #{$spacing-20};
+
+  // === Radius ===
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-2xl: #{$radius-2xl};
+  --radius-full: #{$radius-full};
+
+  // === Transitions ===
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+  --transition-smooth: #{$transition-smooth};
+  --transition-slow: #{$transition-slow};
+}
+
+// ---------------------------------------------------------------------------
+// 4. DARK MODE (t\u1ef1 \u0111\u1ed9ng \u0111\u1ed5i khi html c\u00f3 data-theme="dark")
+// ---------------------------------------------------------------------------
+
+html[data-theme="dark"] {
+  // === Color Primitives ===
+  --color-primary: #{$navy-100};
+  --color-primary-light: #{$navy-200};
+  --color-primary-lighter: #{$navy-300};
+  --color-secondary: #{$coral-400};
+  --color-secondary-hover: #{$coral-500};
+  --color-secondary-light: rgba(244, 63, 94, 0.15);
+  --color-accent: #{$teal-400};
+  --color-accent-hover: #{$teal-500};
+  --color-accent-light: rgba(20, 184, 166, 0.15);
+
+  // === Blue ===
+  --color-blue: #{$blue-400};
+  --color-blue-hover: #{$blue-500};
+  --color-blue-light: rgba(59, 130, 246, 0.15);
+  --color-blue-50: rgba(59, 130, 246, 0.08);
+
+  // === Backgrounds ===
+  --bg-primary: #{$navy-950};
+  --bg-secondary: #{$navy-900};
+  --bg-tertiary: #{$navy-800};
+  --bg-elevated: #{$navy-800};
+  --bg-glass: rgba(15, 23, 42, 0.8);
+  --bg-glass-strong: rgba(15, 23, 42, 0.95);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-overlay-heavy: rgba(0, 0, 0, 0.85);
+
+  // === Gradient backgrounds (t\u1ed1i h\u01a1n, tinh t\u1ebf) ===
+  --bg-gradient-page: linear-gradient(135deg, #{$navy-950} 0%, #{$navy-900} 50%, #{$navy-950} 100%);
+  --bg-gradient-hero: linear-gradient(135deg, #{$navy-900} 0%, #{$navy-950} 100%);
+  --bg-gradient-card: linear-gradient(135deg, #{$navy-800} 0%, #{$navy-900} 100%);
+  --bg-gradient-header: linear-gradient(180deg, #{$navy-900} 0%, #{$navy-950} 100%);
+
+  // === Text ===
+  --text-primary: #{$navy-50};
+  --text-secondary: #{$navy-300};
+  --text-muted: #{$navy-400};
+  --text-disabled: #{$navy-600};
+  --text-inverse: #{$navy-900};
+  --text-link: #{$blue-400};
+  --text-link-hover: #{$blue-300};
+
+  // === Borders ===
+  --border-light: #{$navy-700};
+  --border-medium: #{$navy-600};
+  --border-focus: #{$blue-400};
+  --border-accent: #{$coral-400};
+
+  // === Shadows (m\u1ea1nh h\u01a1n cho dark mode) ===
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-glow-coral: 0 0 25px rgba(244, 63, 94, 0.25);
+  --shadow-glow-teal: 0 0 25px rgba(20, 184, 166, 0.25);
+  --shadow-glow-blue: 0 0 25px rgba(59, 130, 246, 0.25);
+
+  // === Status (t\u01b0\u01a1i h\u01a1n cho dark bg) ===
+  --color-success: #{$success-400};
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-warning: #{$warning-400};
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-error: #{$error-400};
+  --color-error-bg: rgba(239, 68, 68, 0.12);
+  --color-error-border: #{$error-500};
+  --color-error-text: #{$error-400};
+}
+
+// ---------------------------------------------------------------------------
+// 5. UTILITY MIXINS
+// ---------------------------------------------------------------------------
+
+// Responsive breakpoints
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $bp-sm) { @content; }
+  } @else if $breakpoint == md {
+    @media (min-width: $bp-md) { @content; }
+  } @else if $breakpoint == lg {
+    @media (min-width: $bp-lg) { @content; }
+  } @else if $breakpoint == xl {
+    @media (min-width: $bp-xl) { @content; }
+  } @else if $breakpoint == 2xl {
+    @media (min-width: $bp-2xl) { @content; }
+  }
+}
+
+// Focus visible (accessibility)
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+}
+
+// Reduced motion
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// High contrast mode
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
+    @content;
+  }
+}
+
+// Glassmorphism (light mode)
+@mixin glass-effect {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+}
+
+// Glassmorphism (strong)
+@mixin glass-effect-strong {
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+}
+
+// Card style
+@mixin card-base {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base),
+              transform var(--transition-base),
+              border-color var(--transition-base);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-medium);
+  }
+}
+
+// Truncate text
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Line clamp
+@mixin line-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Smooth scrollbar
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: var(--radius-full);
+    &:hover {
+      background: var(--text-muted);
+    }
+  }
+}

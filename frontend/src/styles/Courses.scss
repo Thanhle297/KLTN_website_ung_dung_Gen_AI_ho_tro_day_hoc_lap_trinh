@@ -3,25 +3,7 @@
    Theme: White-Blue Gradient (Education & Trust)
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* Color Variables - Consistent with System */
-$bg-primary: #ffffff;
-$bg-gradient-mesh: radial-gradient(
-    at 0% 0%,
-    rgba(224, 242, 254, 0.6) 0px,
-    transparent 50%
-  ),
-  radial-gradient(at 100% 0%, rgba(219, 234, 254, 0.6) 0px, transparent 50%),
-  radial-gradient(at 100% 100%, rgba(236, 254, 255, 0.4) 0px, transparent 50%),
-  radial-gradient(at 0% 100%, rgba(243, 244, 246, 0.4) 0px, transparent 50%);
-
-$text-primary: #0f172a;
-$text-secondary: #475569;
-$text-light: #94a3b8;
-
-$blue-primary: #2563eb;
-$blue-vibrant: #3b82f6;
+@import "./design-tokens";
 
 /* ==========================================================================
    Main Container
@@ -30,9 +12,20 @@ $blue-vibrant: #3b82f6;
 .courses-ui {
   min-height: 100vh;
   padding: 40px 6%;
-  font-family: "Inter", system-ui, sans-serif;
-  background-color: #f8fafc;
-  background-image: $bg-gradient-mesh;
+  font-family: var(--font-family);
+  background-color: var(--bg-secondary);
+  background-image: radial-gradient(
+      at 0% 0%,
+      rgba(224, 242, 254, 0.6) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 100% 0%, rgba(219, 234, 254, 0.6) 0px, transparent 50%),
+    radial-gradient(
+      at 100% 100%,
+      rgba(236, 254, 255, 0.4) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 0% 100%, rgba(243, 244, 246, 0.4) 0px, transparent 50%);
   background-attachment: fixed;
 
   /* Header Section */
@@ -47,13 +40,17 @@ $blue-vibrant: #3b82f6;
   }
 
   &__title {
-    font-size: 42px;
-    font-weight: 800;
-    color: $text-primary;
-    margin-bottom: 16px;
-    line-height: 1.2;
+    font-size: $font-size-4xl;
+    font-weight: $font-weight-extrabold;
+    color: var(--text-primary);
+    margin-bottom: $spacing-4;
+    line-height: $line-height-tight;
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, $text-primary 30%, $blue-primary 100%);
+    background: linear-gradient(
+      135deg,
+      var(--text-primary) 30%,
+      var(--color-blue) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -68,18 +65,18 @@ $blue-vibrant: #3b82f6;
       transform: translateX(-50%);
       width: 60px;
       height: 4px;
-      background: linear-gradient(90deg, $blue-vibrant, #60a5fa);
+      background: linear-gradient(90deg, var(--color-blue), #{$blue-400});
       border-radius: 2px;
     }
   }
 
   &__subtitle {
-    font-size: 18px;
-    color: $text-secondary;
+    font-size: $font-size-md;
+    color: var(--text-secondary);
     line-height: 1.6;
     max-width: 600px;
     margin: 0 auto;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
   }
 
   /* Grid Layout */
@@ -87,7 +84,7 @@ $blue-vibrant: #3b82f6;
     display: grid;
     /* Adjusted for 5-6 items per row: ~220px min width */
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 24px;
+    gap: $spacing-6;
     padding-bottom: 40px;
     animation: fadeInUp 0.8s ease-out 0.2s backwards;
   }
@@ -95,12 +92,12 @@ $blue-vibrant: #3b82f6;
   /* Empty State */
   &__empty {
     text-align: center;
-    padding: 80px 20px;
-    background: rgba(255, 255, 255, 0.6);
+    padding: $spacing-20 $spacing-5;
+    background: var(--bg-glass);
     backdrop-filter: blur(12px);
-    border-radius: 24px;
+    border-radius: $radius-2xl;
     border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     max-width: 600px;
     margin: 40px auto;
     animation: fadeIn 0.8s ease-out;
@@ -108,14 +105,18 @@ $blue-vibrant: #3b82f6;
     &-icon {
       width: 80px;
       height: 80px;
-      margin: 0 auto 24px;
-      color: $blue-primary;
-      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      margin: 0 auto $spacing-6;
+      color: var(--color-blue);
+      background: linear-gradient(
+        135deg,
+        #{$blue-100} 0%,
+        var(--color-blue-light) 100%
+      );
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+      box-shadow: var(--shadow-glow-blue);
 
       svg {
         width: 40px;
@@ -124,15 +125,15 @@ $blue-vibrant: #3b82f6;
     }
 
     h3 {
-      font-size: 24px;
-      font-weight: 700;
-      color: $text-primary;
-      margin-bottom: 12px;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: var(--text-primary);
+      margin-bottom: $spacing-3;
     }
 
     p {
-      color: $text-secondary;
-      font-size: 16px;
+      color: var(--text-secondary);
+      font-size: $font-size-base;
       line-height: 1.6;
     }
   }
@@ -171,43 +172,68 @@ $blue-vibrant: #3b82f6;
 }
 
 /* ==========================================================================
+   Dark Mode
+   ========================================================================== */
+
+html[data-theme="dark"] {
+  .courses-ui {
+    background-image: radial-gradient(
+        at 0% 0%,
+        rgba(59, 130, 246, 0.08) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 0%,
+        rgba(59, 130, 246, 0.06) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 100% 100%, transparent 0px, transparent 50%),
+      radial-gradient(at 0% 100%, transparent 0px, transparent 50%);
+
+    &__empty {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+/* ==========================================================================
    Responsive Design
    ========================================================================== */
 
-@media (max-width: 1024px) {
+@media (max-width: $bp-lg) {
   .courses-ui {
     padding: 30px 4%;
 
     &__grid {
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
+      gap: $spacing-6;
     }
 
     &__title {
-      font-size: 36px;
+      font-size: $font-size-3xl;
     }
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: $bp-md) {
   .courses-ui {
-    padding: 24px 20px;
+    padding: $spacing-6 20px;
 
     &__header {
       margin-bottom: 40px;
     }
 
     &__title {
-      font-size: 30px;
+      font-size: $font-size-2xl;
     }
 
     &__subtitle {
-      font-size: 16px;
+      font-size: $font-size-base;
     }
 
     &__grid {
       grid-template-columns: 1fr; /* Single column on mobile for better focus */
-      gap: 20px;
+      gap: $spacing-5;
     }
   }
 }
@@ -215,11 +241,11 @@ $blue-vibrant: #3b82f6;
 @media (max-width: 480px) {
   .courses-ui {
     &__title {
-      font-size: 26px;
+      font-size: $font-size-xl;
     }
 
     &__empty {
-      padding: 40px 16px;
+      padding: 40px $spacing-4;
 
       &-icon {
         width: 60px;

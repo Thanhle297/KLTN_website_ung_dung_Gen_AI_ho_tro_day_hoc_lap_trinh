@@ -1,59 +1,33 @@
-// Footer.scss - Modern Education Design with White-Blue Gradient
-// Matching Header design system
+// Footer.scss - Deep Ocean & Coral Design System
+// S\u1eed d\u1ee5ng CSS custom properties t\u1eeb _design-tokens.scss \u0111\u1ec3 h\u1ed7 tr\u1ee3 dark mode
+
+@import "./design-tokens";
 
 /* ==========================================================================
-   Import Inter Font (consistent with Header)
-   ========================================================================== */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
-/* ==========================================================================
-   Color Variables - Education Blue & White Palette
-   (Consistent with Header.scss and HomePage.scss)
-   ========================================================================== */
-
-$bg-primary: #ffffff;
-$bg-secondary: #f8fafb;
-$bg-gradient-start: #e0f2fe;
-
-$blue-primary: #2563eb;
-$blue-secondary: #1d4ed8;
-$blue-light: #dbeafe;
-$blue-education: #0ea5e9;
-$blue-accent: #3b82f6;
-$blue-200: #bae6fd;
-$blue-300: #93c5fd;
-
-$text-primary: #0f172a;
-$text-secondary: #334155;
-$text-muted: #64748b;
-
-$border-light: #e2e8f0;
-
-$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-/* ==========================================================================
-   Footer Container - Gradient Background Matching Header
+   Footer Container - Gradient Background
    ========================================================================== */
 
 .footer {
-  // Gradient background matching header (inverted)
-  background: linear-gradient(
+  // Gradient background - d\u00f9ng CSS var cho dark mode
+  background: var(--footer-bg, linear-gradient(
     135deg,
     rgba(224, 242, 254, 0.98) 0%,
     rgba(147, 197, 253, 0.96) 30%,
     rgba(186, 230, 253, 0.97) 50%,
     rgba(147, 197, 253, 0.96) 70%,
     rgba(224, 242, 254, 0.98) 100%
-  );
+  ));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 
   margin-top: auto;
   padding: 60px 5% 0;
-  border-top: 1px solid rgba(147, 197, 253, 0.4);
+  border-top: 1px solid var(--border-light);
   box-shadow: 0 -4px 20px rgba(37, 99, 235, 0.1);
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
-    sans-serif;
+  font-family: var(--font-family);
+  transition: background-color $transition-smooth,
+              color $transition-smooth,
+              border-color $transition-smooth;
 
   /* ==========================================================================
      Footer Container - Grid Layout
@@ -91,16 +65,16 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &__about {
     .footer__logo {
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: var(--font-size-xl);
+      font-weight: $font-weight-bold;
       margin-bottom: 12px;
 
       // Gradient text effect
       background: linear-gradient(
         135deg,
-        $blue-primary 0%,
-        $blue-education 50%,
-        $blue-secondary 100%
+        var(--color-blue) 0%,
+        var(--color-accent) 50%,
+        var(--color-blue-hover) 100%
       );
       background-clip: text;
       -webkit-background-clip: text;
@@ -109,9 +83,9 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &__description {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: $text-secondary;
+    font-size: var(--font-size-sm);
+    line-height: $line-height-relaxed;
+    color: var(--text-secondary);
     max-width: 350px;
 
     @media (max-width: 767px) {
@@ -120,9 +94,9 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &__title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: $text-primary;
+    font-size: var(--font-size-md);
+    font-weight: $font-weight-semibold;
+    color: var(--text-primary);
     margin-bottom: 4px;
     position: relative;
     padding-bottom: 8px;
@@ -137,8 +111,8 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       height: 3px;
       background: linear-gradient(
         90deg,
-        $blue-primary 0%,
-        $blue-education 100%
+        var(--color-blue) 0%,
+        var(--color-accent) 100%
       );
       border-radius: 2px;
 
@@ -163,10 +137,10 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     li {
       a {
-        color: $text-secondary;
+        color: var(--text-secondary);
         text-decoration: none;
-        font-size: 0.95rem;
-        transition: $transition-smooth;
+        font-size: var(--font-size-sm);
+        transition: color $transition-smooth, padding-left $transition-smooth;
         display: inline-block;
         position: relative;
 
@@ -177,18 +151,20 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           height: 2px;
           bottom: -2px;
           left: 0;
-          background: linear-gradient(90deg, $blue-primary, $blue-education);
-          transition: width 0.3s ease;
+          background: linear-gradient(90deg, var(--color-blue), var(--color-accent));
+          transition: width $transition-smooth;
         }
 
         &:hover {
-          color: $blue-primary;
+          color: var(--color-blue);
           padding-left: 4px;
 
           &::before {
             width: 100%;
           }
         }
+
+        @include focus-visible;
       }
     }
   }
@@ -209,25 +185,27 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     a {
       width: 40px;
       height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, $blue-primary, $blue-education);
+      border-radius: $radius-lg;
+      background: linear-gradient(135deg, var(--color-blue), var(--color-accent));
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 1.1rem;
-      transition: $transition-smooth;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      color: var(--text-inverse);
+      font-size: var(--font-size-md);
+      transition: transform $transition-smooth, box-shadow $transition-smooth, background $transition-smooth;
+      box-shadow: var(--shadow-md);
 
       &:hover {
         transform: translateY(-3px);
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-        background: linear-gradient(135deg, $blue-secondary, $blue-primary);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, var(--color-blue-hover), var(--color-blue));
       }
 
       &:active {
         transform: translateY(0);
       }
+
+      @include focus-visible;
     }
   }
 
@@ -236,21 +214,39 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
      ========================================================================== */
 
   &__bottom {
-    border-top: 1px solid rgba(147, 197, 253, 0.3);
+    border-top: 1px solid var(--border-light);
     padding: 24px 0;
     text-align: center;
   }
 
   &__copyright {
-    font-size: 0.9rem;
-    color: $text-muted;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
     margin: 0;
 
     i {
-      color: #ef4444;
+      color: var(--color-secondary);
       margin: 0 4px;
       animation: heartbeat 1.5s ease-in-out infinite;
     }
+  }
+}
+
+/* ==========================================================================
+   Dark mode - Footer specific overrides
+   ========================================================================== */
+
+html[data-theme="dark"] {
+  .footer {
+    --footer-bg: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.98) 0%,
+      rgba(30, 41, 59, 0.96) 30%,
+      rgba(15, 23, 42, 0.97) 50%,
+      rgba(30, 41, 59, 0.96) 70%,
+      rgba(15, 23, 42, 0.98) 100%
+    );
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -273,7 +269,7 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
    ========================================================================== */
 
 /* Tablet (768px - 1023px) */
-@media (max-width: 1023px) and (min-width: 768px) {
+@media (max-width: 1023px) and (min-width: $bp-md) {
   .footer {
     padding: 50px 4% 0;
 
@@ -374,7 +370,7 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
    Accessibility Features
    ========================================================================== */
 
-/* Reduced motion for accessibility */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .footer,
   .footer__links li a,
@@ -385,22 +381,14 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-/* Focus-visible for keyboard navigation */
-.footer__links li a:focus-visible,
-.footer__social a:focus-visible {
-  outline: 3px solid $blue-primary;
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
-/* High contrast mode support */
+/* High contrast mode */
 @media (prefers-contrast: high) {
   .footer {
-    background: rgba(224, 242, 254, 0.95);
-    border-top: 2px solid $blue-primary;
+    background: var(--bg-primary);
+    border-top: 2px solid var(--color-blue);
 
     &__about .footer__logo {
-      -webkit-text-fill-color: $blue-primary;
+      -webkit-text-fill-color: var(--color-blue);
     }
   }
 }

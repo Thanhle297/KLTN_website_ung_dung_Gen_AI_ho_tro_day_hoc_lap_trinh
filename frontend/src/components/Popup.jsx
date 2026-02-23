@@ -88,21 +88,21 @@ export default function FETestPopup({ data, onClose }) {
 
   return (
     <div className="popup-overlay">
-      <div className={`popup ${shake ? "shake" : ""}`}>
-        <button className="popup-close" onClick={onClose}>
+      <div className={`popup ${shake ? "shake" : ""}`} role="dialog" aria-modal="true" aria-label="Hướng dẫn AI">
+        <button type="button" className="popup-close" onClick={onClose} aria-label="Đóng">
           <FaTimes />
         </button>
 
         <div className="popup-body">
           <div className="character">
-            <img src={character} alt="Gia sư" />
+            <img src={character} alt="Gia sư" width={120} height={120} />
           </div>
 
           <div className="content">
             {/* --------- HƯỚNG DẪN --------- */}
             {item.type === "instruct" && (
               <div>
-                <h3>Hướng dẫn</h3>
+                <h2>Hướng dẫn</h2>
                 <div className="instruct-block">
                   {item.value
                     .split("#")
@@ -117,11 +117,12 @@ export default function FETestPopup({ data, onClose }) {
             {/* --------- CÂU HỎI --------- */}
             {data.mode !== "instruct_only" && item.type === "quiz" && (
               <div>
-                <h3>Câu hỏi</h3>
+                <h2>Câu hỏi</h2>
                 <p>{item.question}</p>
                 <div className="answers">
                   {item.answers.map((opt, idx) => (
                     <button
+                      type="button"
                       key={idx}
                       className={selected === idx ? "selected" : ""}
                       onClick={() => setSelected(idx)}
@@ -136,7 +137,7 @@ export default function FETestPopup({ data, onClose }) {
             {/* --------- CHỈNH SỬA --------- */}
             {data.mode !== "instruct_only" && item.type === "answer" && (
               <div>
-                <h3>Chỉnh sửa đúng</h3>
+                <h2>Chỉnh sửa đúng</h2>
                 <pre>{item.value}</pre>
               </div>
             )}
@@ -145,11 +146,11 @@ export default function FETestPopup({ data, onClose }) {
 
         <div className="popup-footer">
           {currentIndex < sequence.length - 1 ? (
-            <button className="btn-next" onClick={handleNext}>
+            <button type="button" className="btn-next" onClick={handleNext} aria-label="Tiếp theo">
               <FaForward />
             </button>
           ) : (
-            <button className="btn-finish" onClick={onClose}>
+            <button type="button" className="btn-finish" onClick={onClose}>
               Hoàn thành
             </button>
           )}

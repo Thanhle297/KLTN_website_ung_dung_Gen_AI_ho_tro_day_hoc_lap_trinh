@@ -1,54 +1,56 @@
+@import "./design-tokens";
+
 .history-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
-  animation: fadeIn 0.3s ease;
+  z-index: $z-modal;
+  animation: fadeIn $transition-smooth;
 }
 
 .history-modal-content {
-  background: #ffffff;
+  background: var(--bg-primary);
   width: 90%;
   max-width: 600px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
-  animation: slideIn 0.3s ease;
+  animation: slideIn $transition-smooth;
   display: flex;
   flex-direction: column;
   max-height: 80vh;
 
   .history-modal-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1.25rem 1.5rem;
+    padding: $spacing-5 $spacing-6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
+    color: var(--text-inverse);
 
     h3 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: $font-size-lg;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: $spacing-2;
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: white;
+      color: var(--text-inverse);
       font-size: 1.2rem;
       cursor: pointer;
       opacity: 0.8;
-      transition: 0.2s;
+      transition: opacity $transition-fast, transform $transition-fast;
 
       &:hover {
         opacity: 1;
@@ -58,14 +60,14 @@
   }
 
   .history-modal-body {
-    padding: 1.5rem;
+    padding: $spacing-6;
     overflow-y: auto;
   }
 
   .empty-state {
     text-align: center;
-    color: #666;
-    padding: 2rem;
+    color: var(--text-muted);
+    padding: $spacing-8;
   }
 
   .history-table {
@@ -74,54 +76,54 @@
 
     th,
     td {
-      padding: 1rem;
+      padding: $spacing-4;
       text-align: left;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-light);
     }
 
     th {
-      font-weight: 600;
-      color: #555;
-      background: #f9fafb;
+      font-weight: $font-weight-semibold;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
     }
 
     td {
-      color: #333;
+      color: var(--text-secondary);
     }
 
     .badge {
       display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
+      padding: $spacing-1 $spacing-2;
+      border-radius: $radius-full;
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
 
       &.pass {
-        background: #def7ec;
-        color: #03543f;
+        background: var(--color-success-bg);
+        color: var(--color-success);
       }
       &.fail {
-        background: #fde8e8;
-        color: #9b1c1c;
+        background: var(--color-error-bg);
+        color: var(--color-error);
       }
     }
 
     .btn-review {
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      color: #374151;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      padding: $spacing-1 $spacing-3;
+      border-radius: $radius-sm;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
-      font-size: 0.9rem;
-      transition: 0.2s;
+      gap: $spacing-1;
+      font-size: $font-size-sm;
+      transition: background $transition-fast, border-color $transition-fast;
 
       &:hover {
-        background: #e5e7eb;
-        border-color: #9ca3af;
+        background: var(--border-light);
+        border-color: var(--border-medium);
       }
     }
   }

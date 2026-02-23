@@ -1,28 +1,30 @@
+@import "./design-tokens";
+
 .popup-overlay {
-  position: absolute !important; 
+  position: absolute !important;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--bg-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .popup {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
+  background: var(--bg-primary);
+  padding: $spacing-5;
+  border-radius: $radius-md;
   width: 600px;
   max-height: 80vh;
   overflow: auto;
   position: relative;
-  transition: transform 0.2s;
+  transition: transform $transition-fast;
 
   &.shake {
     animation: shake 0.4s;
-    border: 2px solid red;
+    border: 2px solid var(--color-error);
   }
 }
 
@@ -50,12 +52,17 @@
   right: 10px;
   border: none;
   background: transparent;
-  font-size: 20px;
+  font-size: $font-size-lg;
   cursor: pointer;
+  color: var(--text-muted);
+  transition: color $transition-fast;
+
+  &:hover {
+    color: var(--text-primary);
+  }
 }
 
 .popup-body {
-  // width: 200px;
   display: flex;
   align-items: flex-start;
 }
@@ -82,29 +89,30 @@
 
 .answers {
   button {
-    margin: 6px 0;
-    padding: 10px 14px;
+    margin: $spacing-2 0;
+    padding: $spacing-3 $spacing-4;
     width: 100%;
     text-align: left;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    background: linear-gradient(145deg, #fdfdfd, #f2f2f2);
-    color: #333;
-    font-weight: 500;
+    border: 1px solid var(--border-light);
+    border-radius: $radius-md;
+    background: linear-gradient(145deg, var(--bg-primary), var(--bg-tertiary));
+    color: var(--text-secondary);
+    font-weight: $font-weight-medium;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background $transition-base, color $transition-base,
+      transform $transition-base, box-shadow $transition-base;
 
     &:hover {
-      background: #007bff;
-      color: #fff;
+      background: var(--color-blue);
+      color: var(--text-inverse);
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-md);
     }
 
     &.selected {
-      background: #007bff;
-      color: #fff;
-      box-shadow: 0 3px 6px rgba(0, 123, 255, 0.3);
+      background: var(--color-blue);
+      color: var(--text-inverse);
+      box-shadow: var(--shadow-glow-blue);
     }
 
     &:active {
@@ -114,34 +122,38 @@
   }
 }
 
-
 .popup-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
-  gap: 10px;
+  margin-top: $spacing-5;
+  gap: $spacing-3;
 
   button {
     border: none;
     outline: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: $spacing-3 $spacing-5;
+    border-radius: $radius-md;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.25s ease;
+    gap: $spacing-2;
+    transition: background $transition-base, transform $transition-base,
+      box-shadow $transition-base;
   }
 
   .btn-next {
-    background: linear-gradient(135deg, #007bff, #0056d2);
-    color: #fff;
+    background: linear-gradient(
+      135deg,
+      var(--color-blue),
+      var(--color-blue-hover)
+    );
+    color: var(--text-inverse);
 
     &:hover {
-      background: linear-gradient(135deg, #3399ff, #0066ff);
+      background: linear-gradient(135deg, #{$blue-500}, var(--color-blue));
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+      box-shadow: var(--shadow-glow-blue);
     }
 
     &:active {
@@ -151,13 +163,13 @@
   }
 
   .btn-finish {
-    background: linear-gradient(135deg, #28a745, #1e7e34);
-    color: #fff;
+    background: linear-gradient(135deg, var(--color-success), #{$success-600});
+    color: var(--text-inverse);
 
     &:hover {
-      background: linear-gradient(135deg, #33cc66, #239b45);
+      background: linear-gradient(135deg, #{$success-400}, var(--color-success));
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+      box-shadow: var(--shadow-glow-teal);
     }
 
     &:active {
@@ -167,29 +179,30 @@
   }
 }
 
-
 /* Tăng cỡ chữ cho Hướng dẫn (luồng instruct_only và luồng thường) */
 .popup .content .instruct-block p {
-  font-size: 18px;
+  font-size: $font-size-md;
   line-height: 1.6;
-  color: #000;
+  color: var(--text-primary);
 }
 
 /* Tăng cỡ chữ cho Kết quả trả về (luồng thường: type === "answer") */
 .popup .content pre {
-  font-size: 18px;
+  font-size: $font-size-md;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #000;
+  color: var(--text-primary);
 }
 
 /* Tuỳ chọn: tăng chữ câu hỏi và đáp án trong quiz (luồng thường) */
-.popup .content > div > p { /* câu hỏi */
-  font-size: 18px;
-  color: #000;
+.popup .content > div > p {
+  /* câu hỏi */
+  font-size: $font-size-md;
+  color: var(--text-primary);
 }
-.popup .content .answers button { /* đáp án */
-  font-size: 18px;
-  color: #000;
+.popup .content .answers button {
+  /* đáp án */
+  font-size: $font-size-md;
+  color: var(--text-primary);
 }

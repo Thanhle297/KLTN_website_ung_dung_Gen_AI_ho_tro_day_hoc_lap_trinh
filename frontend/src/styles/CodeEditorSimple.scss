@@ -1,20 +1,22 @@
+@import "./design-tokens";
+
 .code-editor {
   display: flex;
   flex-direction: column;
   max-height: 100%;
   overflow-y: auto;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: $radius-lg;
+  box-shadow: var(--shadow-sm);
+  padding: $spacing-4;
 
   /* =============================
      CodeMirror
      ============================= */
   .cm-editor {
-    border-radius: 8px;
-    border: 1px solid #dfe3ea;
+    border-radius: $radius-md;
+    border: 1px solid var(--border-light);
     font-size: 15px;
     min-height: 320px;
     max-height: 400px; // ✅ giới hạn cao nhất cho vùng code
@@ -28,20 +30,20 @@
     margin-top: 0.8rem;
     width: auto;
     height: 80px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-family: "Courier New", monospace;
+    border: 1px solid var(--border-medium);
+    border-radius: $radius-md;
+    font-family: var(--font-family-code);
     padding: 8px;
     resize: vertical;
-    background: #fefefe;
-    transition: 0.2s;
+    background: var(--bg-primary);
+    transition: border-color $transition-fast, box-shadow $transition-fast;
     flex-shrink: 0; // ✅ Ngăn bị co lại
     min-height: 80px; // ✅ Đảm bảo chiều cao tối thiểu
 
     &:focus {
       outline: none;
-      border-color: #3182ce;
-      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
   }
 
@@ -62,21 +64,21 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: #0d6efd;
-    color: white;
+    background: var(--color-blue);
+    color: var(--text-inverse);
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-md;
     padding: 10px 16px;
     cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    font-weight: $font-weight-medium;
+    transition: background $transition-fast;
 
     &:hover {
-      background: #0b5ed7;
+      background: var(--color-blue-hover);
     }
 
     &:disabled {
-      background: #a0aec0;
+      background: var(--text-disabled);
       cursor: not-allowed;
     }
 
@@ -93,21 +95,21 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: #28a745;
-    color: white;
+    background: var(--color-success);
+    color: var(--text-inverse);
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-md;
     padding: 10px 16px;
     cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    font-weight: $font-weight-medium;
+    transition: background $transition-fast;
 
     &:hover {
-      background: #218838;
+      background: $success-600;
     }
 
     &:disabled {
-      background: #a0aec0;
+      background: var(--text-disabled);
       cursor: not-allowed;
     }
 
@@ -121,7 +123,7 @@
      Tabs Container
      ============================= */
   &__tabs {
-    margin-top: 1rem;
+    margin-top: $spacing-4;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -130,26 +132,26 @@
   .tabs-header {
     display: flex;
     gap: 1.2rem;
-    border-bottom: 2px solid #e2e8f0;
-    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-light);
+    margin-bottom: $spacing-2;
 
     button {
       background: none;
       border: none;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       font-size: 15px;
-      color: #555;
-      padding: 0.5rem 0.8rem;
+      color: var(--text-muted);
+      padding: $spacing-2 0.8rem;
       cursor: pointer;
-      transition: 0.2s;
+      transition: color $transition-fast, border-color $transition-fast;
 
       &.active {
-        color: #0d6efd;
-        border-bottom: 3px solid #0d6efd;
+        color: var(--color-blue);
+        border-bottom: 3px solid var(--color-blue);
       }
 
       &:hover {
-        color: #0b5ed7;
+        color: var(--color-blue-hover);
       }
     }
   }
@@ -161,10 +163,10 @@
     flex: 1;
     background: #0b0b0b;
     color: #00ff88;
-    font-family: "Courier New", monospace;
-    font-size: 14px;
-    border-radius: 8px;
-    padding: 12px;
+    font-family: var(--font-family-code);
+    font-size: $font-size-sm;
+    border-radius: $radius-md;
+    padding: $spacing-3;
     white-space: pre-wrap;
     overflow-y: auto;
     min-height: 180px;
@@ -176,16 +178,16 @@
      ============================= */
   .guide {
     flex: 1;
-    background: #f8f9fa;
-    color: #333;
-    font-family: "Inter", sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-family: var(--font-family);
     font-size: 15px;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: $radius-md;
+    padding: $spacing-3;
     white-space: pre-wrap;
     overflow-y: auto;
     min-height: 180px;
-    line-height: 1.5;
+    line-height: $line-height-normal;
   }
 
   /* =============================
@@ -197,10 +199,11 @@
     }
   }
 }
+
 .blink-red {
   animation: blink 1s infinite;
-  border: 1px solid red;
-  color: red !important;
+  border: 1px solid var(--color-error);
+  color: var(--color-error) !important;
 }
 
 @keyframes blink {
@@ -219,24 +222,24 @@
 .terminal-output {
   background: #0b0b0b;
   color: #00ff88;
-  font-family: monospace;
+  font-family: var(--font-family-code);
   padding: 10px;
   min-height: 100px;
-  border-radius: 6px;
+  border-radius: $radius-sm;
   white-space: pre-wrap;
 }
 
 .ai-guide {
   white-space: pre-wrap;
-  color: #333;
-  background: #fff5f5;
+  color: var(--text-secondary);
+  background: var(--color-error-bg);
   padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  border-radius: $radius-sm;
+  border: 1px solid var(--border-light);
 }
 
 // --- Responsive ---
-@media (max-width: 768px) {
+@media (max-width: $bp-md) {
   .code-editor {
     border: none;
     border-radius: 0;
@@ -270,9 +273,8 @@
       
       .tabs-header button {
         padding: 8px 12px;
-        font-size: 14px;
+        font-size: $font-size-sm;
       }
     }
   }
 }
-

@@ -1,19 +1,4 @@
-// ============================================================
-// BẢNG MÀU DEEP OCEAN BLUE (MODERN & HIGH CONTRAST)
-// ============================================================
-$primary-main: #2563eb; // Xanh dương chủ đạo (Royal Blue)
-$primary-dark: #1e40af; // Xanh dương đậm cho hover
-$success-active: #059669; // Xanh lá đậm cho nút xác nhận
-$danger-text: #dc2626; // Đỏ cho hành động hủy
-$text-title: #0f172a; // Đen Slate (rất đậm) cho tiêu đề
-$text-body: #334155; // Xám Slate đậm cho nội dung
-$bg-card: #ffffff;
-$overlay-dark: rgba(2, 6, 17, 0.8); // Nền tối sâu để popup "nổi" hẳn lên
-$overlay: rgba(0, 0, 0, 0.45); // Nền mờ vừa phải
-$bg-white: #ffffff;
-$primary-blue: #2563eb;
-$text-title: #1e293b; // Màu xanh đen Slate đậm nhưng không quá gắt
-$text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
+@import "./design-tokens";
 
 // ============================================================
 // NÚT BẤM CHÍNH (SUBMIT BUTTON)
@@ -22,25 +7,26 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px 28px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  background: $primary-main;
+  gap: $spacing-3;
+  padding: $spacing-3 $spacing-8;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: var(--text-inverse);
+  background: var(--color-blue);
   border: none;
-  border-radius: 14px;
+  border-radius: $radius-xl;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background $transition-smooth, transform $transition-smooth,
+    box-shadow $transition-smooth;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
 
   .icon {
-    font-size: 18px;
-    transition: transform 0.3s ease;
+    font-size: $font-size-md;
+    transition: transform $transition-smooth;
   }
 
   &:hover:not(.disabled) {
-    background: $primary-dark;
+    background: var(--color-blue-hover);
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(30, 64, 175, 0.4);
 
@@ -50,8 +36,8 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
   }
 
   &.disabled {
-    background: #e2e8f0;
-    color: #94a3b8;
+    background: var(--border-light);
+    color: var(--text-disabled);
     cursor: not-allowed;
     box-shadow: none;
   }
@@ -69,82 +55,81 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  padding: 20px; // Đảm bảo không dính mép màn hình trên mobile
+  z-index: $z-modal;
+  padding: $spacing-5; // Đảm bảo không dính mép màn hình trên mobile
 }
 
 .popup-overlay {
   position: absolute;
   inset: 0;
-  background: $overlay;
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px); // Giảm độ mờ xuống một chút cho nhẹ mắt
   animation: fadeIn 0.2s ease-out;
 }
 
 .popup-card {
   position: relative;
-  background: $bg-white;
+  background: var(--bg-primary);
   width: 100%;
-  max-width: 360px; // ⬇️ Giảm chiều rộng (từ 440px xuống 360px)
-  padding: 32px 24px; // ⬇️ Giảm padding cho thanh thoát
-  border-radius: 20px; // Bo góc vừa phải
+  max-width: 360px; // Giảm chiều rộng (từ 440px xuống 360px)
+  padding: $spacing-8 $spacing-6; // Giảm padding cho thanh thoát
+  border-radius: $radius-2xl; // Bo góc vừa phải
   text-align: center;
-  box-shadow:
-    0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  z-index: 10001;
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-xl);
+  z-index: $z-modal + 1;
+  animation: slideIn $transition-smooth;
 
   .popup-header {
-    margin-bottom: 24px;
+    margin-bottom: $spacing-6;
 
     h3 {
-      font-size: 19px; // ⬇️ Giảm cỡ chữ tiêu đề
-      font-weight: 700; // ⬇️ Giảm độ đậm (từ 800 xuống 700)
-      color: $text-title;
-      margin-bottom: 8px;
+      font-size: 19px; // Giảm cỡ chữ tiêu đề
+      font-weight: $font-weight-bold; // Giảm độ đậm (từ 800 xuống 700)
+      color: var(--text-primary);
+      margin-bottom: $spacing-2;
       letter-spacing: -0.01em;
     }
 
     p {
-      font-size: 14px; // ⬇️ Giảm cỡ chữ nội dung
-      font-weight: 400; // ⬇️ Chữ thường (không để 500)
-      color: $text-body;
-      line-height: 1.5;
-      padding: 0 10px; // Tạo khoảng cách hai bên cho text
+      font-size: $font-size-sm; // Giảm cỡ chữ nội dung
+      font-weight: $font-weight-normal; // Chữ thường (không để 500)
+      color: var(--text-muted);
+      line-height: $line-height-normal;
+      padding: 0 $spacing-3; // Tạo khoảng cách hai bên cho text
     }
   }
 
   .popup-actions {
     display: flex;
-    gap: 12px;
+    gap: $spacing-3;
 
     button {
       flex: 1;
-      padding: 10px 16px; // ⬇️ Nút nhỏ gọn hơn
-      font-size: 14px; // ⬇️ Chữ trên nút nhỏ lại
-      font-weight: 600;
-      border-radius: 10px;
+      padding: $spacing-3 $spacing-4; // Nút nhỏ gọn hơn
+      font-size: $font-size-sm; // Chữ trên nút nhỏ lại
+      font-weight: $font-weight-semibold;
+      border-radius: $radius-lg;
       border: 1px solid transparent;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background $transition-fast, transform $transition-fast,
+        border-color $transition-fast;
 
       &.btn-primary {
-        background: $primary-blue;
-        color: white;
+        background: var(--color-blue);
+        color: var(--text-inverse);
         &:hover {
-          background: darken($primary-blue, 5%);
+          background: var(--color-blue-hover);
           transform: translateY(-1px);
         }
       }
 
       &.btn-secondary {
-        background: #f8fafc;
-        color: #475569;
-        border-color: #e2e8f0;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border-color: var(--border-light);
         &:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--bg-tertiary);
+          color: var(--text-primary);
         }
       }
     }
@@ -157,91 +142,91 @@ $text-body: #64748b; // Màu xám Slate nhẹ cho nội dung phụ
 .result-popup {
   max-width: 420px; // Rộng hơn popup xác nhận một chút
   .popup-header {
-    margin-bottom: 28px;
+    margin-bottom: $spacing-8;
     .result-icon {
       width: 72px;
       height: 72px;
-      margin: 0 auto 16px;
+      margin: 0 auto $spacing-4;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
 
       &.pass {
-        background: rgba(5, 150, 105, 0.1); // Xanh lá nhạt
-        color: $success-active;
+        background: var(--color-success-bg);
+        color: var(--color-success);
       }
       &.fail {
-        background: rgba(220, 38, 38, 0.1); // Đỏ nhạt
-        color: $danger-text;
+        background: var(--color-error-bg);
+        color: var(--color-error);
       }
       svg {
         font-size: 40px;
       }
     }
     h3 {
-      font-size: 20px;
-      font-weight: 700;
-      color: $text-title;
-      margin-bottom: 16px;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: var(--text-primary);
+      margin-bottom: $spacing-4;
     }
     .score-info {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: $spacing-2;
       font-size: 15px;
-      color: $text-body;
+      color: var(--text-muted);
       .score-detail,
       .score-percentage {
         strong {
-          color: $text-title;
-          font-weight: 700;
-          font-size: 16px;
+          color: var(--text-primary);
+          font-weight: $font-weight-bold;
+          font-size: $font-size-base;
         }
       }
       .badge {
         display: inline-block;
-        margin-top: 8px;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
+        margin-top: $spacing-2;
+        padding: $spacing-2 $spacing-4;
+        border-radius: $radius-2xl;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
         &.pass {
-          background: rgba(5, 150, 105, 0.12);
-          color: $success-active;
+          background: var(--color-success-bg);
+          color: var(--color-success);
         }
         &.fail {
-          background: rgba(220, 38, 38, 0.12);
-          color: $danger-text;
+          background: var(--color-error-bg);
+          color: var(--color-error);
         }
       }
     }
   }
   .popup-actions {
-    flex-direction: column; // ⬇️ Nút xếp dọc cho dễ bấm
+    flex-direction: column; // Nút xếp dọc cho dễ bấm
     button {
       width: 100%;
-      padding: 12px 20px;
+      padding: $spacing-3 $spacing-5;
       font-size: 15px;
       &.btn-primary {
-        background: $primary-blue;
-        color: white;
-        border: 2px solid $primary-blue;
+        background: var(--color-blue);
+        color: var(--text-inverse);
+        border: 2px solid var(--color-blue);
         order: 1; // Nút chính ở trên
         &:hover {
-          background: darken($primary-blue, 8%);
-          border-color: darken($primary-blue, 8%);
+          background: var(--color-blue-hover);
+          border-color: var(--color-blue-hover);
         }
       }
       &.btn-secondary {
         background: transparent;
-        color: $text-body;
-        border: 2px solid #e2e8f0;
+        color: var(--text-muted);
+        border: 2px solid var(--border-light);
         order: 2; // Nút phụ ở dưới
         &:hover {
-          background: #f8fafc;
-          color: $text-title;
-          border-color: #cbd5e1;
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          border-color: var(--border-medium);
         }
       }
     }

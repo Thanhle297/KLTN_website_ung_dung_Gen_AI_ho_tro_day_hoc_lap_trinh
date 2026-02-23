@@ -30,6 +30,7 @@ export default function CourseCard({ course }) {
         <h3>{course.title || course.name}</h3>
         <p>{course.description || `${course.lessons?.length || 0} bài học`}</p>
         <button
+          type="button"
           className="course-card__btn"
           tabIndex={-1} // Prevent double tab stop since card is focusable
         >

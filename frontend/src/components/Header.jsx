@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useThemeMode } from "../context/ThemeContext";
 import logo from "../IMG/Logo_noback.png";
 import "../styles/Header.scss";
 
@@ -14,6 +15,7 @@ export default function Header() {
 
   const menuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const { isDark, toggleTheme } = useThemeMode();
 
   // Load user từ JWT (DUY NHẤT)
   useEffect(() => {
@@ -90,7 +92,7 @@ export default function Header() {
       {/* Logo */}
       <div className="header__logo">
         <Link to="/">
-          <img src={logo} alt="Logo" />
+          <img src={logo} alt="Logo" width={40} height={40} />
         </Link>
       </div>
 
@@ -112,15 +114,38 @@ export default function Header() {
         </ul>
       </nav>
 
+      {/* Dark/Light mode toggle */}
+      <button
+        className="theme-toggle-btn"
+        onClick={toggleTheme}
+        aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+        title={isDark ? "Chế độ sáng" : "Chế độ tối"}
+        type="button"
+      >
+        <i className={`fas ${isDark ? "fa-sun" : "fa-moon"}`} />
+      </button>
+
       {/* Auth / User */}
       <div className="header__auth" ref={menuRef}>
         {!user ? (
-          <button className="login-btn" onClick={() => navigate("/login")}>
+          <button type="button" className="login-btn" onClick={() => navigate("/login")}>
             Đăng nhập
           </button>
         ) : (
           <div className="user-menu">
-            <div className="avatar" onClick={() => setOpenMenu(!openMenu)}>
+            <div
+              className="avatar"
+              role="button"
+              tabIndex={0}
+              aria-label="Menu người dùng"
+              onClick={() => setOpenMenu(!openMenu)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpenMenu(!openMenu);
+                }
+              }}
+            >
               {user.username.charAt(0).toUpperCase()}
             </div>
 
@@ -146,7 +171,7 @@ export default function Header() {
                 </li>
 
                 <li>
-                  <button onClick={handleLogout} className="logout-item">
+                  <button type="button" onClick={handleLogout} className="logout-item">
                     <i className="fas fa-sign-out-alt"></i> Đăng xuất
                   </button>
                 </li>
@@ -157,7 +182,9 @@ export default function Header() {
 
         {/* Mobile button */}
         <button
+          type="button"
           className="hamburger-btn"
+          aria-label={isMobileMenuOpen ? "Đóng menu" : "Mở menu"}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`} />

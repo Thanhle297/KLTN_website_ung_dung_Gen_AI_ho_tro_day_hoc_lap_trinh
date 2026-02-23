@@ -20,6 +20,7 @@ export default function Contact() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const devs = [
     {
@@ -98,7 +99,7 @@ export default function Contact() {
       console.log("Form submitted:", formData);
       setIsSubmitting(false);
       setFormData({ name: "", email: "", message: "" });
-      alert("Tin nhắn đã được gửi thành công!");
+      setShowSuccess(true);
     }, 1500);
   };
 
@@ -135,7 +136,7 @@ export default function Contact() {
             key={index}
             style={{ "--card-color": item.color }}
             target={item.link.startsWith("http") ? "_blank" : "_self"}
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             <div className="card-glow"></div>
             <div className="icon-wrapper">
@@ -170,24 +171,27 @@ export default function Contact() {
                     <a
                       href={dev.facebook}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="Facebook"
+                      aria-label="Facebook"
                     >
                       <FaFacebookF />
                     </a>
                     <a
                       href={dev.github}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="GitHub"
+                      aria-label="GitHub"
                     >
                       <FaGithub />
                     </a>
                     <a
                       href={dev.linkedin}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="LinkedIn"
+                      aria-label="LinkedIn"
                     >
                       <FaLinkedinIn />
                     </a>
@@ -259,6 +263,11 @@ export default function Contact() {
               </>
             )}
           </button>
+          {showSuccess && (
+            <div className="form-success" role="alert">
+              Tin nhắn đã được gửi thành công!
+            </div>
+          )}
         </form>
       </div>
     </div>

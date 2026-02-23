@@ -9,13 +9,13 @@ export default function SessionWarning({ countdown, onContinue, onLogout }) {
   }, [countdown, onLogout]);
 
   return (
-    <div className="session-warning">
+    <div className="session-warning" role="alertdialog" aria-modal="true" aria-labelledby="session-warning-title">
       <div className="session-warning__box">
-        <h3>Phiên làm việc sắp hết hạn</h3>
+        <h3 id="session-warning-title">Phiên làm việc sắp hết hạn</h3>
         <p>
           Bạn sẽ bị đăng xuất sau <b>{countdown}</b> giây nếu không thao tác.
         </p>
-        <button onClick={onContinue}>Tiếp tục phiên</button>
+        <button type="button" onClick={onContinue}>Tiếp tục phiên</button>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ export default function QuestionPanel({ current }) {
 
       <div className="question-panel__io">
         <h3>Ví dụ: </h3>
-        <table border={1}>
+        <table border={1} aria-label="Ví dụ Input/Output">
           <thead>
             <tr>
               <th>Input</th>

@@ -1,3 +1,5 @@
+@import "./design-tokens";
+
 .code-ex-page {
   height: 100vh;
   display: flex;
@@ -15,11 +17,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: #f9f9f9;
+  background: var(--bg-secondary);
   border-radius: 0; // Bỏ border radius để full width đẹp hơn nếu cần
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   flex: 0 0 auto; // Không co giãn
-  z-index: 100; // Đảm bảo nổi lên trên
+  z-index: $z-dropdown; // Đảm bảo nổi lên trên
 
   .left {
     flex: 1;
@@ -33,7 +35,7 @@
 }
 
 // --- Responsive ---
-@media (max-width: 768px) {
+@media (max-width: $bp-md) {
   .top-bar {
     padding: 8px 12px;
     
@@ -50,4 +52,3 @@
     }
   }
 }
-

@@ -37,9 +37,11 @@ router.post("/", async (req, res) => {
     const completed = progress >= requiredProgress;
 
     // 2.5️⃣ LẤY DANH SÁCH CÂU HỎI HIỆN TẠI (SNAPSHOT)
+    const snapshotQuery = { lessonId };
+    if (courseId) snapshotQuery.courseId = courseId;
     const questionsSnapshot = await db
       .collection("question")
-      .find({ lessonId })
+      .find(snapshotQuery)
       .toArray();
 
     // 3️⃣ LƯU LỊCH SỬ (KHÔNG GHI ĐÈ)

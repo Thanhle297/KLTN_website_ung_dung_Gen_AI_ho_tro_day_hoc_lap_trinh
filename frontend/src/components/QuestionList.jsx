@@ -31,6 +31,7 @@ export default function QuestionList({
         return (
           <button
             key={qId || idx}
+            type="button"
             onClick={() => setCurrent(q)}
             className={btnClass}
           >

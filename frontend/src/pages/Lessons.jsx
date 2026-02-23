@@ -512,10 +512,11 @@ function LessonsContent() {
         >
           Bạn chưa được phân bổ vào khóa học này.
         </p>
-        <p style={{ fontSize: "0.9rem", color: "#999" }}>
+        <p style={{ fontSize: "0.9rem", color: "#767676" }}>
           Vui lòng liên hệ giáo viên để được thêm vào khóa học.
         </p>
         <button
+          type="button"
           onClick={() => navigate("/")}
           style={{
             marginTop: "2rem",
@@ -767,12 +768,15 @@ function SortableLessonItem({
         <div
           className="lesson-item__info"
           onClick={() => onExpand(lesson.lessonId)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onExpand(lesson.lessonId); } }}
         >
           <h3>
             {lesson.title}
             {isHidden && editMode && (
               <span
-                style={{ color: "#999", fontSize: "0.8rem", marginLeft: 8 }}
+                style={{ color: "#767676", fontSize: "0.8rem", marginLeft: 8 }}
               >
                 (Ẩn)
               </span>
@@ -828,6 +832,7 @@ function SortableLessonItem({
         )}
 
         <button
+          type="button"
           className="lesson-item__btn"
           onClick={() => onExpand(lesson.lessonId)}
         >
@@ -989,7 +994,7 @@ function SortableSubLessonItem({
             {sub.title}
             {isHidden && editMode && (
               <span
-                style={{ color: "#999", fontSize: "0.75rem", marginLeft: 8 }}
+                style={{ color: "#767676", fontSize: "0.75rem", marginLeft: 8 }}
               >
                 (Ẩn)
               </span>
@@ -1058,6 +1063,7 @@ function SortableSubLessonItem({
           )}
 
           <button
+            type="button"
             className="btn-do"
             onClick={() =>
               onNavigate(
@@ -1073,6 +1079,7 @@ function SortableSubLessonItem({
           {/* Nút xem lịch sử - Chỉ hiển thị khi đã làm bài */}
           {prog.progress > 0 && (
             <button
+              type="button"
               className="btn-history"
               onClick={() => onViewHistory(sub.lessonId)}
               style={{
@@ -1091,6 +1098,7 @@ function SortableSubLessonItem({
           )}
 
           <button
+            type="button"
             className={`btn-status ${prog.completed ? "done" : "pending"}`}
             disabled
           >

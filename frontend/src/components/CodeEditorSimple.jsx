@@ -3,7 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
+import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
+import { useThemeMode } from "../context/ThemeContext";
 import "../styles/CodeEditorSimple.scss";
 
 export default function CodeEditorSimple({
@@ -19,6 +21,7 @@ export default function CodeEditorSimple({
   lessonId,
   lessonNumber,
 }) {
+  const { isDark } = useThemeMode();
   const [localCode, setLocalCode] = useState("");
   const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState("");
@@ -243,15 +246,18 @@ export default function CodeEditorSimple({
 
   return (
     <div className="code-editor">
-      <CodeMirror
-        value={localCode}
-        height="400px"
-        extensions={[python(), autocompletion({ override: [] })]}
-        onChange={(v) => {
-          setLocalCode(v);
-          onChangeCode?.(v);
-        }}
-      />
+      <div role="group" aria-label="Trình soạn code Python">
+        <CodeMirror
+          value={localCode}
+          height="400px"
+          theme={isDark ? oneDark : "light"}
+          extensions={[python(), autocompletion({ override: [] })]}
+          onChange={(v) => {
+            setLocalCode(v);
+            onChangeCode?.(v);
+          }}
+        />
+      </div>
 
       <textarea
         className="code-editor__input"
@@ -261,10 +267,12 @@ export default function CodeEditorSimple({
           setInputText(e.target.value);
           onChangeInput?.(e.target.value);
         }}
+        aria-label="Nhập input cho chương trình"
       />
 
       <div className="code-editor__button-group">
         <button
+          type="button"
           onClick={runCode}
           disabled={runningCode || submittingAI}
           className="code-editor__run-btn"
@@ -273,6 +281,7 @@ export default function CodeEditorSimple({
         </button>
 
         <button
+          type="button"
           onClick={submitToAI}
           disabled={
             runningCode ||
@@ -294,12 +303,14 @@ export default function CodeEditorSimple({
       <div className="code-editor__tabs">
         <div className="tabs-header">
           <button
+            type="button"
             className={activeTab === "terminal" ? "active" : ""}
             onClick={() => setActiveTab("terminal")}
           >
             Terminal
           </button>
           <button
+            type="button"
             className={`${activeTab === "guide" ? "active" : ""} ${
               hasNewGuide ? "blink-red" : ""
             }`}

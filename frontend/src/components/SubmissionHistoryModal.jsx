@@ -32,16 +32,19 @@ export default function SubmissionHistoryModal({
   };
 
   return ReactDOM.createPortal(
-    <div className="history-modal-overlay" onClick={onClose}>
+    <div className="history-modal-overlay" onClick={onClose} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
       <div
         className="history-modal-content"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="history-modal-title"
       >
         <div className="history-modal-header">
-          <h3>
+          <h3 id="history-modal-title">
             <FaHistory /> Lịch sử làm bài
           </h3>
-          <button className="close-btn" onClick={onClose}>
+          <button type="button" className="close-btn" onClick={onClose} aria-label="Đóng">
             <FaTimes />
           </button>
         </div>
@@ -54,7 +57,7 @@ export default function SubmissionHistoryModal({
               <p>Chưa có lượt làm bài nào.</p>
             </div>
           ) : (
-            <table className="history-table">
+            <table className="history-table" aria-label="Lịch sử làm bài">
               <thead>
                 <tr>
                   <th>Thời gian</th>
@@ -83,6 +86,7 @@ export default function SubmissionHistoryModal({
                     </td>
                     <td>
                       <button
+                        type="button"
                         className="btn-review"
                         onClick={() => navigate(`/review/${item._id}`)}
                       >

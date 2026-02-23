@@ -1,51 +1,55 @@
+@import "./design-tokens";
+
 .profile-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 90vh;
-  background: #f9fafc;
-  padding: 2rem;
+  background: var(--bg-secondary);
+  padding: $spacing-8;
 }
 
 .profile-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 2rem 3rem;
+  background: var(--bg-primary);
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-md);
+  padding: $spacing-8 $spacing-12;
   width: 420px;
   text-align: center;
 
   h2 {
-    font-size: 22px;
-    color: #2d3748;
-    margin-bottom: 1.5rem;
+    font-size: $font-size-lg;
+    color: var(--text-primary);
+    margin-bottom: $spacing-6;
   }
 
   .profile-info {
     text-align: left;
-    margin-top: 1rem;
+    margin-top: $spacing-4;
 
     label {
       display: flex;
       flex-direction: column;
-      font-size: 15px;
-      color: #4a5568;
-      margin-bottom: 1rem;
+      font-size: $font-size-sm;
+      color: var(--text-secondary);
+      margin-bottom: $spacing-4;
 
       input {
         margin-top: 5px;
-        padding: 8px 10px;
-        border: 1px solid #cbd5e0;
-        border-radius: 8px;
-        transition: 0.2s;
+        padding: $spacing-2 $spacing-3;
+        border: 1px solid var(--border-medium);
+        border-radius: $radius-md;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: border-color $transition-fast;
 
         &:focus {
           outline: none;
-          border-color: #3182ce;
+          border-color: var(--border-focus);
         }
 
         &:disabled {
-          background: #edf2f7;
+          background: var(--bg-tertiary);
           cursor: not-allowed;
         }
       }
@@ -54,18 +58,18 @@
 
   .save-btn {
     width: 100%;
-    background: #3182ce;
-    color: #fff;
-    padding: 10px;
-    font-size: 15px;
+    background: var(--color-blue);
+    color: var(--text-inverse);
+    padding: $spacing-3;
+    font-size: $font-size-sm;
     border: none;
-    border-radius: 10px;
+    border-radius: $radius-lg;
     cursor: pointer;
-    transition: 0.3s;
-    margin-top: 1rem;
+    transition: background-color $transition-smooth;
+    margin-top: $spacing-4;
 
     &:hover {
-      background: #2b6cb0;
+      background: var(--color-blue-hover);
     }
   }
 }

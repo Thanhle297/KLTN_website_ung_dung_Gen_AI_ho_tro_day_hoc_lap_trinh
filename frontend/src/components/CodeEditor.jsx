@@ -4,7 +4,9 @@ import CodeMirror from "@uiw/react-codemirror";
 import { EditorView } from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
+import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
+import { useThemeMode } from "../context/ThemeContext";
 import "../styles/CodeEditor.scss";
 
 export default function CodeEditor({
@@ -19,6 +21,7 @@ export default function CodeEditor({
   lessonId,
   lessonNumber,
 }) {
+  const { isDark } = useThemeMode();
   const [results, setResults] = useState([]);
   const [guide, setGuide] = useState(null);
   const [localCode, setLocalCode] = useState("");
@@ -222,17 +225,20 @@ export default function CodeEditor({
 
   return (
     <div className="code-editor">
-      <CodeMirror
-        ref={editorRef}
-        value={localCode}
-        height="400px"
-        extensions={[
-          python(),
-          EditorView.editable.of(true),
-          autocompletion({ override: [] }),
-        ]}
-        onChange={(value) => handleCodeChange(value)}
-      />
+      <div role="group" aria-label="Trình soạn code Python">
+        <CodeMirror
+          ref={editorRef}
+          value={localCode}
+          height="400px"
+          theme={isDark ? oneDark : "light"}
+          extensions={[
+            python(),
+            EditorView.editable.of(true),
+            autocompletion({ override: [] }),
+          ]}
+          onChange={(value) => handleCodeChange(value)}
+        />
+      </div>
 
       <div className="code-editor__actions">
         <input
@@ -241,12 +247,14 @@ export default function CodeEditor({
           id="upload-file"
           style={{ display: "none" }}
           onChange={handleFileUpload}
+          aria-label="Tải file Python"
         />
         <label htmlFor="upload-file" className="upload-btn">
           📂 Tải file Python
         </label>
 
         <button
+          type="button"
           onClick={runCode}
           disabled={loading}
           className="code-editor__run-btn"
@@ -259,6 +267,7 @@ export default function CodeEditor({
       <div className="code-editor__tabs">
         <div className="tabs-header">
           <button
+            type="button"
             className={activeTab === "results" ? "active" : ""}
             onClick={() => setActiveTab("results")}
           >
@@ -266,6 +275,7 @@ export default function CodeEditor({
           </button>
 
           <button
+            type="button"
             className={activeTab === "guide" ? "active" : ""}
             onClick={() => {
               setActiveTab("guide");
@@ -285,7 +295,7 @@ export default function CodeEditor({
           {activeTab === "results" && (
             <div className="tab-panel">
               {results.length ? (
-                <table border="1" style={{ width: "100%" }}>
+                <table border="1" style={{ width: "100%" }} aria-label="Kết quả chạy code">
                   <thead>
                     <tr>
                       <th>Input</th>
@@ -300,7 +310,7 @@ export default function CodeEditor({
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.input}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.expected}</td>
                         <td style={{ whiteSpace: "pre-wrap" }}>{r.actual}</td>
-                        <td style={{ color: r.pass ? "green" : "red" }}>
+                        <td style={{ color: r.pass ? "#15803d" : "#dc2626" }}>
                           {r.pass ? "✔ Đúng" : "❌ Sai"}
                         </td>
                       </tr>

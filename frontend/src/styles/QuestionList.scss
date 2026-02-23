@@ -1,12 +1,14 @@
+@import "./design-tokens";
+
 /* QuestionList.scss */
 .question-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  gap: $spacing-2;
+  padding: $spacing-3;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: $radius-lg;
   max-height: calc(2.8em * 2 + 20px); // khoảng 2 dòng button
   overflow-y: auto;
 
@@ -16,22 +18,23 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #bbb;
+    background: var(--border-medium);
     border-radius: 3px;
   }
 
   button {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    border-radius: $radius-sm;
     padding: 6px 10px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    color: var(--text-primary);
+    transition: background-color $transition-fast, border-color $transition-fast;
 
     &:hover {
-      background: #e6f3ff;
-      border-color: #3399ff;
+      background: var(--color-blue-light);
+      border-color: var(--color-blue);
     }
 
     // Trạng thái ĐÚNG
@@ -42,47 +45,47 @@
 
       &.active {
         background-color: #2e7d32;
-        color: #ffffff;
+        color: var(--text-inverse);
         border-color: #1b5e20;
       }
     }
 
     // Trạng thái SAI
     &.wrong {
-      border-color: #d32f2f;
-      color: #d32f2f;
-      background-color: #ffebee;
+      border-color: var(--color-error);
+      color: var(--color-error);
+      background-color: var(--color-error-bg);
 
       &.active {
-        background-color: #d32f2f;
-        color: #ffffff;
+        background-color: var(--color-error);
+        color: var(--text-inverse);
         border-color: #b71c1c;
       }
     }
 
     // Trạng thái ĐANG CHỌN (nhưng chưa có kết quả hoặc đang làm)
     &.active:not(.correct):not(.wrong) {
-      background-color: #1976d2; // Màu xanh dương sậm
-      color: #ffffff;
-      border-color: #1565c0;
-      font-weight: 700;
+      background-color: var(--color-blue);
+      color: var(--text-inverse);
+      border-color: var(--color-blue-hover);
+      font-weight: $font-weight-bold;
     }
 
     // Hiệu ứng chung khi active
     &.active {
       transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-md);
       z-index: 2;
     }
   }
 
   // --- Responsive for Mobile ---
-  @media (max-width: 768px) {
+  @media (max-width: $bp-md) {
     flex-wrap: nowrap;
     overflow-x: auto;
     max-height: none;
-    padding: 8px 4px;
-    gap: 8px;
+    padding: $spacing-2 $spacing-1;
+    gap: $spacing-2;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -101,10 +104,33 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 12px;
+      padding: 0 $spacing-3;
       white-space: nowrap;
-      font-size: 14px;
+      font-size: $font-size-sm;
     }
   }
 }
 
+// --- Dark mode overrides cho semantic colors cố định ---
+html[data-theme="dark"] {
+  .question-list {
+    button {
+      &.correct {
+        border-color: #4ade80;
+        color: #4ade80;
+        background-color: rgba(16, 185, 129, 0.12);
+
+        &.active {
+          background-color: #16a34a;
+          border-color: #15803d;
+        }
+      }
+
+      &.wrong {
+        &.active {
+          border-color: #b91c1c;
+        }
+      }
+    }
+  }
+}

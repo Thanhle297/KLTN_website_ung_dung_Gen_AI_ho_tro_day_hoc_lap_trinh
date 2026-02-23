@@ -74,12 +74,14 @@ export default function LayoutSimpleMobile({
       {/* 2. Tabs Navigation */}
       <div className="layout-mobile__tabs">
         <button 
+          type="button"
           className={activeTab === "question" ? "active" : ""}
           onClick={() => setActiveTab("question")}
         >
           Đề bài
         </button>
         <button 
+          type="button"
           className={activeTab === "code" ? "active" : ""}
           onClick={() => setActiveTab("code")}
         >

@@ -109,7 +109,7 @@ export default function Footer() {
       <div className="footer__bottom">
         <p className="footer__copyright">
           © {currentYear} TEdu Technology. Designed with{" "}
-          <i className="fas fa-heart"></i> for education.
+          <i className="fas fa-heart" aria-hidden="true"></i> for education.
         </p>
       </div>
     </footer>

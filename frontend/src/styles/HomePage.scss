@@ -1,49 +1,25 @@
 /* ==========================================================================
-   HomePage - Modern LMS Dashboard Theme (White-Blue Gradient)
+   HomePage - Deep Ocean & Coral Design System
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* --- Variables --- */
-$font-family: "Inter", sans-serif;
-
-// Colors
-$bg-page: #f8fafc;
-$bg-glass: rgba(255, 255, 255, 0.7);
-$bg-glass-strong: rgba(255, 255, 255, 0.9);
-
-$primary-blue: #2563eb;
-$light-blue: #e0f2fe;
-$dark-blue: #1e3a8a;
-$text-primary: #0f172a;
-$text-secondary: #475569;
-$text-muted: #94a3b8;
-
-$gradient-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-$gradient-hero: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
-
-$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-  0 2px 4px -1px rgba(0, 0, 0, 0.06);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-  0 4px 6px -2px rgba(0, 0, 0, 0.05);
+@import "./design-tokens";
 
 /* --- HomePage Container --- */
 .homepage {
-  font-family: $font-family;
+  font-family: var(--font-family);
   min-height: 100vh;
-  background-color: $bg-page;
+  background-color: var(--bg-secondary);
   background-image: radial-gradient(
       at 0% 0%,
-      hsla(213, 94%, 92%, 1) 0,
+      hsla(213, 94%, 92%, 0.6) 0,
       transparent 50%
     ),
-    radial-gradient(at 100% 0%, hsla(204, 96%, 90%, 1) 0, transparent 50%);
+    radial-gradient(at 100% 0%, hsla(204, 96%, 90%, 0.6) 0, transparent 50%);
   padding: 40px;
-  color: $text-primary;
-
+  color: var(--text-primary);
   max-width: 1600px;
   margin: 0 auto;
+  transition: background-color $transition-smooth, color $transition-smooth;
 
   /* --- Intro Section --- */
   &__intro-section {
@@ -52,7 +28,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     gap: 32px;
     margin-bottom: 48px;
 
-    @media (min-width: 1024px) {
+    @media (min-width: $bp-lg) {
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
@@ -61,17 +37,17 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
 
   &__welcome {
     h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      color: $dark-blue;
+      font-size: var(--font-size-3xl);
+      font-weight: $font-weight-extrabold;
+      color: var(--color-primary);
       margin-bottom: 12px;
     }
 
     p {
-      color: $text-secondary;
-      font-size: 1.1rem;
+      color: var(--text-secondary);
+      font-size: var(--font-size-md);
       max-width: 600px;
-      line-height: 1.6;
+      line-height: $line-height-relaxed;
     }
   }
 
@@ -83,31 +59,32 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
       align-items: center;
       margin-bottom: 32px;
       padding-bottom: 16px;
-      border-bottom: 2px solid $light-blue;
+      border-bottom: 2px solid var(--color-blue-light);
 
       h2 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: $text-primary;
+        font-size: var(--font-size-2xl);
+        font-weight: $font-weight-bold;
+        color: var(--text-primary);
         position: relative;
 
         &::after {
           content: "";
           position: absolute;
-          bottom: -18px; // align with border-bottom
+          bottom: -18px;
           left: 0;
           width: 80px;
           height: 4px;
-          background: $primary-blue;
+          background: linear-gradient(90deg, var(--color-blue), var(--color-accent));
           border-radius: 2px;
         }
       }
 
       .view-all {
-        color: $primary-blue;
-        font-weight: 600;
+        color: var(--color-blue);
+        font-weight: $font-weight-semibold;
         text-decoration: none;
-        font-size: 0.95rem;
+        font-size: var(--font-size-sm);
+
         &:hover {
           text-decoration: underline;
         }
@@ -122,8 +99,20 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
   }
 }
 
+/* Dark mode - HomePage specific */
+html[data-theme="dark"] {
+  .homepage {
+    background-image: radial-gradient(
+        at 0% 0%,
+        rgba(59, 130, 246, 0.08) 0,
+        transparent 50%
+      ),
+      radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.06) 0, transparent 50%);
+  }
+}
+
 /* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
+@media (max-width: $bp-md) {
   .homepage {
     padding: 20px;
   }

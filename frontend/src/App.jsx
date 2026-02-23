@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import { HeaderProvider, HeaderContext } from "./context/HeaderContext";
+import { AppThemeProvider } from "./context/ThemeContext";
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,7 +9,6 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
@@ -25,15 +25,6 @@ import Profile from "./pages/Profile";
 //dashboard admin
 import AdminRoute from "./routes/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
-// MUI theme
-
-const theme = createTheme({
-  palette: {
-    primary: { main: "#1976d2" },
-    secondary: { main: "#9c27b0" },
-  },
-});
 
 // ====================
 // Token & inactivity utilities
@@ -157,6 +148,9 @@ function AppContent() {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Chuyển đến nội dung chính
+      </a>
       {showHeader && !forceHide && <Header />}
 
       {showWarning && (
@@ -179,6 +173,7 @@ function AppContent() {
         />
       )}
 
+      <main id="main-content">
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -242,6 +237,7 @@ function AppContent() {
           }
         />
       </Routes>
+      </main>
 
       {showHeader && !forceHide && <Footer />}
     </>
@@ -253,12 +249,12 @@ function AppContent() {
 // ====================
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <AppThemeProvider>
       <HeaderProvider>
         <Router>
           <AppContent />
         </Router>
       </HeaderProvider>
-    </ThemeProvider>
+    </AppThemeProvider>
   );
 }
