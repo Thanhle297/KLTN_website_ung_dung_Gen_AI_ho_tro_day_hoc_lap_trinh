@@ -7,6 +7,7 @@ import {
   Button,
   Typography,
   Box,
+  useTheme,
 } from "@mui/material";
 import { Warning } from "@mui/icons-material";
 
@@ -17,6 +18,8 @@ const DeleteConfirmDialog = ({
   onConfirm,
   onCancel,
 }) => {
+  const theme = useTheme();
+  
   return (
     <Dialog
       open={open}
@@ -24,17 +27,19 @@ const DeleteConfirmDialog = ({
       disableRestoreFocus
       maxWidth="sm"
       fullWidth
-      PaperProps={{
+PaperProps={{
         sx: {
           borderRadius: 4,
-          background: "rgba(255, 255, 255, 0.98)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
         },
       }}
     >
-      <DialogTitle
+<DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+            : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
           color: "white",
           fontWeight: 700,
           fontSize: "1.5rem",
@@ -52,16 +57,17 @@ const DeleteConfirmDialog = ({
           <Typography variant="h6" gutterBottom>
             Bạn có chắc chắn muốn xóa {itemType} này?
           </Typography>
-          <Typography
+<Typography
             variant="body1"
             sx={{
               mt: 2,
               p: 2,
-              background:
-                "linear-gradient(135deg, #fa709a15 0%, #fee14015 100%)",
+              background: theme.palette.mode === "dark"
+                ? "rgba(244, 63, 94, 0.1)"
+                : "linear-gradient(135deg, #fa709a15 0%, #fee14015 100%)",
               borderRadius: 2,
               fontWeight: 600,
-              color: "#d63031",
+              color: theme.palette.error.main,
             }}
           >
             {itemName}
@@ -73,33 +79,37 @@ const DeleteConfirmDialog = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button
+<Button
           onClick={onCancel}
           variant="outlined"
           sx={{
             borderRadius: 2,
             textTransform: "none",
             px: 3,
-            borderColor: "#cbd5e0",
-            color: "#4a5568",
+            borderColor: theme.palette.divider,
+            color: theme.palette.text.secondary,
             "&:hover": {
-              borderColor: "#a0aec0",
-              background: "#f7fafc",
+              borderColor: theme.palette.text.primary,
+              backgroundColor: theme.palette.action.hover,
             },
           }}
         >
           Hủy
         </Button>
-        <Button
+<Button
           onClick={onConfirm}
           variant="contained"
           sx={{
-            background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            background: theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+              : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+              background: theme.palette.mode === "dark"
+                ? `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`
+                : "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
             },
           }}
         >

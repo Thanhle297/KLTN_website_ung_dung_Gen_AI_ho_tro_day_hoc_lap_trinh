@@ -9,6 +9,7 @@ import {
   Chip,
   IconButton,
   Fade,
+  useTheme,
 } from "@mui/material";
 import {
   Edit,
@@ -65,6 +66,8 @@ const UserTableRow = ({
   onChangePassword,
   onManageCourses,
 }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const roleConfig = getRoleConfig(user.role);
   // Teacher dùng teachingCourses, student dùng enrolledCourses
   const courseCount = user.role === "teacher"
@@ -76,7 +79,9 @@ const UserTableRow = ({
       <TableRow
         sx={{
           "&:hover": {
-            backgroundColor: "#f7fafc",
+            backgroundColor: isDark
+              ? "rgba(102, 126, 234, 0.08)"
+              : "#f7fafc",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
           },
           transition: "all 0.2s ease",
@@ -102,7 +107,7 @@ const UserTableRow = ({
                 variant="body1"
                 sx={{
                   fontWeight: 600,
-                  color: "#2d3748",
+                  color: isDark ? theme.palette.text.primary : "#2d3748",
                 }}
               >
                 {user.fullname || user.username}
@@ -116,7 +121,7 @@ const UserTableRow = ({
           <Typography
             variant="body2"
             sx={{
-              color: "#4a5568",
+              color: isDark ? theme.palette.text.secondary : "#4a5568",
             }}
           >
             {user.email}
@@ -128,9 +133,11 @@ const UserTableRow = ({
           <Typography
             variant="body2"
             sx={{
-              color: "#718096",
+              color: isDark ? theme.palette.text.secondary : "#718096",
               fontFamily: "monospace",
-              backgroundColor: "#edf2f7",
+              backgroundColor: isDark
+                ? "rgba(255, 255, 255, 0.05)"
+                : "#edf2f7",
               px: 1.5,
               py: 0.5,
               borderRadius: 1,
@@ -187,8 +194,8 @@ const UserTableRow = ({
               background:
                 courseCount > 0
                   ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  : "#e0e0e0",
-              color: courseCount > 0 ? "white" : "#666",
+                  : isDark ? "rgba(255, 255, 255, 0.1)" : "#e0e0e0",
+              color: courseCount > 0 ? "white" : isDark ? theme.palette.text.secondary : "#666",
             }}
           />
         </TableCell>

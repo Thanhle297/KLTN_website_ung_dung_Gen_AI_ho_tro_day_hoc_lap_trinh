@@ -11,11 +11,13 @@ import {
   MenuItem,
   Box,
   Typography,
+  useTheme,
 } from "@mui/material";
 import useAdminAPI from "../../../hook/useAdminAPI";
 
 const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
   const api = useAdminAPI();
+  const theme = useTheme();
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [subLessons, setSubLessons] = useState([]);
@@ -95,7 +97,13 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 700 }}>
+      <DialogTitle sx={{
+        fontWeight: 700,
+        background: theme.palette.mode === "dark"
+          ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+          : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+      }}>
         Phân phối {selectedQuestionIds.length} câu hỏi
       </DialogTitle>
       <DialogContent>

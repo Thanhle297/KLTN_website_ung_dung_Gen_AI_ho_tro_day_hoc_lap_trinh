@@ -21,6 +21,7 @@ import {
   Tooltip,
   CircularProgress,
   Chip,
+  useTheme,
 } from "@mui/material";
 import {
   Add,
@@ -81,6 +82,7 @@ export default function QuestionManagerDialog({
   onQuestionsChanged,
 }) {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   // State
   const [questions, setQuestions] = useState([]);
@@ -256,7 +258,9 @@ export default function QuestionManagerDialog({
       >
         <DialogTitle
           sx={{
-            background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+            background: theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`
+              : "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
             color: "white",
             fontWeight: 700,
             fontSize: "1.3rem",
@@ -283,8 +287,10 @@ export default function QuestionManagerDialog({
               p: 2,
               display: "flex",
               gap: 2,
-              background: "#f8f9fa",
-              borderBottom: "1px solid #e9ecef",
+              background: theme.palette.mode === "dark"
+                ? theme.palette.background.default
+                : "#f8f9fa",
+              borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
             <Button
@@ -356,7 +362,7 @@ export default function QuestionManagerDialog({
                 justifyContent: "center",
                 alignItems: "center",
                 minHeight: 200,
-                color: "#666",
+                color: "text.secondary",
               }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
@@ -418,7 +424,12 @@ export default function QuestionManagerDialog({
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 2, background: "#f8f9fa" }}>
+        <DialogActions sx={{
+          p: 2,
+          background: theme.palette.mode === "dark"
+            ? theme.palette.background.default
+            : "#f8f9fa",
+        }}>
           <Button
             onClick={onClose}
             variant="outlined"
@@ -465,6 +476,7 @@ export default function QuestionManagerDialog({
 // ==================== SORTABLE QUESTION ROW COMPONENT ====================
 
 function SortableQuestionRow({ question, index, onEdit, onDelete }) {
+  const theme = useTheme();
   const {
     attributes,
     listeners,
@@ -499,7 +511,7 @@ function SortableQuestionRow({ question, index, onEdit, onDelete }) {
           sx={{
             display: "flex",
             alignItems: "center",
-            color: "#9e9e9e",
+            color: theme.palette.text.disabled,
             cursor: isDragging ? "grabbing" : "grab",
             "&:hover": { color: "#667eea" },
           }}

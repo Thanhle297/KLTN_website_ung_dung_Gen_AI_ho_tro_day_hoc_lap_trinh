@@ -12,6 +12,7 @@ import {
   Box,
   Typography,
   Chip,
+  useTheme,
 } from "@mui/material";
 import { School as SchoolIcon } from "@mui/icons-material";
 
@@ -22,6 +23,7 @@ export default function UserCoursesDialog({
   onSave,
   api,
 }) {
+  const theme = useTheme();
   const [allCourses, setAllCourses] = useState([]);
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -113,7 +115,9 @@ export default function UserCoursesDialog({
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
           display: "flex",
           alignItems: "center",
@@ -192,7 +196,7 @@ export default function UserCoursesDialog({
                     border: "1px solid",
                     borderColor: selectedCourses.includes(course.courseId)
                       ? "#667eea"
-                      : "#e0e0e0",
+                      : theme.palette.divider,
                     backgroundColor: selectedCourses.includes(course.courseId)
                       ? "rgba(102, 126, 234, 0.05)"
                       : "transparent",

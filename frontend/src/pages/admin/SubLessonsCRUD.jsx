@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Box, Snackbar, Alert } from "@mui/material";
+import { Box, Snackbar, Alert, useTheme } from "@mui/material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import SubLessonsHeader from "../../components/admin/sublessons/SubLessonsHeader";
@@ -9,6 +9,7 @@ import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDial
 
 export default function SubLessonsCRUD() {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -181,11 +182,12 @@ export default function SubLessonsCRUD() {
 
   /* ------- RENDER ------- */
   return (
-    <Box
+<Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >

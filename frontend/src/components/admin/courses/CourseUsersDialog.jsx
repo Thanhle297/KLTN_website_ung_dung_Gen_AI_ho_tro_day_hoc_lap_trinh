@@ -14,6 +14,7 @@ import {
   Chip,
   TextField,
   InputAdornment,
+  useTheme,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -27,6 +28,7 @@ export default function CourseUsersDialog({
   onSave,
   api,
 }) {
+  const theme = useTheme();
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -128,7 +130,9 @@ export default function CourseUsersDialog({
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+            : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
           color: "white",
           display: "flex",
           alignItems: "center",
@@ -219,7 +223,7 @@ export default function CourseUsersDialog({
                     border: "1px solid",
                     borderColor: selectedUsers.includes(user._id)
                       ? "#f5576c"
-                      : "#e0e0e0",
+                      : theme.palette.divider,
                     backgroundColor: selectedUsers.includes(user._id)
                       ? "rgba(245, 87, 108, 0.05)"
                       : "transparent",

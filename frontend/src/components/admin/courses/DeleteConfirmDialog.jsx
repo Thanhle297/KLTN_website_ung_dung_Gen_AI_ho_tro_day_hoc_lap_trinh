@@ -7,10 +7,13 @@ import {
   Button,
   Typography,
   Box,
+  useTheme,
 } from "@mui/material";
 import { Warning } from "@mui/icons-material";
 
 const DeleteConfirmDialog = ({ open, courseName, onConfirm, onCancel }) => {
+  const theme = useTheme();
+
   return (
     <Dialog
       open={open}
@@ -20,14 +23,16 @@ const DeleteConfirmDialog = ({ open, courseName, onConfirm, onCancel }) => {
       PaperProps={{
         sx: {
           borderRadius: 4,
-          background: "rgba(255, 255, 255, 0.98)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
         },
       }}
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+            : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
           color: "white",
           fontWeight: 700,
           fontSize: "1.5rem",
@@ -50,11 +55,12 @@ const DeleteConfirmDialog = ({ open, courseName, onConfirm, onCancel }) => {
             sx={{
               mt: 2,
               p: 2,
-              background:
-                "linear-gradient(135deg, #fa709a15 0%, #fee14015 100%)",
+              background: theme.palette.mode === "dark"
+                ? "rgba(244, 63, 94, 0.1)"
+                : "linear-gradient(135deg, #fa709a15 0%, #fee14015 100%)",
               borderRadius: 2,
               fontWeight: 600,
-              color: "#d63031",
+              color: theme.palette.error.main,
             }}
           >
             {courseName}
@@ -73,11 +79,11 @@ const DeleteConfirmDialog = ({ open, courseName, onConfirm, onCancel }) => {
             borderRadius: 2,
             textTransform: "none",
             px: 3,
-            borderColor: "#cbd5e0",
-            color: "#4a5568",
+            borderColor: theme.palette.divider,
+            color: theme.palette.text.secondary,
             "&:hover": {
-              borderColor: "#a0aec0",
-              background: "#f7fafc",
+              borderColor: theme.palette.text.primary,
+              backgroundColor: theme.palette.action.hover,
             },
           }}
         >
@@ -87,12 +93,16 @@ const DeleteConfirmDialog = ({ open, courseName, onConfirm, onCancel }) => {
           onClick={onConfirm}
           variant="contained"
           sx={{
-            background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            background: theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+              : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+              background: theme.palette.mode === "dark"
+                ? `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`
+                : "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
             },
           }}
         >

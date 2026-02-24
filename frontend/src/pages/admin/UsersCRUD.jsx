@@ -11,6 +11,7 @@ import {
   Paper,
   TablePagination,
   Typography,
+  useTheme,
 } from "@mui/material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
@@ -26,6 +27,7 @@ import UserNotification from "../../components/admin/users/UserNotification";
 import UserCoursesDialog from "../../components/admin/users/UserCoursesDialog";
 export default function UsersCRUD() {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -292,8 +294,9 @@ export default function UsersCRUD() {
     <Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
         overflowX: "hidden",
       }}
@@ -301,15 +304,18 @@ export default function UsersCRUD() {
       {/* Header Section */}
       <UserTableHeader onAddUser={openCreateDialog} />
 
-      {/* Search Bar */}
+{/* Search Bar */}
       <Box
         sx={{
-          background: "rgba(255, 255, 255, 0.95)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
           borderRadius: 4,
           p: 3,
           mb: 3,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          boxShadow: theme.palette.mode === "dark" 
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.1)",
+          border: `1px solid ${theme.palette.divider}`,
         }}
       >
         <UserSearchBar value={search} onChange={handleSearchChange} />
@@ -325,28 +331,32 @@ export default function UsersCRUD() {
             minHeight: "400px",
           }}
         >
-          <CircularProgress
+<CircularProgress
             size={60}
             sx={{
-              color: "white",
+              color: theme.palette.primary.main,
             }}
           />
         </Box>
       ) : (
-        <Paper
+<Paper
           sx={{
             borderRadius: 4,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+            boxShadow: theme.palette.mode === "dark" 
+              ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+              : "0 8px 32px rgba(0, 0, 0, 0.1)",
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow
+<TableRow
                   sx={{
-                    background:
-                      "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+                    background: theme.palette.mode === "dark"
+                      ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+                      : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                   }}
                 >
                   <TableCell
@@ -443,7 +453,7 @@ export default function UsersCRUD() {
             </Table>
           </TableContainer>
 
-          <TablePagination
+<TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
             count={filteredUsers.length}
@@ -456,7 +466,8 @@ export default function UsersCRUD() {
               `${from}-${to} của ${count}`
             }
             sx={{
-              borderTop: "1px solid rgba(224, 224, 224, 1)",
+              borderTop: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.background.paper,
             }}
           />
         </Paper>

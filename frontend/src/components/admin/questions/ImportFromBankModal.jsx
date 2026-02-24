@@ -18,6 +18,7 @@ import {
   Paper,
   CircularProgress,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import useAdminAPI from "../../../hook/useAdminAPI";
@@ -37,6 +38,7 @@ export default function ImportFromBankModal({
   onSuccess,
 }) {
   const api = useAdminAPI();
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -97,7 +99,13 @@ export default function ImportFromBankModal({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>
+      <DialogTitle sx={{
+        fontWeight: 700,
+        background: theme.palette.mode === "dark"
+          ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+          : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+      }}>
         🏦 Lấy câu hỏi từ Ngân hàng
       </DialogTitle>
       <DialogContent dividers>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Box, Snackbar, Alert } from "@mui/material";
+import { Box, Snackbar, Alert, useTheme } from "@mui/material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import LessonsHeader from "../../components/admin/lessons/LessonsHeader";
@@ -11,6 +11,7 @@ const DEFAULT_COURSE_ID = "10";
 
 export default function LessonsCRUD() {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -178,11 +179,12 @@ export default function LessonsCRUD() {
 
   /* ============================ RENDER ============================ */
   return (
-    <Box
+<Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >

@@ -21,6 +21,7 @@ import {
   Tooltip,
   Breadcrumbs,
   Link,
+  useTheme,
 } from "@mui/material";
 import {
   Assessment as AssessmentIcon,
@@ -39,6 +40,7 @@ export default function CourseReportPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const reportAPI = useReportAPI();
+  const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -133,34 +135,35 @@ export default function CourseReportPage() {
       sx={{
         minHeight: "100vh",
         maxWidth: "100%",
-        background:
-          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
         overflow: "hidden",
       }}
     >
       {/* Header với breadcrumb */}
-      <Box
-        sx={{
-          mb: 3,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
+        <Box
+          sx={{
+            mb: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
         <Box>
           <Breadcrumbs
             separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 1, color: "white" }}
+            sx={{ mb: 1, color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white" }}
           >
             <Link
               underline="hover"
               sx={{
                 display: "flex",
                 alignItems: "center",
-                color: "white",
+                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
                 cursor: "pointer",
               }}
               onClick={() => navigate("/admin/courses")}
@@ -169,7 +172,7 @@ export default function CourseReportPage() {
               Quản lý Khóa học
             </Link>
             <Typography
-              sx={{ display: "flex", alignItems: "center", color: "white" }}
+              sx={{ display: "flex", alignItems: "center", color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white" }}
             >
               <AssessmentIcon sx={{ mr: 0.5 }} fontSize="small" />
               Báo cáo điểm
@@ -183,11 +186,15 @@ export default function CourseReportPage() {
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
-                color: "white",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
+                backgroundColor: theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "rgba(255, 255, 255, 0.15)",
                 backdropFilter: "blur(10px)",
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                  backgroundColor: theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.15)"
+                    : "rgba(255, 255, 255, 0.25)",
                 },
               }}
             >
@@ -198,17 +205,22 @@ export default function CourseReportPage() {
       </Box>
 
       {/* Main content box */}
-      <Paper
+<Paper
         sx={{
           borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+          boxShadow: theme.palette.mode === "dark" 
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.15)",
           overflow: "hidden",
+          backgroundColor: theme.palette.background.paper,
         }}
       >
         {/* Title */}
-        <Box
+<Box
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             p: 3,
           }}
@@ -369,7 +381,9 @@ export default function CourseReportPage() {
                       <TableCell
                         sx={{
                           fontWeight: 700,
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: theme.palette.mode === "dark"
+                            ? theme.palette.background.paper
+                            : "#f5f5f5",
                           position: "sticky",
                           left: 0,
                           zIndex: 3,
@@ -381,7 +395,9 @@ export default function CourseReportPage() {
                       <TableCell
                         sx={{
                           fontWeight: 700,
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: theme.palette.mode === "dark"
+                            ? theme.palette.background.paper
+                            : "#f5f5f5",
                           position: "sticky",
                           left: 50,
                           zIndex: 3,
@@ -393,7 +409,9 @@ export default function CourseReportPage() {
                       <TableCell
                         sx={{
                           fontWeight: 700,
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: theme.palette.mode === "dark"
+                            ? theme.palette.background.paper
+                            : "#f5f5f5",
                           position: "sticky",
                           left: 170,
                           zIndex: 3,
@@ -410,7 +428,9 @@ export default function CourseReportPage() {
                           align="center"
                           sx={{
                             fontWeight: 600,
-                            backgroundColor: "#f5f5f5",
+                            backgroundColor: theme.palette.mode === "dark"
+                              ? theme.palette.background.paper
+                              : "#f5f5f5",
                             minWidth: 100,
                             fontSize: "0.75rem",
                           }}
@@ -436,7 +456,9 @@ export default function CourseReportPage() {
                         align="center"
                         sx={{
                           fontWeight: 700,
-                          backgroundColor: "#e3f2fd",
+                          backgroundColor: theme.palette.mode === "dark"
+                            ? "rgba(33, 150, 243, 0.15)"
+                            : "#e3f2fd",
                           minWidth: 80,
                         }}
                       >
@@ -462,8 +484,9 @@ export default function CourseReportPage() {
                           sx={{
                             position: "sticky",
                             left: 0,
-                            backgroundColor:
-                              index % 2 === 0 ? "#fafafa" : "#ffffff",
+                            backgroundColor: theme.palette.mode === "dark"
+                              ? theme.palette.background.paper
+                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
                             zIndex: 2,
                             boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
                             "&:hover": {
@@ -477,8 +500,9 @@ export default function CourseReportPage() {
                           sx={{
                             position: "sticky",
                             left: 50,
-                            backgroundColor:
-                              index % 2 === 0 ? "#fafafa" : "#ffffff",
+                            backgroundColor: theme.palette.mode === "dark"
+                              ? theme.palette.background.paper
+                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
                             zIndex: 2,
                             fontWeight: 500,
                             boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
@@ -493,8 +517,9 @@ export default function CourseReportPage() {
                           sx={{
                             position: "sticky",
                             left: 170,
-                            backgroundColor:
-                              index % 2 === 0 ? "#fafafa" : "#ffffff",
+                            backgroundColor: theme.palette.mode === "dark"
+                              ? theme.palette.background.paper
+                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
                             zIndex: 2,
                             fontWeight: 600,
                             boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
@@ -516,7 +541,9 @@ export default function CourseReportPage() {
                         {/* Điểm trung bình */}
                         <TableCell
                           align="center"
-                          sx={{ backgroundColor: "#e3f2fd" }}
+                          sx={{ backgroundColor: theme.palette.mode === "dark"
+                            ? "rgba(33, 150, 243, 0.15)"
+                            : "#e3f2fd" }}
                         >
                           <Chip
                             label={`${student.averageProgress}%`}

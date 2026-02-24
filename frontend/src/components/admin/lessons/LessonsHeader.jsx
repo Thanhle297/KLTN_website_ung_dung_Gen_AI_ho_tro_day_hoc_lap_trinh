@@ -8,6 +8,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useTheme,
 } from "@mui/material";
 
 const LessonsHeader = React.memo(
@@ -19,15 +20,23 @@ const LessonsHeader = React.memo(
     onFilterChange,
     onAddClick,
   }) => {
+    const theme = useTheme();
+    const isDark = theme.palette.mode === "dark";
+
     return (
       <Box
         sx={{
-          background: "rgba(255, 255, 255, 0.95)",
+          background: isDark
+            ? theme.palette.background.paper
+            : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(10px)",
           borderRadius: 4,
           p: 3,
           mb: 3,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          boxShadow: isDark
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.1)",
+          border: isDark ? `1px solid ${theme.palette.divider}` : "none",
         }}
       >
         <Stack
@@ -64,7 +73,7 @@ const LessonsHeader = React.memo(
                 onChange={(e) => onCourseChange(e.target.value)}
                 sx={{
                   borderRadius: 2,
-                  backgroundColor: "white",
+                backgroundColor: isDark ? theme.palette.background.default : "white",
                 }}
               >
                 {courses?.map((c) => (
@@ -83,7 +92,7 @@ const LessonsHeader = React.memo(
                 onChange={(e) => onFilterChange(e.target.value)}
                 sx={{
                   borderRadius: 2,
-                  backgroundColor: "white",
+                  backgroundColor: isDark ? theme.palette.background.default : "white",
                 }}
               >
                 <MenuItem value="all">Tất cả</MenuItem>

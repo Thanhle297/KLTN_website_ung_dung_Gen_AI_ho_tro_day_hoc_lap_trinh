@@ -6,6 +6,7 @@ import {
   DialogActions,
   TextField,
   Button,
+  useTheme,
 } from "@mui/material";
 
 const ChangePasswordDialog = ({
@@ -15,6 +16,8 @@ const ChangePasswordDialog = ({
   onSave,
   onPasswordChange,
 }) => {
+  const theme = useTheme();
+
   return (
     <Dialog
       open={open}
@@ -24,14 +27,16 @@ const ChangePasswordDialog = ({
       PaperProps={{
         sx: {
           borderRadius: 4,
-          background: "rgba(255, 255, 255, 0.98)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
         },
       }}
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+            : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
           color: "white",
           fontWeight: 700,
         }}

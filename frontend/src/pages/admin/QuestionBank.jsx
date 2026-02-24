@@ -17,6 +17,7 @@ import {
   IconButton,
   Paper,
   TablePagination,
+  useTheme,
 } from "@mui/material";
 import { Search, Add, Assignment } from "@mui/icons-material";
 
@@ -29,6 +30,7 @@ import DistributeModal from "../../components/admin/questions/DistributeModal";
 export default function QuestionBank() {
   const api = useAdminAPI();
   const apiRef = useRef(api);
+  const theme = useTheme();
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -213,11 +215,12 @@ export default function QuestionBank() {
   }, []);
 
   return (
-    <Box
+<Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
@@ -231,10 +234,10 @@ export default function QuestionBank() {
         }}
       >
         <Stack spacing={1}>
-          <Typography variant="h4" color="white" fontWeight={700}>
+<Typography variant="h4" color={theme.palette.mode === "dark" ? theme.palette.text.primary : "white"} fontWeight={700}>
             🏦 Ngân hàng câu hỏi
           </Typography>
-          <Typography variant="body2" color="rgba(255,255,255,0.8)">
+          <Typography variant="body2" color={theme.palette.mode === "dark" ? theme.palette.text.secondary : "rgba(255,255,255,0.8)"}>
             Quản lý kho câu hỏi tập trung và phân phối về bài học
           </Typography>
         </Stack>
@@ -246,9 +249,11 @@ export default function QuestionBank() {
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             sx={{
-              bgcolor: "white",
+              bgcolor: theme.palette.mode === "dark"
+                ? theme.palette.background.paper
+                : "white",
               borderRadius: 2,
-              "& fieldset": { border: "none" },
+              "& fieldset": { border: theme.palette.mode === "dark" ? undefined : "none" },
             }}
             InputProps={{
               startAdornment: (
@@ -263,10 +268,16 @@ export default function QuestionBank() {
             startIcon={<Add />}
             onClick={handleAddClick}
             sx={{
-              bgcolor: "white",
-              color: "#2196F3",
+              bgcolor: theme.palette.mode === "dark"
+                ? theme.palette.background.paper
+                : "white",
+              color: theme.palette.mode === "dark"
+                ? theme.palette.primary.main
+                : "#2196F3",
               fontWeight: 700,
-              "&:hover": { bgcolor: "#f0f0f0" },
+              "&:hover": { bgcolor: theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.08)"
+                : "#f0f0f0" },
             }}
           >
             Tạo câu hỏi

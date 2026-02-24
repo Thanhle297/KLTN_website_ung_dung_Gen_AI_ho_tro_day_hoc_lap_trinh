@@ -10,12 +10,14 @@ import {
   Autocomplete,
   Chip,
   CircularProgress,
+  useTheme,
 } from "@mui/material";
 import { School } from "@mui/icons-material";
 import useAdminAPI from "../../../hook/useAdminAPI";
 
 const CourseFormDialog = ({ open, editing, onClose, onSave }) => {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [form, setForm] = useState({
     courseId: "",
@@ -117,14 +119,16 @@ const CourseFormDialog = ({ open, editing, onClose, onSave }) => {
       PaperProps={{
         sx: {
           borderRadius: 4,
-          background: "rgba(255, 255, 255, 0.98)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
         },
       }}
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
           fontWeight: 700,
           fontSize: "1.5rem",

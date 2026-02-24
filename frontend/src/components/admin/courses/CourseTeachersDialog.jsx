@@ -22,6 +22,7 @@ import {
   CircularProgress,
   Chip,
   Divider,
+  useTheme,
 } from "@mui/material";
 import {
   School,
@@ -45,6 +46,7 @@ export default function CourseTeachersDialog({
   onTeachersChanged,
 }) {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [teachers, setTeachers] = useState([]); // Tất cả teachers
   const [courseTeachers, setCourseTeachers] = useState([]); // Teachers của course
@@ -148,7 +150,9 @@ export default function CourseTeachersDialog({
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
           fontWeight: 700,
           fontSize: "1.3rem",
@@ -181,7 +185,12 @@ export default function CourseTeachersDialog({
         ) : (
           <>
             {/* Thêm giáo viên */}
-            <Box sx={{ p: 2, background: "#f8f9fa" }}>
+            <Box sx={{
+              p: 2,
+              background: theme.palette.mode === "dark"
+                ? theme.palette.background.default
+                : "#f8f9fa",
+            }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Thêm giáo viên
               </Typography>
@@ -258,7 +267,7 @@ export default function CourseTeachersDialog({
                     <ListItem
                       key={teacher._id}
                       sx={{
-                        border: "1px solid #e0e0e0",
+                        border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 2,
                         mb: 1,
                         "&:hover": {
@@ -330,7 +339,12 @@ export default function CourseTeachersDialog({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, background: "#f8f9fa" }}>
+      <DialogActions sx={{
+        p: 2,
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "#f8f9fa",
+      }}>
         <Button
           onClick={onClose}
           variant="outlined"

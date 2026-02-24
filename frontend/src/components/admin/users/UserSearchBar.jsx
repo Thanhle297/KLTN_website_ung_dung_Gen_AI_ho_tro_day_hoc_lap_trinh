@@ -1,8 +1,11 @@
 import React from "react";
-import { TextField, InputAdornment } from "@mui/material";
+import { TextField, InputAdornment, useTheme } from "@mui/material";
 import { Search } from "@mui/icons-material";
 
 const UserSearchBar = ({ value, onChange }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   return (
     <TextField
       placeholder="🔍 Tìm kiếm theo username..."
@@ -12,9 +15,9 @@ const UserSearchBar = ({ value, onChange }) => {
       sx={{
         "& .MuiOutlinedInput-root": {
           borderRadius: 3,
-          backgroundColor: "white",
+          backgroundColor: isDark ? theme.palette.background.default : "white",
           "& fieldset": {
-            borderColor: "#e0e0e0",
+            borderColor: theme.palette.divider,
           },
           "&:hover fieldset": {
             borderColor: "#667eea",

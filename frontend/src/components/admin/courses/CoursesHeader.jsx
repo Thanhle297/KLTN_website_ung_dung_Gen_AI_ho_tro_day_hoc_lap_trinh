@@ -1,17 +1,25 @@
 import React from "react";
-import { Box, Typography, Button, Stack } from "@mui/material";
+import { Box, Typography, Button, Stack, useTheme } from "@mui/material";
 import { Add } from "@mui/icons-material";
 
 const CoursesHeader = React.memo(({ onAddClick }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   return (
     <Box
       sx={{
-        background: "rgba(255, 255, 255, 0.95)",
+        background: isDark
+          ? theme.palette.background.paper
+          : "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(10px)",
         borderRadius: 4,
         p: 3,
         mb: 3,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        boxShadow: isDark
+          ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+          : "0 8px 32px rgba(0, 0, 0, 0.1)",
+        border: isDark ? `1px solid ${theme.palette.divider}` : "none",
       }}
     >
       <Stack

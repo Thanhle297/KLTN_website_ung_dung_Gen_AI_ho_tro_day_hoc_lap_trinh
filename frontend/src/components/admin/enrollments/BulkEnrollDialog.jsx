@@ -14,6 +14,7 @@ import {
   Typography,
   CircularProgress,
   OutlinedInput,
+  useTheme,
 } from "@mui/material";
 import { GroupAdd as GroupAddIcon } from "@mui/icons-material";
 
@@ -29,6 +30,7 @@ const MenuProps = {
 };
 
 export default function BulkEnrollDialog({ open, onClose, onSave, api }) {
+  const theme = useTheme();
   const [users, setUsers] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -102,7 +104,9 @@ export default function BulkEnrollDialog({ open, onClose, onSave, api }) {
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`
+            : "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
           color: "white",
           display: "flex",
           alignItems: "center",

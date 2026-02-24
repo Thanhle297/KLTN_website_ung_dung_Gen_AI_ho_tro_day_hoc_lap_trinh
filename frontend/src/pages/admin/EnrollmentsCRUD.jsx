@@ -17,6 +17,7 @@ import {
   Chip,
   Snackbar,
   Alert,
+  useTheme,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -28,6 +29,7 @@ import useAdminAPI from "../../hook/useAdminAPI";
 
 export default function EnrollmentsCRUD() {
   const api = useAdminAPI();
+  const theme = useTheme();
 
   const [users, setUsers] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -242,8 +244,16 @@ export default function EnrollmentsCRUD() {
     );
   }
 
-  return (
-    <Box sx={{ p: 3 }}>
+return (
+    <Box 
+      sx={{ 
+        p: 3,
+        minHeight: "100vh",
+        background: theme.palette.mode === "dark"
+          ? theme.palette.background.default
+          : "transparent",
+      }}
+    >
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
@@ -322,15 +332,23 @@ export default function EnrollmentsCRUD() {
       </Box>
 
       {/* Ma trận */}
-      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+      <Paper sx={{ 
+          borderRadius: 3, 
+          overflow: "hidden",
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: theme.palette.mode === "dark" 
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.1)",
+        }}>
         <TableContainer sx={{ maxHeight: 600 }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell
+<TableCell
                   sx={{
-                    background:
-                      "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+                    background: theme.palette.mode === "dark"
+                      ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+                      : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                     color: "white",
                     fontWeight: 700,
                     minWidth: 200,
@@ -339,12 +357,13 @@ export default function EnrollmentsCRUD() {
                   Học sinh
                 </TableCell>
                 {courses.map((course) => (
-                  <TableCell
+<TableCell
                     key={course.courseId}
                     align="center"
                     sx={{
-                      background:
-                        "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+                      background: theme.palette.mode === "dark"
+                        ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+                        : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
                       color: "white",
                       fontWeight: 700,
                       minWidth: 120,
@@ -379,9 +398,9 @@ export default function EnrollmentsCRUD() {
                         )}
                         onChange={() => handleToggle(user._id, course.courseId)}
                         sx={{
-                          color: "#2196F3",
+                          color: theme.palette.primary.main,
                           "&.Mui-checked": {
-                            color: "#1976D2",
+                            color: theme.palette.primary.dark,
                           },
                         }}
                       />

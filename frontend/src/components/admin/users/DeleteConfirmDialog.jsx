@@ -7,10 +7,13 @@ import {
   Button,
   Typography,
   Box,
+  useTheme,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 const DeleteConfirmDialog = ({ open, user, onClose, onConfirm }) => {
+  const theme = useTheme();
+
   return (
     <Dialog
       open={open}
@@ -20,14 +23,16 @@ const DeleteConfirmDialog = ({ open, user, onClose, onConfirm }) => {
       PaperProps={{
         sx: {
           borderRadius: 4,
-          background: "rgba(255, 255, 255, 0.98)",
+          background: theme.palette.background.paper,
           backdropFilter: "blur(10px)",
         },
       }}
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.mode === "dark"
+            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+            : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
           color: "white",
           fontWeight: 700,
         }}
@@ -46,7 +51,9 @@ const DeleteConfirmDialog = ({ open, user, onClose, onConfirm }) => {
             sx={{
               p: 2,
               borderRadius: 2,
-              background: "rgba(245, 87, 108, 0.1)",
+              background: theme.palette.mode === "dark"
+                ? "rgba(244, 63, 94, 0.1)"
+                : "rgba(245, 87, 108, 0.1)",
               border: "1px solid rgba(245, 87, 108, 0.3)",
             }}
           >
@@ -81,12 +88,16 @@ const DeleteConfirmDialog = ({ open, user, onClose, onConfirm }) => {
           variant="contained"
           onClick={onConfirm}
           sx={{
-            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            background: theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
+              : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              background: "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
+              background: theme.palette.mode === "dark"
+                ? `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`
+                : "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
             },
           }}
         >

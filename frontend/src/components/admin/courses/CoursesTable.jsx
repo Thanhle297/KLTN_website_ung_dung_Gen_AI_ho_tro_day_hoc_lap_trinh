@@ -10,11 +10,14 @@ import {
   TableContainer,
   CircularProgress,
   Typography,
+  useTheme,
 } from "@mui/material";
 import CourseRow from "./CourseRow";
 
 const CoursesTable = React.memo(
   ({ courses, loading, onEdit, onDelete, onManageUsers, onManageTeachers, onViewReport }) => {
+    const theme = useTheme();
+    
     if (loading) {
       return (
         <Box
@@ -25,10 +28,10 @@ const CoursesTable = React.memo(
             minHeight: "400px",
           }}
         >
-          <CircularProgress
+<CircularProgress
             size={60}
             sx={{
-              color: "white",
+              color: theme.palette.primary.main,
             }}
           />
         </Box>
@@ -36,20 +39,24 @@ const CoursesTable = React.memo(
     }
 
     return (
-      <Paper
+<Paper
         sx={{
           borderRadius: 4,
           overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          boxShadow: theme.palette.mode === "dark" 
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.1)",
+          backgroundColor: theme.palette.background.paper,
         }}
       >
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow
+<TableRow
                 sx={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background: theme.palette.mode === "dark"
+                    ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 }}
               >
                 <TableCell

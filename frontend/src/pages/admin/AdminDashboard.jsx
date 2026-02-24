@@ -22,6 +22,8 @@ import Quiz from "@mui/icons-material/Quiz";
 import Home from "@mui/icons-material/Home";
 import MenuIcon from "@mui/icons-material/Menu";
 import Assignment from "@mui/icons-material/Assignment";
+import LightMode from "@mui/icons-material/LightMode";
+import DarkMode from "@mui/icons-material/DarkMode";
 import {
   Routes,
   Route,
@@ -30,6 +32,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import ScrollToTop from "../../components/ScrollToTop";
+import { useThemeMode } from "../../context/ThemeContext";
 import UsersCRUD from "./UsersCRUD";
 import CoursesCRUD from "./CoursesCRUD";
 import LessonsCRUD from "./LessonsCRUD";
@@ -77,6 +80,7 @@ const SidebarMenuItem = memo(function SidebarMenuItem({
   onClick,
 }) {
   const { label, path, Icon } = item;
+  const theme = useTheme();
 
   const menuButton = (
     <ListItemButton
@@ -94,24 +98,32 @@ const SidebarMenuItem = memo(function SidebarMenuItem({
         transition: MENU_ITEM_TRANSITION,
         touchAction: "manipulation", // Prevents double-tap zoom delay
         WebkitTapHighlightColor: "transparent",
-        "&.Mui-selected": {
-          background: "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
-          color: "#1976D2",
-          boxShadow: "0 2px 8px rgba(33, 150, 243, 0.12)",
+"&.Mui-selected": {
+          background: theme.palette.mode === "dark" 
+            ? "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%)"
+            : "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
+          color: theme.palette.primary.main,
+          boxShadow: theme.palette.mode === "dark"
+            ? "0 2px 8px rgba(59, 130, 246, 0.12)"
+            : "0 2px 8px rgba(33, 150, 243, 0.12)",
           "&:hover": {
-            background: "linear-gradient(135deg, #BBDEFB 0%, #E3F2FD 100%)",
+            background: theme.palette.mode === "dark"
+              ? "linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)"
+              : "linear-gradient(135deg, #BBDEFB 0%, #E3F2FD 100%)",
             transform: isCollapsed ? "scale(1.05)" : "translateX(4px)",
           },
-          "& .MuiListItemIcon-root": { color: "#1976D2" },
+          "& .MuiListItemIcon-root": { color: theme.palette.primary.main },
         },
         "&:hover": {
-          backgroundColor: "#F5F9FC",
+          backgroundColor: theme.palette.mode === "dark" 
+            ? "rgba(255, 255, 255, 0.05)"
+            : "#F5F9FC",
           transform: isCollapsed ? "scale(1.05)" : "translateX(4px)",
-          borderLeft: isCollapsed ? "none" : "3px solid #2196F3",
+          borderLeft: isCollapsed ? "none" : `3px solid ${theme.palette.primary.main}`,
         },
         // Focus visible state for accessibility
         "&:focus-visible": {
-          outline: "2px solid #1976D2",
+          outline: `2px solid ${theme.palette.primary.main}`,
           outlineOffset: 2,
         },
         // Reduced motion support
@@ -123,11 +135,11 @@ const SidebarMenuItem = memo(function SidebarMenuItem({
         },
       }}
     >
-      <ListItemIcon
+<ListItemIcon
         sx={{
           minWidth: isCollapsed ? 0 : 40,
           mr: isCollapsed ? 0 : 1,
-          color: isSelected ? "#1976D2" : "#2196F3",
+          color: isSelected ? theme.palette.primary.main : theme.palette.primary.main,
           transition: "color 0.2s ease",
           justifyContent: "center",
         }}
@@ -135,15 +147,16 @@ const SidebarMenuItem = memo(function SidebarMenuItem({
         <Icon />
       </ListItemIcon>
       {!isCollapsed && (
-        <ListItemText
-          primary={label}
-          primaryTypographyProps={{
-            fontWeight: isSelected ? 600 : 500,
-            fontSize: "0.95rem",
-            letterSpacing: "0.3px",
-            noWrap: true, // Prevent text overflow
-          }}
-        />
+<ListItemText
+           primary={label}
+           primaryTypographyProps={{
+             fontWeight: isSelected ? 600 : 500,
+             fontSize: "0.95rem",
+             letterSpacing: "0.3px",
+             noWrap: true, // Prevent text overflow
+             color: theme.palette.text.primary,
+           }}
+         />
       )}
     </ListItemButton>
   );
@@ -168,12 +181,15 @@ const SidebarContent = memo(function SidebarContent({
   onItemClick,
   currentPath,
 }) {
+  const theme = useTheme();
+  
   return (
     <Box
       sx={{
         overflow: "auto",
         mt: 2,
         px: isCollapsed ? 1 : 2,
+        color: theme.palette.text.primary,
       }}
     >
       <List>
@@ -201,8 +217,8 @@ export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
   const theme = useTheme();
+  const { mode, toggleTheme, isDark } = useThemeMode();
 
   // Responsive breakpoints using derived boolean state (rerender-derived-state)
   // This reduces re-renders compared to subscribing to continuous values
@@ -254,16 +270,16 @@ export default function AdminDashboard() {
     return 40;
   }, [isMobile, isTablet]);
 
-  // Common drawer paper styles
+// Common drawer paper styles
   const drawerPaperSx = useMemo(
     () => ({
       width: drawerWidth,
-      background: "#FFFFFF",
-      borderRight: "1px solid #E3F2FD",
+      background: theme.palette.background.paper,
+      borderRight: `1px solid ${theme.palette.divider}`,
       transition: SIDEBAR_TRANSITION,
       overflowX: "hidden",
     }),
-    [drawerWidth]
+    [drawerWidth, theme]
   );
 
   return (
@@ -273,14 +289,18 @@ export default function AdminDashboard() {
       {/* ================================================================== */}
       {/* HEADER - Responsive AppBar */}
       
-      <AppBar
+<AppBar
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background:
-            "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+          background: theme.palette.mode === "dark"
+            ? theme.palette.background.paper
+            : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
           backdropFilter: "blur(10px)",
-          boxShadow: "0 2px 12px rgba(33, 150, 243, 0.15)",
+          boxShadow: theme.palette.mode === "dark"
+            ? "0 2px 12px rgba(0, 0, 0, 0.3)"
+            : "0 2px 12px rgba(33, 150, 243, 0.15)",
+          color: theme.palette.mode === "dark" ? theme.palette.text.primary : "inherit",
         }}
       >
         <Toolbar
@@ -293,21 +313,23 @@ export default function AdminDashboard() {
         >
           {/* Left section: Menu button + Logo + Title */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
-            <IconButton
+<IconButton
               color="inherit"
               aria-label={menuButtonAriaLabel}
               edge="start"
               onClick={handleDrawerToggle}
               sx={{
-                color: "white",
+                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
                 minWidth: 44, // Touch-friendly
                 minHeight: 44,
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  backgroundColor: theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(255, 255, 255, 0.15)",
                   transform: "scale(1.1)",
                 },
                 "&:focus-visible": {
-                  outline: "2px solid white",
+                  outline: `2px solid ${theme.palette.mode === "dark" ? theme.palette.primary.main : "white"}`,
                   outlineOffset: 2,
                 },
                 transition: "background-color 0.2s ease, transform 0.2s ease",
@@ -342,14 +364,14 @@ export default function AdminDashboard() {
             />
 
             {/* Title - responsive text */}
-            <Typography
+<Typography
               variant="h5"
               noWrap
               fontWeight="600"
               sx={{
-                color: "white",
+                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
                 letterSpacing: "0.5px",
-                textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                textShadow: theme.palette.mode === "dark" ? "none" : "0 2px 4px rgba(0, 0, 0, 0.1)",
                 fontSize: { xs: "1rem", sm: "1.25rem", md: "1.5rem" },
                 maxWidth: { xs: 150, sm: 250, md: "none" }, // Prevent overflow on mobile
               }}
@@ -358,19 +380,51 @@ export default function AdminDashboard() {
             </Typography>
           </Box>
 
-          {/* Right section: Home button + Avatar */}
+{/* Right section: Theme toggle + Home button + Avatar */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
+            {/* Theme toggle button */}
+            <Tooltip title={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"} arrow>
+              <IconButton
+                onClick={toggleTheme}
+                aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                sx={{
+                  color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
+                  minWidth: 44,
+                  minHeight: 44,
+                  "&:hover": {
+                    backgroundColor: theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(255, 255, 255, 0.15)",
+                    transform: "scale(1.1)",
+                  },
+                  "&:focus-visible": {
+                    outline: `2px solid ${theme.palette.mode === "dark" ? theme.palette.primary.main : "white"}`,
+                    outlineOffset: 2,
+                  },
+                  transition: "background-color 0.2s ease, transform 0.2s ease",
+                  "@media (prefers-reduced-motion: reduce)": {
+                    transition: "none",
+                    "&:hover": { transform: "none" },
+                  },
+                }}
+              >
+                {isDark ? <LightMode /> : <DarkMode />}
+              </IconButton>
+            </Tooltip>
+
             {/* Home button - icon only on mobile/tablet, with text on desktop */}
             <Tooltip title={isDesktop ? "" : "Về trang chủ"} arrow>
-              <Button
+<Button
                 startIcon={<Home />}
                 onClick={handleNavigateHome}
                 aria-label="Về trang chủ"
                 sx={{
                   textTransform: "none",
                   fontWeight: 600,
-                  color: "white",
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
+                  backgroundColor: theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(255, 255, 255, 0.15)",
                   backdropFilter: "blur(10px)",
                   px: { xs: 1.5, lg: 2.5 },
                   py: 1,
@@ -378,12 +432,16 @@ export default function AdminDashboard() {
                   minHeight: 44,
                   borderRadius: 2,
                   "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    backgroundColor: theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(255, 255, 255, 0.25)",
                     transform: "translateY(-2px)",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                    boxShadow: theme.palette.mode === "dark"
+                      ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+                      : "0 4px 12px rgba(0, 0, 0, 0.2)",
                   },
                   "&:focus-visible": {
-                    outline: "2px solid white",
+                    outline: `2px solid ${theme.palette.mode === "dark" ? theme.palette.primary.main : "white"}`,
                     outlineOffset: 2,
                   },
                   transition: "background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease",
@@ -410,15 +468,17 @@ export default function AdminDashboard() {
             </Tooltip>
 
             {/* Avatar - responsive size */}
-            <Avatar
+<Avatar
               sx={{
-                bgcolor: "white",
-                color: "#2196F3",
+                bgcolor: theme.palette.mode === "dark" ? theme.palette.primary.main : "white",
+                color: theme.palette.mode === "dark" ? "white" : theme.palette.primary.main,
                 width: avatarSize,
                 height: avatarSize,
                 fontWeight: 600,
                 fontSize: { xs: "0.875rem", sm: "1rem" },
-                boxShadow: "0 2px 8px rgba(33, 150, 243, 0.2)",
+                boxShadow: theme.palette.mode === "dark"
+                  ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+                  : "0 2px 8px rgba(33, 150, 243, 0.2)",
               }}
             >
               A
@@ -473,13 +533,14 @@ export default function AdminDashboard() {
       {/* ================================================================== */}
       {/* MAIN CONTENT - Responsive layout */}
       {/* ================================================================== */}
-      <Box
+<Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 0, // No padding - child components handle their own spacing
-          background:
-            "linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 50%, #E8F5E9 100%)",
+          background: theme.palette.mode === "dark"
+            ? theme.palette.background.default
+            : "linear-gradient(135deg, #E3F2FD 0%, #FFFFFF 50%, #E8F5E9 100%)",
           minHeight: "100vh",
           maxWidth: "100%",
           overflowX: "hidden",
