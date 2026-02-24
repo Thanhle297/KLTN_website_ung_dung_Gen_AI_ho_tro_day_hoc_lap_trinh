@@ -19,7 +19,7 @@ export default function FETestPopup({ data, onClose }) {
 
     // Luôn thêm phần hướng dẫn
     data.instructs?.forEach((ins) =>
-      seq.push({ type: "instruct", value: ins })
+      seq.push({ type: "instruct", value: ins }),
     );
 
     // Nếu không ở chế độ hướng dẫn thì thêm quiz và answer
@@ -43,10 +43,10 @@ export default function FETestPopup({ data, onClose }) {
           const answers = ansMatches.map((m) => m[1].trim());
 
           const correctIndex = answers.findIndex((a) =>
-            a.includes("<correct>")
+            a.includes("<correct>"),
           );
           const cleanAnswers = answers.map((a) =>
-            a.replace(/<\/?correct>/g, "")
+            a.replace(/<\/?correct>/g, ""),
           );
 
           seq.push({
@@ -88,8 +88,18 @@ export default function FETestPopup({ data, onClose }) {
 
   return (
     <div className="popup-overlay">
-      <div className={`popup ${shake ? "shake" : ""}`} role="dialog" aria-modal="true" aria-label="Hướng dẫn AI">
-        <button type="button" className="popup-close" onClick={onClose} aria-label="Đóng">
+      <div
+        className={`popup ${shake ? "shake" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Hướng dẫn AI"
+      >
+        <button
+          type="button"
+          className="popup-close"
+          onClick={onClose}
+          aria-label="Đóng"
+        >
           <FaTimes />
         </button>
 
@@ -105,7 +115,7 @@ export default function FETestPopup({ data, onClose }) {
                 <h2>Hướng dẫn</h2>
                 <div className="instruct-block">
                   {item.value
-                    .split("#")
+                    .split(/\n+/) // tách theo xuống dòng
                     .filter((line) => line.trim() !== "")
                     .map((line, idx) => (
                       <p key={idx}>{line.trim()}</p>
@@ -146,7 +156,12 @@ export default function FETestPopup({ data, onClose }) {
 
         <div className="popup-footer">
           {currentIndex < sequence.length - 1 ? (
-            <button type="button" className="btn-next" onClick={handleNext} aria-label="Tiếp theo">
+            <button
+              type="button"
+              className="btn-next"
+              onClick={handleNext}
+              aria-label="Tiếp theo"
+            >
               <FaForward />
             </button>
           ) : (
