@@ -5,6 +5,19 @@ const { ObjectId } = require("mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
 const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
 
+/* -------------------- Helper: Get Next Course ID (Atomic) -------------------- */
+async function getNextCourseId(db) {
+  const result = await db
+    .collection("counters")
+    .findOneAndUpdate(
+      { _id: "course_id" },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: "after" }
+    );
+
+  return `CRS_${result.seq}`;
+}
+
 // GET all (admin only - trả về tất cả courses)
 router.get("/", async (req, res) => {
   const data = await getDB().collection("courses").find().toArray();
@@ -56,8 +69,20 @@ router.get("/:courseId", async (req, res) => {
 
 // CREATE
 router.post("/", async (req, res) => {
-  await getDB().collection("courses").insertOne(req.body);
-  res.json({ message: "Course created" });
+  try {
+    const db = getDB();
+
+    // Tự động sinh courseId
+    const courseId = await getNextCourseId(db);
+    const data = { ...req.body, courseId };
+    delete data._id;
+
+    await db.collection("courses").insertOne(data);
+    res.json({ message: "Course created", courseId });
+  } catch (err) {
+    console.error("❌ Tạo course lỗi:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
 });
 
 // UPDATE

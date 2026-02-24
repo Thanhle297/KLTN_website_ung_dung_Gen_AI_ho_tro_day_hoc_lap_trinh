@@ -119,8 +119,8 @@ export default function SubLessonsCRUD() {
   /* ------- SAVE ------- */
   const handleSave = useCallback(
     async (formData) => {
-      if (!selectedLesson || !formData.lessonId || !formData.title) {
-        notify("Các trường lessonId, title là bắt buộc", "warning");
+      if (!selectedLesson || !formData.title) {
+        notify("Vui lòng chọn bài học cha và nhập title", "warning");
         return;
       }
 

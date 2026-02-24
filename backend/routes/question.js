@@ -94,6 +94,10 @@ router.get("/lesson/:lessonId", async (req, res) => {
       lessonId: parentLesson.lessonId,
       title: parentLesson.title,
     };
+    // Fallback: nếu sublesson chưa có lessonNumber (dữ liệu cũ), kế thừa từ lesson cha
+    if (subLesson.lessonNumber === undefined || subLesson.lessonNumber === null) {
+      subLesson.lessonNumber = parentLesson.lessonNumber;
+    }
 
     return res.json(subLesson);
   } catch (err) {

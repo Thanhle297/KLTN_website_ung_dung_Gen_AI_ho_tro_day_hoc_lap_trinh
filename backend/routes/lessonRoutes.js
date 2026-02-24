@@ -2,6 +2,19 @@ const express = require("express");
 const router = express.Router();
 const { getDB } = require("../config/mongodb");
 
+/* -------------------- Helper: Get Next Lesson ID (Atomic) -------------------- */
+async function getNextLessonId(db) {
+  const result = await db
+    .collection("counters")
+    .findOneAndUpdate(
+      { _id: "lesson_id" },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: "after" }
+    );
+
+  return `BAI_${result.seq}`;
+}
+
 /* -------- GET lessons by course -------- */
 router.get("/course/:courseId", async (req, res) => {
   const list = await getDB()
@@ -71,6 +84,10 @@ router.get("/detail/:lessonId", async (req, res) => {
       lessonId: parent.lessonId,
       title: parent.title,
     };
+    // Fallback: nếu sublesson chưa có lessonNumber (dữ liệu cũ), kế thừa từ lesson cha
+    if (sub.lessonNumber === undefined || sub.lessonNumber === null) {
+      sub.lessonNumber = parent.lessonNumber;
+    }
 
     res.json(sub);
   } catch (err) {
@@ -81,6 +98,7 @@ router.get("/detail/:lessonId", async (req, res) => {
 /* -------- CREATE -------- */
 router.post("/", async (req, res) => {
   try {
+    const db = getDB();
     const { lessonNumber } = req.body;
 
     // Validation lessonNumber
@@ -97,10 +115,15 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Tự động sinh lessonId
+    const lessonId = await getNextLessonId(db);
+
     // Đảm bảo lessonNumber lưu dạng Number
-    const data = { ...req.body, lessonNumber: num };
-    await getDB().collection("lessons").insertOne(data);
-    res.json({ message: "Lesson created" });
+    const data = { ...req.body, lessonNumber: num, lessonId };
+    delete data._id;
+
+    await db.collection("lessons").insertOne(data);
+    res.json({ message: "Lesson created", lessonId });
   } catch (err) {
     console.error("❌ Tạo lesson lỗi:", err);
     res.status(500).json({ message: "Lỗi server", error: err.message });

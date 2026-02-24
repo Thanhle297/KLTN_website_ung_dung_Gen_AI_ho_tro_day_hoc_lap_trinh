@@ -97,7 +97,12 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
             { signal: controller.signal }
           );
           const parentLesson = await safeJson(parentRes);
-          finalLesson = { ...lessonData, courseId: parentLesson.courseId };
+          finalLesson = {
+            ...lessonData,
+            courseId: parentLesson.courseId,
+            // Fallback: nếu sublesson chưa có lessonNumber, kế thừa từ lesson cha
+            lessonNumber: lessonData.lessonNumber ?? parentLesson.lessonNumber,
+          };
         }
         setLesson(finalLesson);
       } catch (err) {

@@ -83,18 +83,20 @@ const SubLessonFormDialog = ({ open, editing, onClose, onSave }) => {
       </DialogTitle>
       <DialogContent sx={{ mt: 3 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-          <TextField
-            label="SubLesson ID"
-            value={form.lessonId}
-            onChange={(e) => handleChange("lessonId", e.target.value)}
-            disabled={!!editing}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
-          />
+          {/* SubLesson ID chỉ hiển thị khi chỉnh sửa (backend tự sinh khi tạo mới) */}
+          {editing && (
+            <TextField
+              label="SubLesson ID"
+              value={form.lessonId}
+              disabled
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          )}
 
           <TextField
             label="Display ID"

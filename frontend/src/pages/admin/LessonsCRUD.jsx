@@ -109,8 +109,8 @@ export default function LessonsCRUD() {
   /* ============================ SAVE ============================ */
   const handleSave = useCallback(
     async (formData) => {
-      if (!formData.lessonId || !formData.courseId || !formData.title) {
-        showMessage("lessonId, courseId và title là bắt buộc", "warning");
+      if (!formData.courseId || !formData.title) {
+        showMessage("courseId và title là bắt buộc", "warning");
         return;
       }
 

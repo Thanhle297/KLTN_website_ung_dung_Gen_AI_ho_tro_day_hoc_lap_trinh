@@ -9,15 +9,10 @@ async function getNextQuestionId(db) {
     .findOneAndUpdate(
       { _id: "question_id" },
       { $inc: { seq: 1 } },
-      { upsert: true }
+      { upsert: true, returnDocument: "after" }
     );
 
-  if (!result.value) {
-    const doc = await db.collection("counters").findOne({ _id: "question_id" });
-    return doc.seq;
-  }
-
-  return result.value.seq;
+  return result.seq;
 }
 
 /* ------------ GET All / by lessonId or isBank ------------ */

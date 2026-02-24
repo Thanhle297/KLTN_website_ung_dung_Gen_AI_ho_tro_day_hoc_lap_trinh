@@ -120,13 +120,15 @@ const LessonFormDialog = ({
             gap: 2.5,
           }}
         >
-          <TextField
-            label="Lesson ID"
-            value={form.lessonId}
-            onChange={(e) => handleChange("lessonId", e.target.value)}
-            fullWidth
-            disabled={!!editing}
-          />
+          {/* Lesson ID chỉ hiển thị khi chỉnh sửa (backend tự sinh khi tạo mới) */}
+          {editing && (
+            <TextField
+              label="Lesson ID"
+              value={form.lessonId}
+              fullWidth
+              disabled
+            />
+          )}
 
           <FormControl fullWidth>
             <InputLabel>Khóa học</InputLabel>

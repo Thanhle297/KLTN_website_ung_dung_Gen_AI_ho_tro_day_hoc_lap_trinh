@@ -135,18 +135,20 @@ const CourseFormDialog = ({ open, editing, onClose, onSave }) => {
 
       <DialogContent sx={{ mt: 3 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-          <TextField
-            label="Course ID"
-            value={form.courseId}
-            onChange={(e) => handleChange("courseId", e.target.value)}
-            fullWidth
-            disabled={!!editing}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
-          />
+          {/* Course ID chỉ hiển thị khi chỉnh sửa (backend tự sinh khi tạo mới) */}
+          {editing && (
+            <TextField
+              label="Course ID"
+              value={form.courseId}
+              fullWidth
+              disabled
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          )}
           <TextField
             label="Tiêu đề"
             value={form.title}
