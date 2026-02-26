@@ -102,7 +102,7 @@ export default function CodeEditorSimple({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: localCode, input: inputText }),
+          body: JSON.stringify({ code: localCode, input: inputText}),
         }
       );
       const runData = await runResp.json();

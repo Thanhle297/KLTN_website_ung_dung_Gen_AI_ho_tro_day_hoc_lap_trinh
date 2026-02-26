@@ -100,7 +100,7 @@ class CodeRequest(BaseModel):
 class SimpleCodeRequest(BaseModel):
     code: str
     input: str = ""
-    echo_input: bool = True
+    echo_input: bool = False
 
 
 # =====================================================
