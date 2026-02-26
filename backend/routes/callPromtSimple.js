@@ -165,6 +165,10 @@ OUTPUT THỰC TẾ: ${output || "Không có output"}
 2. **Đối chiếu đầu ra**:
    - So sánh OUTPUT của học sinh với yêu cầu.
    - Nếu thiếu bất kỳ phần nào → FAIL.
+   - Nếu kết quả đúng nhưng dùng cách làm quá phức tạp, không phù hợp với bài học → FAIL (vì chưa hiểu bài).
+   - Nếu kết quả đúng và cách làm phù hợp → PASS.
+   - Nếu kết quả ra đúng nhưng không đầy đủ về nội dung nhưng đáp án cuối cùng vẫn đúng → PASS (vì có thể học sinh đã tìm ra cách làm khác).
+   - Nội dung kết quả gần đúng -> PASS (vì có thể học sinh đã hiểu nhưng chưa diễn đạt đúng).
 
 3. **Kết luận**:
    - ĐÚNG → result = "PASS"
