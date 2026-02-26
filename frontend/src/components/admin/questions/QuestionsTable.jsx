@@ -71,7 +71,7 @@ const QuestionsTable = React.memo(
           }}
         >
         <TableContainer>
-          <Table>
+          <Table sx={{ tableLayout: "fixed" }}>
             <TableHead>
 <TableRow
                 sx={{
@@ -86,6 +86,7 @@ const QuestionsTable = React.memo(
                     fontWeight: 700,
                     fontSize: "0.95rem",
                     py: 2,
+                    width: "8%",
                   }}
                 >
                   ID
@@ -95,6 +96,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "10%",
                   }}
                 >
                   Category
@@ -104,6 +106,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "32%",
                   }}
                 >
                   Câu hỏi
@@ -113,6 +116,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "5%",
                   }}
                 >
                   EX
@@ -122,6 +126,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "8%",
                   }}
                 >
                   Testcase
@@ -131,6 +136,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "10%",
                   }}
                 >
                   Echo Input
@@ -140,6 +146,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "12%",
                   }}
                 >
                   Topic
@@ -150,6 +157,7 @@ const QuestionsTable = React.memo(
                     color: "white",
                     fontWeight: 700,
                     fontSize: "0.95rem",
+                    width: "15%",
                   }}
                 >
                   Thao tác
@@ -170,7 +178,7 @@ const QuestionsTable = React.memo(
 
               {questions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                     <Typography variant="h6" color="text.secondary">
                       😔 Không có câu hỏi nào
                     </Typography>

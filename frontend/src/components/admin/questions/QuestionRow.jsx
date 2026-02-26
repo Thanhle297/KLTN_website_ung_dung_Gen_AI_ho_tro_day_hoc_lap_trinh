@@ -58,8 +58,9 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign }) => {
       <TableCell
         sx={{
           fontWeight: 500,
-          maxWidth: 400,
           color: isDark ? theme.palette.text.primary : "#2d3748",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
           "& p": {
             margin: 0,
             padding: 0,
@@ -83,6 +84,11 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign }) => {
           "& strong": {
             fontWeight: 700,
             color: isDark ? theme.palette.text.primary : "#1a202c",
+          },
+          "& pre, & code": {
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
           },
         }}
         dangerouslySetInnerHTML={{ __html: question.question }}
