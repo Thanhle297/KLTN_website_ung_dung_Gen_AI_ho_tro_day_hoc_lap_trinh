@@ -80,6 +80,10 @@
     width: 150%;
     border-radius: 50%;
   }
+
+  .character-img {
+    transition: opacity 0.3s ease-in-out;
+  }
 }
 
 .content {

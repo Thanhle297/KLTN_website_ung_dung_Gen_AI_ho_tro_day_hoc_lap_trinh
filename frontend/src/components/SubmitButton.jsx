@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import ReactDOM from "react-dom";
 import "../styles/SubmitButton.scss";
 import { useNavigate } from "react-router-dom";
 import { FaPaperPlane, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import confetti from "canvas-confetti";
 
 export default function SubmitButton({
   userId,
@@ -16,6 +17,63 @@ export default function SubmitButton({
 
   const [showResultPopup, setShowResultPopup] = useState(false);
   const [result, setResult] = useState(null);
+
+  // Hiệu ứng pháo hoa chúc mừng khi nộp bài thành công
+  const fireConfetti = useCallback((isCompleted) => {
+    const zIndex = 9999; // Đảm bảo pháo hoa hiển thị trên popup overlay
+
+    if (isCompleted) {
+      // Pháo hoa hoành tráng khi đạt yêu cầu - bắn từ hai bên
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        // Bắn từ bên trái
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.6 },
+          colors: ["#4fc3f7", "#81c784", "#fff176", "#ff8a65", "#ba68c8"],
+          zIndex,
+        });
+        // Bắn từ bên phải
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.6 },
+          colors: ["#4fc3f7", "#81c784", "#fff176", "#ff8a65", "#ba68c8"],
+          zIndex,
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+
+      // Bắn thêm một đợt lớn ở giữa
+      setTimeout(() => {
+        confetti({
+          particleCount: 150,
+          spread: 100,
+          origin: { x: 0.5, y: 0.4 },
+          colors: ["#4fc3f7", "#81c784", "#fff176", "#ff8a65", "#ba68c8"],
+          zIndex,
+        });
+      }, 300);
+    } else {
+      // Bắn nhẹ nhàng khi chưa đạt - vẫn khích lệ học sinh
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { x: 0.5, y: 0.5 },
+        colors: ["#90caf9", "#b0bec5"],
+        zIndex,
+      });
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (!userId || !lessonId) return;
@@ -32,6 +90,8 @@ export default function SubmitButton({
       setResult(data);
       setShowPopup(false);
       setShowResultPopup(true);
+      // Bắn pháo hoa chúc mừng
+      fireConfetti(data.completed);
 
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/clear`, {
         method: "DELETE",

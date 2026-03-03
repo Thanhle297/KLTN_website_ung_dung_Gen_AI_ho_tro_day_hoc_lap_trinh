@@ -1,7 +1,10 @@
 // components/Popup.jsx
 import React, { useState, useEffect } from "react";
 import { FaTimes, FaForward } from "react-icons/fa";
-import character from "../IMG/Picture1.png";
+import charInstruct from "../IMG/anh1.png";
+import charCorrect from "../IMG/anh2.png";
+import charWrong from "../IMG/anh3.png";
+import charQuiz from "../IMG/anh4.png";
 import correctSound from "../sounds/correct.mp3";
 import wrongSound from "../sounds/wrong.mp3";
 import "../styles/Popup.scss";
@@ -11,6 +14,7 @@ export default function FETestPopup({ data, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [shake, setShake] = useState(false);
+  const [answered, setAnswered] = useState(null); // null | "correct" | "wrong"
 
   useEffect(() => {
     if (!data) return;
@@ -72,18 +76,40 @@ export default function FETestPopup({ data, onClose }) {
   const handleNext = () => {
     if (item.type === "quiz") {
       if (selected === item.correctIndex) {
-        new Audio(correctSound).play(); // ✅ âm thanh đúng
-        setSelected(null);
-        setCurrentIndex((i) => Math.min(i + 1, sequence.length - 1));
+        new Audio(correctSound).play();
+        setAnswered("correct");
+        // Delay để học sinh thấy ảnh thumbs up trước khi chuyển
+        setTimeout(() => {
+          setSelected(null);
+          setAnswered(null);
+          setCurrentIndex((i) => Math.min(i + 1, sequence.length - 1));
+        }, 800);
       } else {
-        new Audio(wrongSound).play(); // ❌ âm thanh sai
+        new Audio(wrongSound).play();
+        setAnswered("wrong");
         setShake(true);
-        setTimeout(() => setShake(false), 400);
+        setTimeout(() => {
+          setShake(false);
+          setAnswered(null);
+        }, 400);
       }
     } else {
       setSelected(null);
+      setAnswered(null);
       setCurrentIndex((i) => Math.min(i + 1, sequence.length - 1));
     }
+  };
+
+  // Chọn ảnh nhân vật phù hợp với ngữ cảnh hiện tại
+  const getCharacterImage = () => {
+    if (item.type === "instruct") return charInstruct;
+    if (item.type === "answer") return charInstruct;
+    if (item.type === "quiz") {
+      if (answered === "correct") return charCorrect;
+      if (answered === "wrong") return charWrong;
+      return charQuiz;
+    }
+    return charInstruct;
   };
 
   return (
@@ -105,7 +131,13 @@ export default function FETestPopup({ data, onClose }) {
 
         <div className="popup-body">
           <div className="character">
-            <img src={character} alt="Gia sư" width={120} height={120} />
+            <img
+              src={getCharacterImage()}
+              alt="Gia sư"
+              width={120}
+              height={120}
+              className="character-img"
+            />
           </div>
 
           <div className="content">

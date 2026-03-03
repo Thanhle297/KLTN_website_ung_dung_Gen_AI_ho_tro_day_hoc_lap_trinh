@@ -130,7 +130,15 @@ export default function CodeEditorMiddle({
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [localCode, results, guide, aiResult, combinedStatus, hasNewGuide, question?.id]);
+  }, [
+    localCode,
+    results,
+    guide,
+    aiResult,
+    combinedStatus,
+    hasNewGuide,
+    question?.id,
+  ]);
 
   // ============================================================
   // Run code: goi /api/execute-middle (testcase + AI trong 1 call)
@@ -279,10 +287,10 @@ export default function CodeEditorMiddle({
           id="upload-file-middle"
           style={{ display: "none" }}
           onChange={handleFileUpload}
-          aria-label="Tai file Python"
+          aria-label="Up file Python"
         />
         <label htmlFor="upload-file-middle" className="upload-btn">
-          Tai file Python
+          Up file Python
         </label>
 
         <button
@@ -291,7 +299,7 @@ export default function CodeEditorMiddle({
           disabled={loading}
           className="code-editor-middle__run-btn"
         >
-          {loading ? <ImSpinner2 className="spinner" /> : "Chay code"}
+          {loading ? <ImSpinner2 className="spinner" /> : "Chạy code"}
         </button>
 
         {/* Badge trang thai tong hop */}
@@ -338,7 +346,9 @@ export default function CodeEditorMiddle({
                       {results.length} đạt
                     </span>
                     {aiResult && (
-                      <span className={`ai-tag ai-tag--${aiResult.toLowerCase()}`}>
+                      <span
+                        className={`ai-tag ai-tag--${aiResult.toLowerCase()}`}
+                      >
                         AI: {aiResult}
                       </span>
                     )}
