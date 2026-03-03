@@ -14,12 +14,16 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // 1️⃣ TÍNH ĐIỂM
+    // 1️⃣ TÍNH ĐIỂM (hỗ trợ 3 mức: correct=1đ, partial=0.5đ, wrong=0đ)
     const states = Object.values(editorStates || {});
     const total = states.length;
     const correct = states.filter((s) => s.status === "correct").length;
-    const wrong = total - correct;
-    const progress = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const partial = states.filter((s) => s.status === "partial").length;
+    const wrong = total - correct - partial;
+    const progress =
+      total > 0
+        ? Math.round(((correct * 1 + partial * 0.5) / total) * 100)
+        : 0;
 
     // 2️⃣ LẤY requiredProgress TỪ lessons.subLessons[]
     const lessonDoc = await db
@@ -50,6 +54,7 @@ router.post("/", async (req, res) => {
       lessonId, // chính là subLessonId
       courseId,
       correct,
+      partial,
       wrong,
       total,
       progress,
@@ -90,6 +95,7 @@ router.post("/", async (req, res) => {
     return res.json({
       success: true,
       correct,
+      partial,
       wrong,
       total,
       progress,

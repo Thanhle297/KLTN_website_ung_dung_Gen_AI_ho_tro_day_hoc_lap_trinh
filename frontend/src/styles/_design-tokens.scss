@@ -67,11 +67,20 @@ $blue-50: #eff6ff;
 $success-600: #059669;
 $success-500: #10b981;
 $success-400: #34d399;
+$warning-600: #ca8a04;
 $warning-500: #f59e0b;
 $warning-400: #fbbf24;
 $error-600: #dc2626;
 $error-500: #ef4444;
 $error-400: #f87171;
+
+// --- Partial (Middle Mode - đúng một phần) ---
+$partial-600: #ca8a04;
+$partial-500: #eab308;
+$partial-400: #facc15;
+$partial-300: #fde047;
+$partial-100: #fef9c3;
+$partial-50: #fefce8;
 
 // --- Typography ---
 $font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -218,6 +227,12 @@ $bp-2xl: 1536px;
   --color-error-border: #{$error-400};
   --color-error-text: #{$error-600};
 
+  // === Partial (Middle Mode) ===
+  --color-partial: #{$partial-600};
+  --color-partial-bg: #{$partial-100};
+  --color-partial-light: #{$partial-50};
+  --color-partial-border: #{$partial-500};
+
   // === Typography ===
   --font-family: #{$font-family-base};
   --font-family-code: #{$font-family-code};
@@ -332,6 +347,12 @@ html[data-theme="dark"] {
   --color-error-bg: rgba(239, 68, 68, 0.12);
   --color-error-border: #{$error-500};
   --color-error-text: #{$error-400};
+
+  // === Partial (Middle Mode - dark) ===
+  --color-partial: #{$partial-400};
+  --color-partial-bg: rgba(250, 204, 21, 0.12);
+  --color-partial-light: rgba(250, 204, 21, 0.06);
+  --color-partial-border: #{$partial-400};
 }
 
 // ---------------------------------------------------------------------------

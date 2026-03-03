@@ -1069,7 +1069,9 @@ function SortableSubLessonItem({
               onNavigate(
                 sub.mode === "simple"
                   ? `/course/${classId}/lesson-simple/${sub.lessonId}`
-                  : `/course/${classId}/lesson/${sub.lessonId}`,
+                  : sub.mode === "middle"
+                    ? `/course/${classId}/lesson-middle/${sub.lessonId}`
+                    : `/course/${classId}/lesson/${sub.lessonId}`,
               )
             }
           >

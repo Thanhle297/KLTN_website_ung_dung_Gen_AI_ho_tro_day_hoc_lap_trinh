@@ -89,6 +89,11 @@
 
     td {
       color: var(--text-secondary);
+
+      .partial-info {
+        color: var(--color-partial);
+        font-size: $font-size-xs;
+      }
     }
 
     .badge {

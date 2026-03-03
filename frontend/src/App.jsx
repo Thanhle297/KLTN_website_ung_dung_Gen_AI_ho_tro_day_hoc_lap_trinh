@@ -16,6 +16,7 @@ import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
 import CodeEx from "./pages/CodeEx";
 import CodeExSimple from "./pages/CodeExSimple";
+import CodeExMidle from "./pages/CodeExMidle";
 import ReviewPage from "./pages/ReviewPage";
 import Login from "./auth/login";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -89,7 +90,8 @@ function AppContent() {
     // Các trang mặc định ẩn (Lesson) nhưng có thể bật lại
     const isDefaultHidden =
       location.pathname.includes("/lesson/") ||
-      location.pathname.includes("/lesson-simple/");
+      location.pathname.includes("/lesson-simple/") ||
+      location.pathname.includes("/lesson-middle/");
 
     if (isAlwaysHidden) {
       setShowHeader(false);
@@ -213,6 +215,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <CodeExSimple />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/course/:classId/lesson-middle/:lessonId"
+          element={
+            <ProtectedRoute>
+              <CodeExMidle />
             </ProtectedRoute>
           }
         />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/ReviewPage.scss";
-import { FaArrowLeft, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
@@ -63,8 +63,9 @@ export default function ReviewPage() {
         <h1>
           Xem lại bài làm{" "}
           <span className="score">
-            ({submission.correct}/{submission.total} câu đúng -{" "}
-            {submission.progress}%)
+            ({submission.correct}/{submission.total} câu đúng
+            {submission.partial > 0 && ` · ${submission.partial} đúng một phần`}
+            {" "}- {submission.progress}%)
           </span>
         </h1>
         <div className="date">
@@ -76,7 +77,9 @@ export default function ReviewPage() {
         {questions.map((q, index) => {
           const userState = editorStates[q.id] || {};
           const userAns = userState.code || ""; // code chứa đáp án text
-          const isCorrect = userState.status === "correct";
+          const status = userState.status || "wrong"; // "correct" | "partial" | "wrong"
+          const isCorrect = status === "correct";
+          const isPartial = status === "partial";
 
           // Kiểm tra xem có phải câu hỏi code không
           const isCodeQuestion =
@@ -87,15 +90,19 @@ export default function ReviewPage() {
             <div
               key={q._id}
               className={`review-question-card ${
-                isCorrect ? "correct" : "wrong"
+                isCorrect ? "correct" : isPartial ? "partial" : "wrong"
               }`}
             >
               <div className="q-header">
                 <h2>Câu {index + 1}:</h2>
-                <span className={`status-badge ${isCorrect ? "ok" : "err"}`}>
+                <span className={`status-badge ${isCorrect ? "ok" : isPartial ? "partial" : "err"}`}>
                   {isCorrect ? (
                     <>
                       <FaCheckCircle /> Đúng
+                    </>
+                  ) : isPartial ? (
+                    <>
+                      <FaExclamationCircle /> Đúng một phần
                     </>
                   ) : (
                     <>
@@ -119,7 +126,7 @@ export default function ReviewPage() {
                   {isCodeQuestion ? (
                     <div
                       className={`code-view-wrapper ${
-                        isCorrect ? "green-border" : "red-border"
+                        isCorrect ? "green-border" : isPartial ? "yellow-border" : "red-border"
                       }`}
                     >
                       <CodeMirror
@@ -137,7 +144,7 @@ export default function ReviewPage() {
                     </div>
                   ) : (
                     <div
-                      className={`ans-content ${isCorrect ? "green" : "red"}`}
+                      className={`ans-content ${isCorrect ? "green" : isPartial ? "yellow" : "red"}`}
                     >
                       {userAns || "(Chưa trả lời)"}
                     </div>

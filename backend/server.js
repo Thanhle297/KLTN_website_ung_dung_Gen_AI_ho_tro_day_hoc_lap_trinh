@@ -51,6 +51,7 @@ const submitRoutes = require("./routes/submitRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const csvRoutes = require("./routes/csvRoutes");
+const executeMiddleRoutes = require("./routes/executeMiddle");
 
 /* =========================================================
    🚀 KHỞI ĐỘNG SERVER
@@ -76,6 +77,7 @@ async function startServer() {
     app.use("/api/progress", progressRoutes);
     app.use("/api/enrollments", enrollmentRoutes);
     app.use("/api/csv", csvRoutes);
+    app.use("/api", executeMiddleRoutes);
 
     /* ================== HEALTH CHECK ================== */
     app.get("/", (req, res) => {

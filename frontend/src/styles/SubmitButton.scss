@@ -184,6 +184,10 @@
           font-size: $font-size-base;
         }
       }
+      .partial-count {
+        color: var(--color-partial);
+        font-size: $font-size-sm;
+      }
       .badge {
         display: inline-block;
         margin-top: $spacing-2;

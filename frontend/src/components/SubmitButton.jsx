@@ -134,6 +134,11 @@ export default function SubmitButton({
                       {result.correct}/{result.total}
                     </strong>{" "}
                     câu đúng
+                    {result.partial > 0 && (
+                      <span className="partial-count">
+                        {" "}· <strong>{result.partial}</strong> đúng một phần
+                      </span>
+                    )}
                   </div>
                   <div className="score-percentage">
                     Điểm số: <strong>{result.progress}%</strong>

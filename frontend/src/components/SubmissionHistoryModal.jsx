@@ -72,6 +72,9 @@ export default function SubmissionHistoryModal({
                     <td>{new Date(item.createdAt).toLocaleString("vi-VN")}</td>
                     <td>
                       {item.correct}/{item.total}
+                      {item.partial > 0 && (
+                        <span className="partial-info"> ({item.partial} partial)</span>
+                      )}
                     </td>
                     <td>
                       <span

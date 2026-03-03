@@ -63,8 +63,21 @@
       }
     }
 
+    // Trạng thái ĐÚNG MỘT PHẦN (Middle Mode)
+    &.partial {
+      border-color: var(--color-partial);
+      color: var(--color-partial);
+      background-color: var(--color-partial-bg);
+
+      &.active {
+        background-color: var(--color-partial);
+        color: #422006;
+        border-color: #a16207;
+      }
+    }
+
     // Trạng thái ĐANG CHỌN (nhưng chưa có kết quả hoặc đang làm)
-    &.active:not(.correct):not(.wrong) {
+    &.active:not(.correct):not(.wrong):not(.partial) {
       background-color: var(--color-blue);
       color: var(--text-inverse);
       border-color: var(--color-blue-hover);
@@ -129,6 +142,18 @@ html[data-theme="dark"] {
       &.wrong {
         &.active {
           border-color: #b91c1c;
+        }
+      }
+
+      &.partial {
+        border-color: #facc15;
+        color: #facc15;
+        background-color: rgba(250, 204, 21, 0.12);
+
+        &.active {
+          background-color: #ca8a04;
+          border-color: #a16207;
+          color: #fefce8;
         }
       }
     }

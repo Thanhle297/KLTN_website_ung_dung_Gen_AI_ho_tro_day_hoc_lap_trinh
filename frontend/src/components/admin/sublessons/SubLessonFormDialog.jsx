@@ -153,6 +153,7 @@ const SubLessonFormDialog = ({ open, editing, onClose, onSave }) => {
             >
               <MenuItem value="auto">auto</MenuItem>
               <MenuItem value="simple">simple</MenuItem>
+              <MenuItem value="middle">middle</MenuItem>
             </Select>
           </FormControl>
 

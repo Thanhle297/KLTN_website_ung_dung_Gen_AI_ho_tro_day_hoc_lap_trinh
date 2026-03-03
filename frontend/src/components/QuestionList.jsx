@@ -22,7 +22,13 @@ export default function QuestionList({
         const status = editorStates[q.id]?.status;
 
         const btnClass = [
-          status === "correct" ? "correct" : status === "wrong" ? "wrong" : "",
+          status === "correct"
+            ? "correct"
+            : status === "partial"
+              ? "partial"
+              : status === "wrong"
+                ? "wrong"
+                : "",
           isActive ? "active" : "",
         ]
           .join(" ")

@@ -118,7 +118,9 @@ export default function FETestPopup({ data, onClose }) {
                     .split(/\n+/) // tách theo xuống dòng
                     .filter((line) => line.trim() !== "")
                     .map((line, idx) => (
-                      <p key={idx}>{line.trim()}</p>
+                      <p key={idx} style={{ whiteSpace: "pre-wrap" }}>
+                        {line.trim()}
+                      </p>
                     ))}
                 </div>
               </div>
