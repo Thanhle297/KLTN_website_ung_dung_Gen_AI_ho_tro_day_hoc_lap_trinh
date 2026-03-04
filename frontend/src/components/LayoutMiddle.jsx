@@ -4,6 +4,7 @@ import CodeEditorMiddle from "./CodeEditorMiddle";
 import QuestionList from "./QuestionList";
 import Popup from "./Popup";
 import { useState } from "react";
+import fireConfetti from "../utils/fireConfetti";
 import "../styles/Layout.scss";
 
 export default function LayoutMiddle({
@@ -36,8 +37,9 @@ export default function LayoutMiddle({
 
     const status = data.combinedStatus;
 
-    // --- Correct: thong bao ngan ---
+    // --- Correct: thong bao ngan + confetti ---
     if (status === "correct") {
+      fireConfetti();
       setPopupData({
         mode: "instruct_only",
         instructs: ["Bài làm đạt yêu cầu, chúc mừng!"],
@@ -83,7 +85,7 @@ export default function LayoutMiddle({
         : [
             status === "partial"
               ? "Bài làm đúng một phần. Hay xem lại hướng dẫn bên dưới."
-             : "Bài làm chưa đạt yêu cầu. Hãy đọc hướng dẫn để hiểu thêm.",
+              : "Bài làm chưa đạt yêu cầu. Hãy đọc hướng dẫn để hiểu thêm.",
           ];
 
     setPopupData({

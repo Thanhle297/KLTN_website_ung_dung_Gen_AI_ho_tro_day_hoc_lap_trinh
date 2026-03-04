@@ -1,5 +1,6 @@
 // components/LayoutMiddleMobile.jsx
 import React, { useState } from "react";
+import fireConfetti from "../utils/fireConfetti";
 import QuestionPanel from "./QuestionPanel";
 import CodeEditorMiddle from "./CodeEditorMiddle";
 import QuestionList from "./QuestionList";
@@ -32,8 +33,9 @@ export default function LayoutMiddleMobile({
 
     const status = data.combinedStatus;
 
-    // Correct
+    // Correct + confetti
     if (status === "correct") {
+      fireConfetti();
       setPopupData({
         mode: "instruct_only",
         instructs: ["Bài làm đạt yêu cầu, chúc mừng!"],
@@ -82,7 +84,7 @@ export default function LayoutMiddleMobile({
         : [
             status === "partial"
               ? "Bài làm đúng một phần. Hay xem lại hướng dẫn bên dưới."
-             : "Bài làm chưa đạt yêu cầu. Hãy đọc hướng dẫn để hiểu thêm.", 
+              : "Bài làm chưa đạt yêu cầu. Hãy đọc hướng dẫn để hiểu thêm.",
           ];
 
     setPopupData({

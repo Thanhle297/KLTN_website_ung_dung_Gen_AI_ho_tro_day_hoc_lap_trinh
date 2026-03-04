@@ -23,7 +23,7 @@ export default function FETestPopup({ data, onClose }) {
 
     // Luôn thêm phần hướng dẫn
     data.instructs?.forEach((ins) =>
-      seq.push({ type: "instruct", value: ins }),
+      seq.push({ type: "instruct", value: ins })
     );
 
     // Nếu không ở chế độ hướng dẫn thì thêm quiz và answer
@@ -47,10 +47,10 @@ export default function FETestPopup({ data, onClose }) {
           const answers = ansMatches.map((m) => m[1].trim());
 
           const correctIndex = answers.findIndex((a) =>
-            a.includes("<correct>"),
+            a.includes("<correct>")
           );
           const cleanAnswers = answers.map((a) =>
-            a.replace(/<\/?correct>/g, ""),
+            a.replace(/<\/?correct>/g, "")
           );
 
           seq.push({

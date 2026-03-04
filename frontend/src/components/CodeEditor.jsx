@@ -7,6 +7,7 @@ import { autocompletion } from "@codemirror/autocomplete";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
 import { useThemeMode } from "../context/ThemeContext";
+import fireConfetti from "../utils/fireConfetti";
 import "../styles/CodeEditor.scss";
 
 export default function CodeEditor({
@@ -163,6 +164,9 @@ export default function CodeEditor({
       setHasGuide(!!newGuide);
       setHasNewGuide(!!newGuide);
 
+      // ✅ Bắn confetti nếu đúng hết
+      if (isAllPass) fireConfetti();
+
       // ✅ Update state tổng hợp (source-of-truth)
       updateEditorState?.(question.id, {
         code: localCode,
@@ -295,7 +299,11 @@ export default function CodeEditor({
           {activeTab === "results" && (
             <div className="tab-panel">
               {results.length ? (
-                <table border="1" style={{ width: "100%" }} aria-label="Kết quả chạy code">
+                <table
+                  border="1"
+                  style={{ width: "100%" }}
+                  aria-label="Kết quả chạy code"
+                >
                   <thead>
                     <tr>
                       <th>Input</th>

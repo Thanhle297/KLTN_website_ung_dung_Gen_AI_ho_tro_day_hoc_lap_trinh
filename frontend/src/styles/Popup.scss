@@ -171,7 +171,11 @@
     color: var(--text-inverse);
 
     &:hover {
-      background: linear-gradient(135deg, #{$success-400}, var(--color-success));
+      background: linear-gradient(
+        135deg,
+        #{$success-400},
+        var(--color-success)
+      );
       transform: translateY(-2px);
       box-shadow: var(--shadow-glow-teal);
     }

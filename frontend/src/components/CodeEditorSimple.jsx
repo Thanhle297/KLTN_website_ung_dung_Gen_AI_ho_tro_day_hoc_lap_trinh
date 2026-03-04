@@ -6,6 +6,7 @@ import { autocompletion } from "@codemirror/autocomplete";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
 import { useThemeMode } from "../context/ThemeContext";
+import fireConfetti from "../utils/fireConfetti";
 import "../styles/CodeEditorSimple.scss";
 
 export default function CodeEditorSimple({
@@ -102,7 +103,7 @@ export default function CodeEditorSimple({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: localCode, input: inputText}),
+          body: JSON.stringify({ code: localCode, input: inputText }),
         }
       );
       const runData = await runResp.json();
@@ -183,6 +184,9 @@ export default function CodeEditorSimple({
       const aiData = await aiResp.json();
       const isCorrect = !!aiData.isCorrect;
       const quizzes = aiData.quizzes || [];
+
+      // ✅ Bắn confetti nếu đúng
+      if (isCorrect) fireConfetti();
 
       let guideText = aiData.guide || "";
 
