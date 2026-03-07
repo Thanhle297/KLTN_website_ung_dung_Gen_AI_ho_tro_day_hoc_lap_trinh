@@ -11,12 +11,9 @@ import "../styles/Lessons.scss";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
-  Snackbar,
-  Alert,
 } from "@mui/material";
-import { Add, Edit, Delete, DragIndicator, Quiz } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
+import { toast } from "sonner";
 
 // Drag and Drop
 import {
@@ -31,15 +28,17 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 // Context và Components
 import { EditModeProvider, useEditMode } from "../context/EditModeContext";
 import EditModeToggle from "../components/EditModeToggle";
 import SubmissionHistoryModal from "../components/SubmissionHistoryModal";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+// Sortable components (tách riêng để tối ưu React.memo)
+import SortableLessonItem from "../components/lessons/SortableLessonItem";
 
 // Dialogs
 import LessonFormDialog from "../components/admin/lessons/LessonFormDialog";
@@ -73,7 +72,6 @@ function LessonsContent() {
   // State cơ bản
   const [lessons, setLessons] = useState([]);
   const [expanded, setExpanded] = useState(null);
-  const [closing, setClosing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subLessons, setSubLessons] = useState({});
   const [subProgress, setSubProgress] = useState({});
@@ -85,11 +83,6 @@ function LessonsContent() {
     open: false,
     editing: null,
   });
-  const [subLessonDialog, setSubLessonDialog] = useState({
-    open: false,
-    editing: null,
-    parentLessonId: null,
-  });
   const [questionManager, setQuestionManager] = useState({
     open: false,
     subLesson: null,
@@ -100,13 +93,11 @@ function LessonsContent() {
     item: null,
   });
 
-  // State cho snackbar
-  const [snackbar, setSnackbar] = useState({
+  const [subLessonDialog, setSubLessonDialog] = useState({
     open: false,
-    message: "",
-    severity: "success",
+    editing: null,
+    parentLessonId: null,
   });
-
   const token = localStorage.getItem("token");
 
   const userId = useMemo(() => {
@@ -120,7 +111,9 @@ function LessonsContent() {
 
   // Helper để hiển thị thông báo
   const showMessage = useCallback((message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
+    if (severity === "error") toast.error(message);
+    else if (severity === "warning") toast.warning(message);
+    else toast.success(message);
   }, []);
 
   // ==================== FETCH DATA ====================
@@ -133,7 +126,6 @@ function LessonsContent() {
       setSubLessons({});
       setSubProgress({});
       setExpanded(null);
-      setClosing(null);
 
       try {
         const res = await fetch(
@@ -209,15 +201,13 @@ function LessonsContent() {
   };
 
   const handleExpand = async (lessonId) => {
+    // Toggle: nếu đã mở thì đóng lại (AnimatePresence trong SortableLessonItem xử lý exit)
     if (expanded === lessonId) {
-      setClosing(lessonId);
       setExpanded(null);
-      setTimeout(() => setClosing(null), 600);
       return;
     }
 
     setExpanded(lessonId);
-    setClosing(null);
 
     if (!subLessons[lessonId]) {
       try {
@@ -462,41 +452,46 @@ function LessonsContent() {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const currentSubLessons = subLessons[parentLessonId] || [];
-      const oldIndex = currentSubLessons.findIndex(
-        (s) => s.lessonId === active.id,
-      );
-      const newIndex = currentSubLessons.findIndex(
-        (s) => s.lessonId === over.id,
-      );
+      // Dùng functional update để tránh capture stale subLessons
+      setSubLessons((prev) => {
+        const currentSubLessons = prev[parentLessonId] || [];
+        const oldIndex = currentSubLessons.findIndex(
+          (s) => s.lessonId === active.id,
+        );
+        const newIndex = currentSubLessons.findIndex(
+          (s) => s.lessonId === over.id,
+        );
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        const newSubLessons = arrayMove(currentSubLessons, oldIndex, newIndex);
 
-      const newSubLessons = arrayMove(currentSubLessons, oldIndex, newIndex);
-      setSubLessons((prev) => ({ ...prev, [parentLessonId]: newSubLessons }));
-
-      // Lưu thứ tự mới lên server
-      try {
+        // Lưu thứ tự mới lên server (async, không block state update)
         const subLessonIds = newSubLessons.map((s) => s.lessonId);
-        await api.reorderSubLessons(parentLessonId, subLessonIds, classId);
-        showMessage("Cập nhật thứ tự bài học con thành công!");
-      } catch (err) {
-        console.error("❌ Lỗi cập nhật thứ tự:", err);
-        showMessage("Lỗi khi cập nhật thứ tự", "error");
-        // Rollback
-        const res = await api.getLessonDetail(parentLessonId, classId);
-        if (res.data.subLessons) {
-          const sorted = [...res.data.subLessons].sort(
-            (a, b) => (a.order ?? 0) - (b.order ?? 0),
-          );
-          setSubLessons((prev) => ({ ...prev, [parentLessonId]: sorted }));
-        }
-      }
+        api.reorderSubLessons(parentLessonId, subLessonIds, classId)
+          .then(() => showMessage("Cập nhật thứ tự bài học con thành công!"))
+          .catch(async (err) => {
+            console.error("❌ Lỗi cập nhật thứ tự:", err);
+            showMessage("Lỗi khi cập nhật thứ tự", "error");
+            // Rollback từ server
+            try {
+              const res = await api.getLessonDetail(parentLessonId, classId);
+              if (res.data.subLessons) {
+                const sorted = [...res.data.subLessons].sort(
+                  (a, b) => (a.order ?? 0) - (b.order ?? 0),
+                );
+                setSubLessons((p) => ({ ...p, [parentLessonId]: sorted }));
+              }
+            } catch (_) {}
+          });
+
+        return { ...prev, [parentLessonId]: newSubLessons };
+      });
     },
-    [subLessons, api, classId, showMessage],
+    [api, classId, showMessage],
   );
 
   // ==================== RENDER ====================
 
-  if (loading) return <p>Đang tải danh sách bài học...</p>;
+  if (loading) return <LoadingSpinner label="Đang tải bài học..." />;
 
   if (accessDenied) {
     return (
@@ -594,8 +589,7 @@ function LessonsContent() {
             <SortableLessonItem
               key={lesson.lessonId}
               lesson={lesson}
-              expanded={expanded}
-              closing={closing}
+              isExpanded={expanded === lesson.lessonId}
               subLessons={subLessons[lesson.lessonId] || []}
               subProgress={subProgress}
               editMode={editMode}
@@ -674,469 +668,8 @@ function LessonsContent() {
           onClose={() => setHistoryTarget(null)}
         />
       )}
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </div>
   );
 }
 
-// ==================== SORTABLE LESSON ITEM ====================
 
-function SortableLessonItem({
-  lesson,
-  expanded,
-  closing,
-  subLessons,
-  subProgress,
-  editMode,
-  classId,
-  sensors,
-  onExpand,
-  onEditLesson,
-  onDeleteLesson,
-  onAddSubLesson,
-  onEditSubLesson,
-  onDeleteSubLesson,
-  onOpenQuestionManager,
-  onSubLessonDragEnd,
-  onNavigate,
-  onViewHistory,
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: lesson.lessonId, disabled: !editMode });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const isExpanded = expanded === lesson.lessonId;
-  const isClosing = closing === lesson.lessonId;
-  const isHidden = lesson.display === false;
-
-  // Lọc subLessons: ẩn nếu display=false và không ở editMode
-  const visibleSubLessons = editMode
-    ? subLessons
-    : subLessons.filter((sub) => sub.display !== false);
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`lesson-item ${isExpanded ? "expanded" : isClosing ? "closing" : ""} ${isHidden && editMode ? "hidden-lesson" : ""}`}
-    >
-      <div className="lesson-item__top">
-        {/* Drag handle (khi editMode) */}
-        {editMode && (
-          <Box
-            {...attributes}
-            {...listeners}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              color: "#9e9e9e",
-              cursor: isDragging ? "grabbing" : "grab",
-              mr: 1,
-              "&:hover": { color: "#667eea" },
-            }}
-          >
-            <DragIndicator />
-          </Box>
-        )}
-
-        <div
-          className="lesson-item__info"
-          onClick={() => onExpand(lesson.lessonId)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onExpand(lesson.lessonId); } }}
-        >
-          <h3>
-            {lesson.title}
-            {isHidden && editMode && (
-              <span
-                style={{ color: "#767676", fontSize: "0.8rem", marginLeft: 8 }}
-              >
-                (Ẩn)
-              </span>
-            )}
-          </h3>
-          <p>{lesson.description}</p>
-        </div>
-
-        {/* Edit/Delete buttons (khi editMode) */}
-        {editMode && (
-          <Box sx={{ display: "flex", gap: 0.5, mr: 1 }}>
-            <Tooltip title="Chỉnh sửa bài học">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEditLesson(lesson);
-                }}
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                  color: "white",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
-                  },
-                }}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Xóa bài học">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteLesson(lesson);
-                }}
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-                  color: "white",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
-                  },
-                }}
-              >
-                <Delete fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
-
-        <button
-          type="button"
-          className="lesson-item__btn"
-          onClick={() => onExpand(lesson.lessonId)}
-        >
-          {isExpanded ? "Thu gọn" : "Xem chi tiết"}
-        </button>
-      </div>
-
-      {/* SubLessons */}
-      {(isExpanded || isClosing) && visibleSubLessons.length > 0 && (
-        <div className={`sub-lessons ${isExpanded ? "opening" : "closing"}`}>
-          {/* Nút thêm bài học con (khi editMode) */}
-          {editMode && isExpanded && (
-            <Box sx={{ mb: 2, pl: 2 }}>
-              <Button
-                variant="outlined"
-                startIcon={<Add />}
-                onClick={() => onAddSubLesson(lesson.lessonId)}
-                sx={{
-                  borderColor: "#667eea",
-                  color: "#667eea",
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#764ba2",
-                    background: "rgba(102, 126, 234, 0.08)",
-                  },
-                }}
-              >
-                Thêm bài học con
-              </Button>
-            </Box>
-          )}
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={(event) => onSubLessonDragEnd(event, lesson.lessonId)}
-          >
-            <SortableContext
-              items={visibleSubLessons.map((s) => s.lessonId)}
-              strategy={verticalListSortingStrategy}
-            >
-              {visibleSubLessons.map((sub, index) => (
-                <SortableSubLessonItem
-                  key={sub.lessonId}
-                  sub={sub}
-                  index={index}
-                  prog={
-                    subProgress[sub.lessonId] || {
-                      progress: 0,
-                      completed: false,
-                    }
-                  }
-                  editMode={editMode}
-                  classId={classId}
-                  parentLessonId={lesson.lessonId}
-                  onEdit={onEditSubLesson}
-                  onDelete={onDeleteSubLesson}
-                  onOpenQuestionManager={onOpenQuestionManager}
-                  onNavigate={onNavigate}
-                  onViewHistory={onViewHistory}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        </div>
-      )}
-
-      {/* Nút thêm bài học con khi chưa có (và đang expanded + editMode) */}
-      {isExpanded && editMode && visibleSubLessons.length === 0 && (
-        <div className="sub-lessons opening">
-          <Box sx={{ p: 2, textAlign: "center" }}>
-            <p style={{ color: "#666", marginBottom: "1rem" }}>
-              Chưa có bài học con nào
-            </p>
-            <Button
-              variant="outlined"
-              startIcon={<Add />}
-              onClick={() => onAddSubLesson(lesson.lessonId)}
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-              }}
-            >
-              Thêm bài học con
-            </Button>
-          </Box>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ==================== SORTABLE SUBLESSON ITEM ====================
-
-function SortableSubLessonItem({
-  sub,
-  index,
-  prog,
-  editMode,
-  classId,
-  parentLessonId,
-  onEdit,
-  onDelete,
-  onOpenQuestionManager,
-  onNavigate,
-  onViewHistory,
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: sub.lessonId, disabled: !editMode });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    animationDelay: `${0.1 * (index + 1)}s`,
-  };
-
-  const isHidden = sub.display === false;
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`sub-lesson-wrapper ${isHidden && editMode ? "hidden-sublesson" : ""}`}
-    >
-      <div className="sub-lesson">
-        {/* Drag handle (khi editMode) */}
-        {editMode && (
-          <Box
-            {...attributes}
-            {...listeners}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              color: "#9e9e9e",
-              cursor: isDragging ? "grabbing" : "grab",
-              mr: 1,
-              "&:hover": { color: "#667eea" },
-            }}
-          >
-            <DragIndicator fontSize="small" />
-          </Box>
-        )}
-
-        <div className="sub-lesson__info">
-          <h4>
-            {sub.displayId ? `${sub.displayId}: ` : ""}
-            {sub.title}
-            {isHidden && editMode && (
-              <span
-                style={{ color: "#767676", fontSize: "0.75rem", marginLeft: 8 }}
-              >
-                (Ẩn)
-              </span>
-            )}
-          </h4>
-          <p>{sub.description}</p>
-          <p>Số câu hỏi: {sub.questionCount ?? 0}</p>
-        </div>
-
-        <div className="sub-lesson__actions">
-          {/* Edit Mode Actions */}
-          {editMode && (
-            <Box sx={{ display: "flex", gap: 0.5, mr: 1 }}>
-              <Tooltip title="Quản lý câu hỏi">
-                <IconButton
-                  size="small"
-                  onClick={() => onOpenQuestionManager(sub)}
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-                    color: "white",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #38ef7d 0%, #11998e 100%)",
-                    },
-                  }}
-                >
-                  <Quiz fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Chỉnh sửa">
-                <IconButton
-                  size="small"
-                  onClick={() => onEdit(sub, parentLessonId)}
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                    color: "white",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)",
-                    },
-                  }}
-                >
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Xóa">
-                <IconButton
-                  size="small"
-                  onClick={() => onDelete(sub, parentLessonId)}
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-                    color: "white",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
-                    },
-                  }}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          )}
-
-          <button
-            type="button"
-            className="btn-do"
-            onClick={() =>
-              onNavigate(
-                sub.mode === "simple"
-                  ? `/course/${classId}/lesson-simple/${sub.lessonId}`
-                  : sub.mode === "middle"
-                    ? `/course/${classId}/lesson-middle/${sub.lessonId}`
-                    : `/course/${classId}/lesson/${sub.lessonId}`,
-              )
-            }
-          >
-            {prog.progress > 0 ? "Làm lại" : "Làm bài"}
-          </button>
-
-          {/* Nút xem lịch sử - Chỉ hiển thị khi đã làm bài */}
-          {prog.progress > 0 && (
-            <button
-              type="button"
-              className="btn-history"
-              onClick={() => onViewHistory(sub.lessonId)}
-              style={{
-                marginLeft: "0.5rem",
-                padding: "0.5rem 1rem",
-                background: "#f3f4f6",
-                color: "#374151",
-                border: "1px solid #d1d5db",
-                borderRadius: "6px",
-                fontWeight: "500",
-                cursor: "pointer",
-              }}
-            >
-              Lịch sử
-            </button>
-          )}
-
-          <button
-            type="button"
-            className={`btn-status ${prog.completed ? "done" : "pending"}`}
-            disabled
-          >
-            {prog.completed ? "Đã hoàn thành" : "Chưa hoàn thành"}
-          </button>
-        </div>
-      </div>
-
-      <div className="progress-section">
-        <div className="progress-bar">
-          <div
-            className={`progress-fill ${prog.progress >= 90 ? "excellent" : ""}`}
-            style={{ width: `${prog.progress}%` }}
-          />
-        </div>
-        <div className="progress-label">
-          <div className="rating">
-            {prog.progress < 50 && <span className="face">😞</span>}
-            {prog.progress >= 50 && prog.progress < 70 && <span>⭐</span>}
-            {prog.progress >= 70 && prog.progress < 90 && (
-              <>
-                <span>⭐</span>
-                <span>⭐</span>
-              </>
-            )}
-            {prog.progress >= 90 && (
-              <>
-                <span>⭐</span>
-                <span>⭐</span>
-                <span>⭐</span>
-              </>
-            )}
-          </div>
-          <span className="percent">{prog.progress}%</span>
-        </div>
-      </div>
-    </div>
-  );
-}

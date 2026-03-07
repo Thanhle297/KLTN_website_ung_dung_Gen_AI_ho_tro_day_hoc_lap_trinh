@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Box,
   Paper,
   Table,
   TableHead,
@@ -8,7 +7,7 @@ import {
   TableCell,
   TableBody,
   TableContainer,
-  CircularProgress,
+  Skeleton,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -41,21 +40,32 @@ const SubLessonsTable = React.memo(
 
     if (loading) {
       return (
-        <Box
+        <Paper
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
+            borderRadius: 4,
+            overflow: "hidden",
+            boxShadow: isDark
+              ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+              : "0 8px 32px rgba(0, 0, 0, 0.1)",
+            backgroundColor: theme.palette.background.paper,
           }}
         >
-          <CircularProgress
-            size={60}
-            sx={{
-              color: isDark ? theme.palette.primary.main : "white",
-            }}
-          />
-        </Box>
+          <TableContainer>
+            <Table>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 8 }).map((__, j) => (
+                      <TableCell key={j}>
+                        <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
       );
     }
 

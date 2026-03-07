@@ -8,6 +8,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
 import { useThemeMode } from "../context/ThemeContext";
 import fireConfetti from "../utils/fireConfetti";
+import AIMarkdown from "./AIMarkdown";
 import "../styles/CodeEditor.scss";
 
 export default function CodeEditor({
@@ -37,7 +38,17 @@ export default function CodeEditor({
   const apiBase = useMemo(() => process.env.REACT_APP_API_URL, []);
 
   // ============================================================
-  // Sync theo question/editorStates (source-of-truth: editorStates)
+  // Effect 1: CHỈ reset tab về "results" khi đổi sang câu hỏi khác
+  // Tách riêng để tránh reset tab mỗi khi updateEditorState được gọi
+  // ============================================================
+  useEffect(() => {
+    if (!question?.id) return;
+    setActiveTab("results");
+  }, [question?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ============================================================
+  // Effect 2: Sync local state từ editorStates (source-of-truth)
+  // KHÔNG gọi setActiveTab ở đây — để tab guide có thể giữ nguyên sau runCode
   // ============================================================
   useEffect(() => {
     if (!question?.id) return;
@@ -56,9 +67,6 @@ export default function CodeEditor({
       setHasGuide(false);
       setHasNewGuide(false);
     }
-
-    // reset tab hợp lý
-    setActiveTab("results");
   }, [question?.id, editorStates]);
 
   const handleCodeChange = (newCode) => {
@@ -333,11 +341,10 @@ export default function CodeEditor({
 
           {activeTab === "guide" && (
             <div className="tab-panel">
-              {guide ? (
-                <p style={{ whiteSpace: "pre-wrap" }}>{guide}</p>
-              ) : (
-                <p>Chưa có hướng dẫn.</p>
-              )}
+              <AIMarkdown
+                content={guide}
+                emptyText="Chưa có hướng dẫn."
+              />
             </div>
           )}
         </div>

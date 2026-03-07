@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { IoSparkles } from "react-icons/io5";
 import admin from "../IMG/thanh2.jpg";
+import admin2 from "../IMG/admin.jpg";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export default function Contact() {
       name: "Lê Quang Thành",
       role: "Full Stack Developer",
       description: "Frontend & Backend",
-      img: admin,
+      img: admin2,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/thanhle297",
       linkedin: "#",
@@ -36,7 +37,7 @@ export default function Contact() {
       name: "Lê Quang Thành",
       role: "Backend Engineer",
       description: "API & Database",
-      img: admin,
+      img: admin2,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/Thanhle297",
       linkedin: "#",
@@ -45,7 +46,7 @@ export default function Contact() {
       name: "Lê Quang Thành",
       role: "UI/UX Designer",
       description: "Design & Experience",
-      img: admin,
+      img: admin2,
       facebook: "https://www.facebook.com/thanh.le.964218/",
       github: "https://github.com/Thanhle297",
       linkedin: "#",

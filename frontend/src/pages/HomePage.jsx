@@ -48,7 +48,7 @@ export default function HomePage() {
     fallbackCourses,
   );
 
-  if (loading) return <LoadingSpinner text="Đang tải dữ liệu..." />;
+  if (loading) return <LoadingSpinner label="Đang tải dữ liệu..." />;
 
   return (
     <div className="homepage">

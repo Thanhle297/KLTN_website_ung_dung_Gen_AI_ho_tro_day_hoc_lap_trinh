@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Box, Snackbar, Alert, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import LessonsHeader from "../../components/admin/lessons/LessonsHeader";
@@ -24,18 +25,10 @@ export default function LessonsCRUD() {
   const [filterDisplay, setFilterDisplay] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const [snack, setSnack] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
   const showMessage = useCallback((msg, severity = "success") => {
-    setSnack({ open: true, message: msg, severity });
-  }, []);
-
-  const closeSnack = useCallback(() => {
-    setSnack((prev) => ({ ...prev, open: false }));
+    if (severity === "error") toast.error(msg);
+    else if (severity === "warning") toast.warning(msg);
+    else toast.success(msg);
   }, []);
 
   /* ============================ LOAD ============================ */
@@ -221,17 +214,6 @@ export default function LessonsCRUD() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert severity={snack.severity} onClose={closeSnack} variant="filled">
-          {snack.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

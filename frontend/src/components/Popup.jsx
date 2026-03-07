@@ -7,6 +7,7 @@ import charWrong from "../IMG/anh3.png";
 import charQuiz from "../IMG/anh4.png";
 import correctSound from "../sounds/correct.mp3";
 import wrongSound from "../sounds/wrong.mp3";
+import AIMarkdown from "./AIMarkdown";
 import "../styles/Popup.scss";
 
 export default function FETestPopup({ data, onClose }) {
@@ -146,14 +147,10 @@ export default function FETestPopup({ data, onClose }) {
               <div>
                 <h2>Hướng dẫn</h2>
                 <div className="instruct-block">
-                  {item.value
-                    .split(/\n+/) // tách theo xuống dòng
-                    .filter((line) => line.trim() !== "")
-                    .map((line, idx) => (
-                      <p key={idx} style={{ whiteSpace: "pre-wrap" }}>
-                        {line.trim()}
-                      </p>
-                    ))}
+                  <AIMarkdown
+                    content={item.value}
+                    emptyText="Không có hướng dẫn."
+                  />
                 </div>
               </div>
             )}

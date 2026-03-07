@@ -1,5 +1,5 @@
 // src/components/lessons/SortableSubLessonItem.jsx
-// Component hiển thị một sub-lesson với drag & drop support
+// Component hiển thị một sub-lesson với drag & drop support và framer-motion animation
 
 import React from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
@@ -11,19 +11,44 @@ import {
 } from "@mui/icons-material";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { motion } from "framer-motion";
+
+// Variants cho từng item (dùng bởi staggerChildren từ container)
+export const subLessonItemVariants = {
+  hidden: {
+    opacity: 0,
+    x: -24,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.32,
+      ease: [0.34, 1.56, 0.64, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    x: -16,
+    transition: {
+      duration: 0.18,
+      ease: [0.4, 0, 1, 1],
+    },
+  },
+};
 
 const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
   sub,
   index,
+  prog,
   editMode,
   parentLessonId,
   classId,
-  subProgress,
-  onEditSubLesson,
-  onDeleteSubLesson,
+  onEdit,
+  onDelete,
   onOpenQuestionManager,
-  navigate,
-  setHistoryTarget,
+  onNavigate,
+  onViewHistory,
 }) {
   const {
     attributes,
@@ -37,27 +62,28 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
     disabled: !editMode,
   });
 
-  const style = {
+  // Style dành riêng cho dnd-kit transform (không can thiệp vào framer-motion)
+  const dndStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
-    animationDelay: `${0.1 * (index + 1)}s`,
-    ...(editMode && sub.display === false
-      ? {
-          border: "2px dashed #9e9e9e",
-          borderRadius: "8px",
-        }
-      : {}),
+    opacity: isDragging ? 0.45 : 1,
+    zIndex: isDragging ? 999 : undefined,
+    position: "relative",
   };
 
-  const prog = subProgress[sub.lessonId] || {
-    progress: 0,
-    completed: false,
-  };
+  const isHidden = sub.display === false;
 
   return (
-    <div ref={setNodeRef} style={style} className="sub-lesson-wrapper">
+    // motion.div: wrap ngoài để nhận stagger từ container, ref cho dnd-kit
+    <motion.div
+      ref={setNodeRef}
+      style={dndStyle}
+      variants={subLessonItemVariants}
+      // Không khai báo initial/animate/exit ở đây — để AnimatePresence + container stagger điều khiển
+      layout="position"
+      layoutId={`sub-${sub.lessonId}`}
+      className={`sub-lesson-wrapper${isHidden && editMode ? " hidden-sublesson" : ""}`}
+    >
       <div className="sub-lesson">
         {/* Drag handle */}
         {editMode && (
@@ -81,18 +107,18 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
           className="sub-lesson__info"
           style={{
             flex: 1,
-            opacity: sub.display === false && editMode ? 0.7 : 1,
+            opacity: isHidden && editMode ? 0.7 : 1,
           }}
         >
           <h4>
             {sub.displayId ? `${sub.displayId}: ` : ""}
             {sub.title}
-            {editMode && sub.display === false && (
+            {isHidden && editMode && (
               <span
                 style={{
                   marginLeft: "8px",
-                  fontSize: "0.7rem",
-                  color: "#9e9e9e",
+                  fontSize: "0.75rem",
+                  color: "#767676",
                   fontWeight: "normal",
                 }}
               >
@@ -111,7 +137,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
               <Tooltip title="Quản lý câu hỏi">
                 <IconButton
                   size="small"
-                  onClick={() => onOpenQuestionManager(sub, parentLessonId)}
+                  onClick={() => onOpenQuestionManager(sub)}
                   sx={{
                     background:
                       "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
@@ -128,7 +154,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
               <Tooltip title="Chỉnh sửa">
                 <IconButton
                   size="small"
-                  onClick={() => onEditSubLesson(sub, parentLessonId)}
+                  onClick={() => onEdit(sub, parentLessonId)}
                   sx={{
                     background:
                       "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
@@ -145,7 +171,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
               <Tooltip title="Xóa">
                 <IconButton
                   size="small"
-                  onClick={() => onDeleteSubLesson(sub, parentLessonId)}
+                  onClick={() => onDelete(sub, parentLessonId)}
                   sx={{
                     background:
                       "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
@@ -164,9 +190,10 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
 
           {/* Student actions */}
           <button
+            type="button"
             className="btn-do"
             onClick={() =>
-              navigate(
+              onNavigate(
                 sub.mode === "simple"
                   ? `/course/${classId}/lesson-simple/${sub.lessonId}`
                   : sub.mode === "middle"
@@ -180,8 +207,9 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
 
           {prog.progress > 0 && (
             <button
+              type="button"
               className="btn-history"
-              onClick={() => setHistoryTarget(sub.lessonId)}
+              onClick={() => onViewHistory(sub.lessonId)}
               style={{
                 marginLeft: "0.5rem",
                 padding: "0.5rem 1rem",
@@ -198,6 +226,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
           )}
 
           <button
+            type="button"
             className={`btn-status ${prog.completed ? "done" : "pending"}`}
             disabled
           >
@@ -210,9 +239,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
       <div className="progress-section">
         <div className="progress-bar">
           <div
-            className={`progress-fill ${
-              prog.progress >= 90 ? "excellent" : ""
-            }`}
+            className={`progress-fill ${prog.progress >= 90 ? "excellent" : ""}`}
             style={{ width: `${prog.progress}%` }}
           />
         </div>
@@ -237,7 +264,7 @@ const SortableSubLessonItem = React.memo(function SortableSubLessonItem({
           <span className="percent">{prog.progress}%</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 

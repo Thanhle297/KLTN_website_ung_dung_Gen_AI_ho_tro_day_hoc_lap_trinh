@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
+import { Toaster } from "sonner";
 import { HeaderProvider, HeaderContext } from "./context/HeaderContext";
 import { AppThemeProvider } from "./context/ThemeContext";
 import {
@@ -176,77 +177,92 @@ function AppContent() {
       )}
 
       <main id="main-content">
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/course"
-          element={
-            <ProtectedRoute>
-              <Courses />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/course/:classId"
-          element={
-            <ProtectedRoute>
-              <Lessons />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/course/:classId/lesson/:lessonId"
-          element={
-            <ProtectedRoute>
-              <CodeEx />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/course/:classId/lesson-simple/:lessonId"
-          element={
-            <ProtectedRoute>
-              <CodeExSimple />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/course/:classId/lesson-middle/:lessonId"
-          element={
-            <ProtectedRoute>
-              <CodeExMidle />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/review/:submissionId"
-          element={
-            <ProtectedRoute>
-              <ReviewPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/profile" element={<Profile />} />
+        <Routes>
+          {/* Login */}
+          <Route path="/login" element={<Login />} />
 
-        {/* ✅ Admin Dashboard, chỉ admin mới vào được */}
-        <Route
-          path="/admin/*"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-      </Routes>
+          {/* Trang chủ */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Danh sách khóa học */}
+          <Route
+            path="/course"
+            element={
+              <ProtectedRoute>
+                <Courses />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Danh sách bài học của khóa học */}
+          <Route
+            path="/course/:classId"
+            element={
+              <ProtectedRoute>
+                <Lessons />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Trang bài tập code */}
+          <Route
+            path="/course/:classId/lesson/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CodeEx />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/:classId/lesson-simple/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CodeExSimple />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/:classId/lesson-middle/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CodeExMidle />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Trang xem lại bài nộp */}
+          <Route
+            path="/review/:submissionId"
+            element={
+              <ProtectedRoute>
+                <ReviewPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Liên hệ */}
+          <Route path="/contact" element={<Contact />} />
+
+          {/* Hồ sơ */}
+          <Route path="/profile" element={<Profile />} />
+
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin/*"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+        </Routes>
       </main>
 
       {showHeader && !forceHide && <Footer />}
@@ -264,6 +280,15 @@ export default function App() {
         <Router>
           <AppContent />
         </Router>
+        <Toaster
+          position="bottom-right"
+          richColors
+          closeButton
+          duration={3000}
+          toastOptions={{
+            style: { fontFamily: "inherit" },
+          }}
+        />
       </HeaderProvider>
     </AppThemeProvider>
   );

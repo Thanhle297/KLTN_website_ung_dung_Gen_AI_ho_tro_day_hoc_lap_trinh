@@ -12,11 +12,10 @@ import {
   Typography,
   Button,
   CircularProgress,
+  Skeleton,
   TextField,
   InputAdornment,
   Chip,
-  Snackbar,
-  Alert,
   useTheme,
 } from "@mui/material";
 import {
@@ -25,6 +24,7 @@ import {
   FileUpload,
   Save,
 } from "@mui/icons-material";
+import { toast } from "sonner";
 import useAdminAPI from "../../hook/useAdminAPI";
 
 export default function EnrollmentsCRUD() {
@@ -38,11 +38,6 @@ export default function EnrollmentsCRUD() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [snack, setSnack] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   useEffect(() => {
     loadData();
@@ -217,7 +212,9 @@ export default function EnrollmentsCRUD() {
   };
 
   const showMessage = (message, severity = "success") => {
-    setSnack({ open: true, message, severity });
+    if (severity === "error") toast.error(message);
+    else if (severity === "warning") toast.warning(message);
+    else toast.success(message);
   };
 
   const filteredUsers = users.filter(
@@ -231,15 +228,50 @@ export default function EnrollmentsCRUD() {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "400px",
-        }}
-      >
-        <CircularProgress />
+      <Box sx={{ p: 3, minHeight: "100vh" }}>
+        {/* Header skeleton */}
+        <Box sx={{ mb: 3 }}>
+          <Skeleton variant="text" width={300} sx={{ fontSize: "2rem", mb: 1 }} />
+          <Skeleton variant="text" width={400} sx={{ fontSize: "0.875rem" }} />
+        </Box>
+        {/* Toolbar skeleton */}
+        <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
+          <Skeleton variant="rounded" width={250} height={40} />
+          <Skeleton variant="rounded" width={120} height={40} />
+          <Skeleton variant="rounded" width={120} height={40} />
+          <Skeleton variant="rounded" width={120} height={40} />
+          <Skeleton variant="rounded" width={140} height={40} />
+        </Box>
+        {/* Matrix skeleton */}
+        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <TableContainer sx={{ maxHeight: 600 }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton variant="text" sx={{ fontSize: "0.875rem" }} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 6 }).map((__, j) => (
+                      <TableCell key={j}>
+                        {j === 0
+                          ? <Skeleton variant="text" sx={{ fontSize: "0.875rem" }} />
+                          : <Skeleton variant="rounded" width={24} height={24} sx={{ mx: "auto" }} />
+                        }
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
       </Box>
     );
   }
@@ -422,14 +454,6 @@ return (
           color="primary"
         />
       </Box>
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={() => setSnack({ ...snack, open: false })}
-      >
-        <Alert severity={snack.severity}>{snack.message}</Alert>
-      </Snackbar>
     </Box>
   );
 }

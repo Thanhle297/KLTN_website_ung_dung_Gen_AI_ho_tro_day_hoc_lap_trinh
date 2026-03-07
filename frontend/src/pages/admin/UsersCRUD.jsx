@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
-  CircularProgress,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -13,6 +13,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
+import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 
@@ -23,7 +24,6 @@ import UserTableRow from "../../components/admin/users/UserTableRow";
 import UserFormDialog from "../../components/admin/users/UserFormDialog";
 import ChangePasswordDialog from "../../components/admin/users/ChangePasswordDialog";
 import DeleteConfirmDialog from "../../components/admin/users/DeleteConfirmDialog";
-import UserNotification from "../../components/admin/users/UserNotification";
 import UserCoursesDialog from "../../components/admin/users/UserCoursesDialog";
 export default function UsersCRUD() {
   const api = useAdminAPI();
@@ -60,20 +60,6 @@ export default function UsersCRUD() {
     isActive: true,
   });
 
-  const [snack, setSnack] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
-  const showMessage = useCallback((message, severity = "success") => {
-    setSnack({ open: true, message, severity });
-  }, []);
-
-  const handleCloseSnack = useCallback(() => {
-    setSnack((s) => ({ ...s, open: false }));
-  }, []);
-
   /* ============================== LOAD USERS ============================== */
   const loadUsers = useCallback(async () => {
     try {
@@ -81,11 +67,7 @@ export default function UsersCRUD() {
       const res = await api.getUsers();
       setUsers(res.data);
     } catch (err) {
-      setSnack({
-        open: true,
-        message: err.response?.data?.message || "Lỗi tải user",
-        severity: "error",
-      });
+      toast.error(err.response?.data?.message || "Lỗi tải user");
     } finally {
       setLoading(false);
     }
@@ -150,11 +132,7 @@ export default function UsersCRUD() {
   const handleSave = useCallback(async () => {
     try {
       if (!form.email || !form.username || (!editingUser && !form.password)) {
-        setSnack({
-          open: true,
-          message: "Email, Username và Password (khi tạo) là bắt buộc",
-          severity: "warning",
-        });
+        toast.warning("Email, Username và Password (khi tạo) là bắt buộc");
         return;
       }
 
@@ -166,11 +144,7 @@ export default function UsersCRUD() {
           role: form.role,
           isActive: form.isActive,
         });
-        setSnack({
-          open: true,
-          message: "Cập nhật user thành công",
-          severity: "success",
-        });
+        toast.success("Cập nhật user thành công");
       } else {
         await api.createUser({
           email: form.email,
@@ -180,21 +154,13 @@ export default function UsersCRUD() {
           role: form.role,
           isActive: form.isActive,
         });
-        setSnack({
-          open: true,
-          message: "Tạo user mới thành công",
-          severity: "success",
-        });
+        toast.success("Tạo user mới thành công");
       }
 
       setOpenDialog(false);
       loadUsers();
     } catch (err) {
-      setSnack({
-        open: true,
-        message: err.response?.data?.message || "Lỗi lưu user",
-        severity: "error",
-      });
+      toast.error(err.response?.data?.message || "Lỗi lưu user");
     }
   }, [form, editingUser, api, loadUsers]);
 
@@ -214,20 +180,12 @@ export default function UsersCRUD() {
 
     try {
       await api.deleteUser(deletingUser._id);
-      setSnack({
-        open: true,
-        message: "Xóa user thành công",
-        severity: "success",
-      });
+      toast.success("Xóa user thành công");
       setOpenDeleteDialog(false);
       setDeletingUser(null);
       loadUsers();
     } catch (err) {
-      setSnack({
-        open: true,
-        message: err.response?.data?.message || "Lỗi xóa user",
-        severity: "error",
-      });
+      toast.error(err.response?.data?.message || "Lỗi xóa user");
     }
   }, [deletingUser, api, loadUsers]);
 
@@ -248,26 +206,14 @@ export default function UsersCRUD() {
   const handleChangePass = useCallback(async () => {
     try {
       if (!passForm.newPassword) {
-        setSnack({
-          open: true,
-          message: "Vui lòng nhập mật khẩu mới",
-          severity: "warning",
-        });
+        toast.warning("Vui lòng nhập mật khẩu mới");
         return;
       }
       await api.adminChangePassword(passForm.userId, passForm.newPassword);
-      setSnack({
-        open: true,
-        message: "Đổi mật khẩu thành công",
-        severity: "success",
-      });
+      toast.success("Đổi mật khẩu thành công");
       setOpenPassDialog(false);
     } catch (err) {
-      setSnack({
-        open: true,
-        message: err.response?.data?.message || "Lỗi đổi mật khẩu",
-        severity: "error",
-      });
+      toast.error(err.response?.data?.message || "Lỗi đổi mật khẩu");
     }
   }, [passForm, api]);
   const handleManageCourses = useCallback((user) => {
@@ -322,24 +268,7 @@ export default function UsersCRUD() {
       </Box>
 
       {/* Users Table */}
-      {loading ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-          }}
-        >
-<CircularProgress
-            size={60}
-            sx={{
-              color: theme.palette.primary.main,
-            }}
-          />
-        </Box>
-      ) : (
-<Paper
+      <Paper
           sx={{
             borderRadius: 4,
             overflow: "hidden",
@@ -428,19 +357,29 @@ export default function UsersCRUD() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedUsers.map((user, index) => (
-                  <UserTableRow
-                    key={user._id}
-                    user={user}
-                    index={index}
-                    onEdit={openEditDialog}
-                    onDelete={handleDelete}
-                    onChangePassword={openChangePass}
-                    onManageCourses={handleManageCourses}
-                  />
-                ))}
+                {loading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 7 }).map((__, j) => (
+                          <TableCell key={j}>
+                            <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : paginatedUsers.map((user, index) => (
+                    <UserTableRow
+                      key={user._id}
+                      user={user}
+                      index={index}
+                      onEdit={openEditDialog}
+                      onDelete={handleDelete}
+                      onChangePassword={openChangePass}
+                      onManageCourses={handleManageCourses}
+                    />
+                  ))}
 
-                {paginatedUsers.length === 0 && (
+                {!loading && paginatedUsers.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                       <Typography variant="h6" color="text.secondary">
@@ -471,7 +410,6 @@ export default function UsersCRUD() {
             }}
           />
         </Paper>
-      )}
 
       {/* Dialog thêm / sửa */}
       <UserFormDialog
@@ -501,19 +439,13 @@ export default function UsersCRUD() {
       />
 
       {/* Snackbar thông báo */}
-      <UserNotification
-        open={snack.open}
-        message={snack.message}
-        severity={snack.severity}
-        onClose={handleCloseSnack}
-      />
       {/* Dialog quản lý khóa học */}
       <UserCoursesDialog
         open={openCoursesDialog}
         user={managingUser}
         onClose={handleCloseCoursesDialog}
         onSave={() => {
-          showMessage("Cập nhật khóa học thành công");
+          toast.success("Cập nhật khóa học thành công");
           loadUsers();
         }}
         api={api}

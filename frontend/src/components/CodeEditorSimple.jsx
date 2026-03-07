@@ -7,6 +7,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { ImSpinner2 } from "react-icons/im";
 import { useThemeMode } from "../context/ThemeContext";
 import fireConfetti from "../utils/fireConfetti";
+import AIMarkdown from "./AIMarkdown";
 import "../styles/CodeEditorSimple.scss";
 
 export default function CodeEditorSimple({
@@ -197,11 +198,7 @@ export default function CodeEditorSimple({
           : "Bài làm chưa đạt yêu cầu.";
       }
 
-      const cleanedGuide = guideText
-        .replace(/^#+\s*/gm, "") // xoá # ở đầu dòng
-        .trim();
-
-      setGuide(cleanedGuide);
+      setGuide(guideText);
       setHasNewGuide(true);
 
       // Update state với guide và status mới
@@ -334,7 +331,12 @@ export default function CodeEditorSimple({
             </div>
           )}
           {activeTab === "guide" && (
-            <div className="ai-guide">{guide || "Chưa có gợi ý."}</div>
+            <div className="ai-guide">
+              <AIMarkdown
+                content={guide}
+                emptyText="Chưa có gợi ý."
+              />
+            </div>
           )}
         </div>
       </div>

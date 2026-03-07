@@ -38,9 +38,9 @@ export default function CodeExMidle() {
   const [difficulty, setDifficulty] = useState(0);
   const { showHeader, setShowHeader } = useContext(HeaderContext);
 
-  if (loading) return <LoadingSpinner label="Dang tai du lieu..." />;
+  if (loading) return <LoadingSpinner label="Đang tải dữ liệu..." />;
   if (!questions || questions.length === 0 || !current)
-    return <p>Khong co cau hoi nao cho bai nay.</p>;
+    return <p>Không có câu hỏi nào cho bài này.</p>;
 
   const updateEditorState = (id, newState) => {
     setEditorStates((prev) => ({
@@ -60,9 +60,9 @@ export default function CodeExMidle() {
             type="button"
             onClick={() => setShowHeader(!showHeader)}
             className="toggle-header-btn"
-            title={showHeader ? "An Header" : "Hien Header"}
+            title={showHeader ? "Ẩn Header" : "Hiện Header"}
             aria-label={
-              showHeader ? "An thanh dieu huong" : "Hien thanh dieu huong"
+              showHeader ? "Ẩn thanh điều hướng" : "Hiện thanh điều hướng"
             }
             style={{
               background: "none",

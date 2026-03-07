@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Box, Snackbar, Alert, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import SubLessonsHeader from "../../components/admin/sublessons/SubLessonsHeader";
@@ -25,18 +26,10 @@ export default function SubLessonsCRUD() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const [snack, setSnack] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
   const notify = useCallback((msg, severity = "success") => {
-    setSnack({ open: true, message: msg, severity });
-  }, []);
-
-  const closeSnack = useCallback(() => {
-    setSnack((s) => ({ ...s, open: false }));
+    if (severity === "error") toast.error(msg);
+    else if (severity === "warning") toast.warning(msg);
+    else toast.success(msg);
   }, []);
 
   /* ------- LOAD danh sách Khóa học ------- */
@@ -223,17 +216,6 @@ export default function SubLessonsCRUD() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert severity={snack.severity} variant="filled">
-          {snack.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

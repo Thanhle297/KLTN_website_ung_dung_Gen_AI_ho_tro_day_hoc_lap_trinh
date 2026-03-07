@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  Skeleton,
   Typography,
   Table,
   TableBody,
@@ -264,20 +265,22 @@ export default function CourseReportPage() {
         {/* Content */}
         <Box sx={{ p: 3 }}>
           {loading ? (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: 300,
-                gap: 2,
-              }}
-            >
-              <CircularProgress size={50} />
-              <Typography color="text.secondary">
-                Đang tải dữ liệu báo cáo...
-              </Typography>
+            <Box sx={{ p: 3 }}>
+              {/* Header row skeleton */}
+              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <Skeleton key={j} variant="text" width={j === 0 ? 40 : 100} sx={{ fontSize: "0.875rem", flex: j > 2 ? 1 : "none" }} />
+                ))}
+              </Box>
+              {/* Data rows skeleton */}
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Box key={i} sx={{ display: "flex", gap: 2, mb: 1 }}>
+                  {Array.from({ length: 6 }).map((__, j) => (
+                    <Skeleton key={j} variant="rounded" height={32}
+                      sx={{ flex: j > 2 ? 1 : "none", width: j === 0 ? 40 : j <= 2 ? 100 : undefined }} />
+                  ))}
+                </Box>
+              ))}
             </Box>
           ) : error ? (
             <Box

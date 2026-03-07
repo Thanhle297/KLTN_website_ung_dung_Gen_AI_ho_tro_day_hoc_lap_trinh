@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Box,
   Paper,
   Table,
   TableHead,
@@ -8,7 +7,7 @@ import {
   TableCell,
   TableBody,
   TableContainer,
-  CircularProgress,
+  Skeleton,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -18,26 +17,6 @@ const LessonsTable = React.memo(
   ({ lessons, loading, onEdit, onDelete, onToggleDisplay }) => {
     const theme = useTheme();
     const isDark = theme.palette.mode === "dark";
-
-    if (loading) {
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-          }}
-        >
-          <CircularProgress
-            size={60}
-            sx={{
-              color: isDark ? theme.palette.primary.main : "white",
-            }}
-          />
-        </Box>
-      );
-    }
 
     return (
       <Paper
@@ -144,17 +123,27 @@ const LessonsTable = React.memo(
             </TableHead>
 
             <TableBody>
-              {lessons.map((lesson) => (
-                <LessonRow
-                  key={lesson.lessonId}
-                  lesson={lesson}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onToggleDisplay={onToggleDisplay}
-                />
-              ))}
+              {loading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 8 }).map((__, j) => (
+                        <TableCell key={j}>
+                          <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : lessons.map((lesson) => (
+                    <LessonRow
+                      key={lesson.lessonId}
+                      lesson={lesson}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onToggleDisplay={onToggleDisplay}
+                    />
+                  ))}
 
-              {lessons.length === 0 && (
+              {!loading && lessons.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                     <Typography variant="h6" color="text.secondary">

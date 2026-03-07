@@ -7,19 +7,17 @@ import React, {
 } from "react";
 import {
   Box,
-  Snackbar,
-  Alert,
   Typography,
   TextField,
   InputAdornment,
   Button,
   Stack,
-  IconButton,
   Paper,
   TablePagination,
   useTheme,
 } from "@mui/material";
-import { Search, Add, Assignment } from "@mui/icons-material";
+import { Search, Add } from "@mui/icons-material";
+import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import QuestionsTable from "../../components/admin/questions/QuestionsTable";
@@ -43,24 +41,16 @@ export default function QuestionBank() {
 
   // Distribute Modal
   const [openDistribute, setOpenDistribute] = useState(false);
-  const [selectedForDistribute, setSelectedForDistribute] = useState([]); // Currently unused (future bulk select)
-
-  const [snack, setSnack] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [selectedForDistribute, setSelectedForDistribute] = useState([]);
 
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const notify = useCallback((msg, severity = "success") => {
-    setSnack({ open: true, message: msg, severity });
-  }, []);
-
-  const closeSnack = useCallback(() => {
-    setSnack((s) => ({ ...s, open: false }));
+    if (severity === "error") toast.error(msg);
+    else if (severity === "warning") toast.warning(msg);
+    else toast.success(msg);
   }, []);
 
   /* ================= LOAD QUESTIONS ================= */
@@ -346,17 +336,6 @@ export default function QuestionBank() {
         selectedQuestionIds={selectedForDistribute}
         onSuccess={handleDistributeSuccess}
       />
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert severity={snack.severity} variant="filled">
-          {snack.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

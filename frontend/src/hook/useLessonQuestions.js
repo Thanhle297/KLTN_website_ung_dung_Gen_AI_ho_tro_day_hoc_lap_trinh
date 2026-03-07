@@ -45,18 +45,18 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
           fetch(
             `${apiBase}/api/lessons/detail/${lessonId}?${cQuery.replace(
               "&",
-              ""
+              "",
             )}`,
             {
               signal: controller.signal,
-            }
+            },
           ).then(safeJson),
           fetch(`${apiBase}/api/questions?lessonId=${lessonId}${cQuery}`, {
             signal: controller.signal,
           }).then(safeJson),
           fetch(
             `${apiBase}/api/temp/load?userId=${userId}&lessonId=${lessonId}`,
-            { signal: controller.signal }
+            { signal: controller.signal },
           )
             .then((res) => (res.ok ? res.json() : {}))
             .catch(() => ({})),
@@ -78,6 +78,7 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
             code: (temp?.code ?? q?.defaultCode ?? "").toString(),
             results: Array.isArray(temp?.results) ? temp.results : [],
             guide: temp?.guide ?? null,
+            aiResult: temp?.aiResult ?? null,
             status: temp?.status ?? null,
             hasNewGuide: !!temp?.hasNewGuide,
           };
@@ -94,7 +95,7 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
           const pQuery = courseId ? `?courseId=${courseId}` : "";
           const parentRes = await fetch(
             `${apiBase}/api/lessons/${lessonData.parentLesson.lessonId}${pQuery}`,
-            { signal: controller.signal }
+            { signal: controller.signal },
           );
           const parentLesson = await safeJson(parentRes);
           finalLesson = {
@@ -108,9 +109,12 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
       } catch (err) {
         if (err?.name !== "AbortError") {
           console.error("❌ Lỗi load bài học/câu hỏi/temp:", err);
+          setLoading(false);
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 

@@ -230,12 +230,13 @@
 }
 
 .ai-guide {
-  white-space: pre-wrap;
   color: var(--text-secondary);
   background: var(--color-error-bg);
   padding: 10px;
   border-radius: $radius-sm;
   border: 1px solid var(--border-light);
+  overflow-y: auto;
+  min-height: 80px;
 }
 
 // --- Responsive ---

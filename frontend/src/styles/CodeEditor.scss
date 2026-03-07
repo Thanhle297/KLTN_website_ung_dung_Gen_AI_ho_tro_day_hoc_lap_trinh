@@ -167,6 +167,15 @@
       border: 1px solid var(--border-light);
 
       .tab-panel {
+        // Đảm bảo AIMarkdown hiển thị đúng trong tab
+        .ai-markdown {
+          font-size: $font-size-sm;
+
+          &__code-block {
+            margin: 0.5rem 0;
+          }
+        }
+
         table {
           width: 100%;
           border-collapse: collapse;

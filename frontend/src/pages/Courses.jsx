@@ -1,6 +1,7 @@
 import React from "react";
 import useCourses from "../hook/useCourses";
 import CourseCard from "../components/CourseCard";
+import LoadingSpinner from "../components/LoadingSpinner";
 import "../styles/Courses.scss";
 
 export default function Courses() {
@@ -9,7 +10,7 @@ export default function Courses() {
     process.env.REACT_APP_API_URL + "/api/courses/my-courses"
   );
 
-  if (loading) return <p>Đang tải khóa học...</p>;
+  if (loading) return <LoadingSpinner label="Đang tải khóa học..." />;
 
   return (
     <div className="courses-ui">

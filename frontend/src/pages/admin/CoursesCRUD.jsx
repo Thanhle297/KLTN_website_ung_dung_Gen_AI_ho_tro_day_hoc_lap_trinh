@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Snackbar, Alert, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
 import CoursesHeader from "../../components/admin/courses/CoursesHeader";
@@ -29,18 +30,10 @@ export default function CoursesCRUD() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const [snack, setSnack] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
   const showMessage = useCallback((msg, severity = "success") => {
-    setSnack({ open: true, message: msg, severity });
-  }, []);
-
-  const handleCloseSnack = useCallback(() => {
-    setSnack((prev) => ({ ...prev, open: false }));
+    if (severity === "error") toast.error(msg);
+    else if (severity === "warning") toast.warning(msg);
+    else toast.success(msg);
   }, []);
 
   /* ==================== LOAD ==================== */
@@ -210,21 +203,6 @@ export default function CoursesCRUD() {
           showMessage("Cập nhật giáo viên thành công");
         }}
       />
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnack}
-          severity={snack.severity}
-          variant="filled"
-        >
-          {snack.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }
