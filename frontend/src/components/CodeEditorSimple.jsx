@@ -1,5 +1,5 @@
 // components/CodeEditorSimple.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { autocompletion } from "@codemirror/autocomplete";
@@ -8,7 +8,12 @@ import { ImSpinner2 } from "react-icons/im";
 import { useThemeMode } from "../context/ThemeContext";
 import fireConfetti from "../utils/fireConfetti";
 import AIMarkdown from "./AIMarkdown";
+import InteractiveTerminal from "./InteractiveTerminal";
 import "../styles/CodeEditorSimple.scss";
+
+// Tạo WebSocket URL từ HTTP URL của python-service
+const PYTHON_SERVICE_URL = process.env.REACT_APP_API_URL_B || "http://localhost:8001";
+const WS_URL = PYTHON_SERVICE_URL.replace(/^http/, "ws") + "/ws/run_simple";
 
 export default function CodeEditorSimple({
   question,
@@ -25,8 +30,8 @@ export default function CodeEditorSimple({
 }) {
   const { isDark } = useThemeMode();
   const [localCode, setLocalCode] = useState("");
-  const [inputText, setInputText] = useState("");
   const [output, setOutput] = useState("");
+  const [collectedInput, setCollectedInput] = useState("");
   const [guide, setGuide] = useState("");
   const [runningCode, setRunningCode] = useState(false);
   const [submittingAI, setSubmittingAI] = useState(false);
@@ -34,6 +39,7 @@ export default function CodeEditorSimple({
   const [hasNewGuide, setHasNewGuide] = useState(false);
 
   const lastSavedRef = useRef("");
+  const terminalRef = useRef(null);
 
   // ============================================================
   // RESTORE dữ liệu khi đổi câu / F5
@@ -43,23 +49,30 @@ export default function CodeEditorSimple({
 
     const local = editorStates?.[question.id] || {};
     setLocalCode(local.code || "");
-    setInputText(local.input || "");
     setOutput(local.result || "");
+    setCollectedInput(local.input || "");
     setGuide(local.guide || "");
     setHasNewGuide(!!local.guide);
     setActiveTab("terminal");
-  }, [question?.id, editorStates]);
+
+    // Cleanup terminal khi đổi câu hỏi
+    if (terminalRef.current) {
+      terminalRef.current.stopExecution();
+      terminalRef.current.clearTerminal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question?.id]);
 
   // ============================================================
   // AUTO SAVE
   // ============================================================
   useEffect(() => {
     if (!userId || !lessonId || !question?.id) return;
-    if (!localCode && !inputText && !output && !guide) return;
+    if (!localCode && !collectedInput && !output && !guide) return;
 
     const data = {
       code: localCode,
-      input: inputText,
+      input: collectedInput,
       result: output,
       guide,
       status: editorStates?.[question.id]?.status ?? null,
@@ -86,62 +99,87 @@ export default function CodeEditorSimple({
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [localCode, inputText, output, guide, question?.id]);
+  }, [localCode, collectedInput, output, guide, question?.id]);
 
   // ============================================================
-  // RUN CODE (Chỉ chạy code)
+  // Callbacks từ InteractiveTerminal
   // ============================================================
-  const runCode = async () => {
-    if (!question?.id) return;
+  const handleRunStateChange = useCallback((isRunning) => {
+    setRunningCode(isRunning);
+  }, []);
 
-    setRunningCode(true);
-    setOutput("⏳ Đang chạy code...\n");
-
-    try {
-      // Chạy code Python
-      const runResp = await fetch(
-        `${process.env.REACT_APP_API_URL_B}/run_code_simple`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: localCode, input: inputText }),
-        }
-      );
-      const runData = await runResp.json();
-      const resultOutput = runData.output || runData.error || "Không có output";
-
+  const handleOutputReady = useCallback(
+    (termOutput) => {
+      const resultOutput = termOutput || "Không có output";
       setOutput(resultOutput);
       onChangeResult?.(resultOutput);
 
-      // Update state (chưa có guide và status)
+      // Update state + save ngay
       const newState = {
         code: localCode,
-        input: inputText,
+        input: collectedInput,
         result: resultOutput,
         guide: guide || "",
-        status: editorStates?.[question.id]?.status ?? null,
+        status: editorStates?.[question?.id]?.status ?? null,
       };
 
-      updateEditorState?.(question.id, newState);
+      updateEditorState?.(question?.id, newState);
 
-      // Save ngay
-      await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          lessonId,
-          questionId: String(question.id),
-          data: newState,
-        }),
-      });
+      // Save to backend
+      if (userId && lessonId && question?.id) {
+        fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            lessonId,
+            questionId: String(question.id),
+            data: newState,
+          }),
+        })
+          .then(() => {
+            lastSavedRef.current = JSON.stringify(newState);
+          })
+          .catch(console.error);
+      }
+    },
+    [
+      localCode,
+      collectedInput,
+      guide,
+      question?.id,
+      editorStates,
+      updateEditorState,
+      onChangeResult,
+      userId,
+      lessonId,
+    ]
+  );
 
-      lastSavedRef.current = JSON.stringify(newState);
-    } catch (err) {
-      setOutput(`❌ Lỗi: ${err.message}`);
-    } finally {
-      setRunningCode(false);
-    }
+  const handleInputCollected = useCallback(
+    (inputs) => {
+      setCollectedInput(inputs);
+      onChangeInput?.(inputs);
+    },
+    [onChangeInput]
+  );
+
+  // ============================================================
+  // RUN CODE (qua WebSocket InteractiveTerminal)
+  // ============================================================
+  const runCode = () => {
+    if (!question?.id) return;
+
+    setActiveTab("terminal");
+    // Gọi InteractiveTerminal bắt đầu chạy
+    terminalRef.current?.startExecution(localCode);
+  };
+
+  // ============================================================
+  // STOP CODE
+  // ============================================================
+  const stopCode = () => {
+    terminalRef.current?.stopExecution();
   };
 
   // ============================================================
@@ -174,7 +212,7 @@ export default function CodeEditorSimple({
               question?.description ||
               question?.title ||
               "Không có đề bài",
-            input: inputText,
+            input: collectedInput,
             output: output,
             difficulty,
             lessonNumber,
@@ -186,12 +224,12 @@ export default function CodeEditorSimple({
       const isCorrect = !!aiData.isCorrect;
       const quizzes = aiData.quizzes || [];
 
-      // ✅ Bắn confetti nếu đúng
+      // Bắn confetti nếu đúng
       if (isCorrect) fireConfetti();
 
       let guideText = aiData.guide || "";
 
-      // 🔴 CHỈ THÊM LOGIC – KHÔNG ĐỔI GIAO DIỆN
+      // CHỈ THÊM LOGIC – KHÔNG ĐỔI GIAO DIỆN
       if (difficulty === 2) {
         guideText = isCorrect
           ? "Bài làm đạt yêu cầu."
@@ -204,7 +242,7 @@ export default function CodeEditorSimple({
       // Update state với guide và status mới
       const newState = {
         code: localCode,
-        input: inputText,
+        input: collectedInput,
         result: output,
         guide: guideText,
         status: isCorrect ? "correct" : "wrong",
@@ -260,26 +298,25 @@ export default function CodeEditorSimple({
         />
       </div>
 
-      <textarea
-        className="code-editor__input"
-        placeholder="Nhập input..."
-        value={inputText}
-        onChange={(e) => {
-          setInputText(e.target.value);
-          onChangeInput?.(e.target.value);
-        }}
-        aria-label="Nhập input cho chương trình"
-      />
-
       <div className="code-editor__button-group">
-        <button
-          type="button"
-          onClick={runCode}
-          disabled={runningCode || submittingAI}
-          className="code-editor__run-btn"
-        >
-          {runningCode ? <ImSpinner2 className="spinner" /> : "Chạy code"}
-        </button>
+        {runningCode ? (
+          <button
+            type="button"
+            onClick={stopCode}
+            className="code-editor__stop-btn"
+          >
+            Dừng
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={runCode}
+            disabled={submittingAI}
+            className="code-editor__run-btn"
+          >
+            Chạy code
+          </button>
+        )}
 
         <button
           type="button"
@@ -306,7 +343,11 @@ export default function CodeEditorSimple({
           <button
             type="button"
             className={activeTab === "terminal" ? "active" : ""}
-            onClick={() => setActiveTab("terminal")}
+            onClick={() => {
+              setActiveTab("terminal");
+              // Re-fit xterm khi tab chuyển về visible
+              requestAnimationFrame(() => terminalRef.current?.refit());
+            }}
           >
             Terminal
           </button>
@@ -325,11 +366,15 @@ export default function CodeEditorSimple({
         </div>
 
         <div className="tabs-content">
-          {activeTab === "terminal" && (
-            <div className="terminal-output">
-              {output || "Chưa có kết quả."}
-            </div>
-          )}
+          <div style={{ display: activeTab === "terminal" ? "block" : "none" }}>
+            <InteractiveTerminal
+              ref={terminalRef}
+              wsUrl={WS_URL}
+              onRunStateChange={handleRunStateChange}
+              onOutputReady={handleOutputReady}
+              onInputCollected={handleInputCollected}
+            />
+          </div>
           {activeTab === "guide" && (
             <div className="ai-guide">
               <AIMarkdown

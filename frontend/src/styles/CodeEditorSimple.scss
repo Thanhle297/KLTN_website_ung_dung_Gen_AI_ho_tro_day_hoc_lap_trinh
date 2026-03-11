@@ -89,6 +89,27 @@
   }
 
   /* =============================
+     Stop Button
+     ============================= */
+  &__stop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-error);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: $radius-md;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: darken(#ef4444, 10%);
+    }
+  }
+
+  /* =============================
      Submit AI Button
      ============================= */
   &__submit-btn {
@@ -229,6 +250,38 @@
   white-space: pre-wrap;
 }
 
+/* =============================
+   Interactive Terminal (xterm.js)
+   ============================= */
+.interactive-terminal-wrapper {
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+  border: 1px solid transparent;
+  transition: border-color $transition-fast;
+
+  &:focus-within,
+  &.connected {
+    border-color: #00ff88;
+  }
+}
+
+.interactive-terminal {
+  min-height: 180px;
+  max-height: 300px;
+  background: #0b0b0b;
+
+  // xterm.js sẽ fill toàn bộ container
+  .xterm {
+    padding: 8px;
+    height: 100%;
+  }
+
+  .xterm-viewport {
+    overflow-y: auto !important;
+  }
+}
+
 .ai-guide {
   color: var(--text-secondary);
   background: var(--color-error-bg);
@@ -252,12 +305,6 @@
       max-height: 250px;
     }
 
-    &__input {
-      height: 60px;
-      min-height: 60px;
-      margin-top: 10px;
-    }
-
     &__button-group {
       margin-top: 10px;
       
@@ -277,5 +324,10 @@
         font-size: $font-size-sm;
       }
     }
+  }
+
+  .interactive-terminal {
+    min-height: 140px;
+    max-height: 220px;
   }
 }
