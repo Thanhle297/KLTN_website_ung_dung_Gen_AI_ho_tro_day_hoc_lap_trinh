@@ -14,3 +14,4 @@ backend/*.csv
 draw
 backup*/
 backend/scripts*/
+*.pdf
