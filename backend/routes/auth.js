@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 const { getDB } = require("../config/mongodb");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -24,7 +24,7 @@ router.post("/auth/login", async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: "Sai mật khẩu" });
 
     // Tạo sessionId unique cho phiên đăng nhập
-    const sessionId = uuidv4();
+    const sessionId = crypto.randomUUID();
     const now = new Date();
     const tokenExpiry = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 giờ
 
