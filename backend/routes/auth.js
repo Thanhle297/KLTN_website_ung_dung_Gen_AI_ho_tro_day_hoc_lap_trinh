@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 const { getDB } = require("../config/mongodb");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -22,16 +23,44 @@ router.post("/auth/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Sai mật khẩu" });
 
+    // Tạo sessionId unique cho phiên đăng nhập
+    const sessionId = uuidv4();
+    const now = new Date();
+    const tokenExpiry = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 giờ
+
     const token = jwt.sign(
       { 
         id: user._id.toString(),
         username: user.username,
         role: user.role,
         fullname: user.fullname,
+        sessionId,
       },
       JWT_SECRET,
       { expiresIn: "2h" },
     );
+
+    // Ghi nhận phiên đăng nhập vào login_sessions
+    const ipAddress =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      "unknown";
+    const userAgent = req.headers["user-agent"] || "unknown";
+
+    await db.collection("login_sessions").insertOne({
+      userId: user._id,
+      username: user.username,
+      fullname: user.fullname,
+      role: user.role,
+      loginAt: now,
+      logoutAt: null,
+      logoutType: null,
+      duration: null,
+      ipAddress,
+      userAgent,
+      tokenExpiry,
+      sessionId,
+    });
 
     // Trả về field phù hợp theo role
     const responseData = {
@@ -50,7 +79,7 @@ router.post("/auth/login", async (req, res) => {
 
     res.json(responseData);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Lỗi đăng nhập:", err);
     res.status(500).json({ message: "Lỗi server" });
   }
 });
