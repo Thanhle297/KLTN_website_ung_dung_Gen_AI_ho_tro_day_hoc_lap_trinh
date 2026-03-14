@@ -22,6 +22,7 @@ import Quiz from "@mui/icons-material/Quiz";
 import Home from "@mui/icons-material/Home";
 import MenuIcon from "@mui/icons-material/Menu";
 import Assignment from "@mui/icons-material/Assignment";
+import History from "@mui/icons-material/History";
 import LightMode from "@mui/icons-material/LightMode";
 import DarkMode from "@mui/icons-material/DarkMode";
 import {
@@ -41,6 +42,7 @@ import QuestionsCRUD from "./QuestionsCRUD";
 import QuestionBank from "./QuestionBank";
 import EnrollmentsCRUD from "./EnrollmentsCRUD";
 import CourseReportPage from "./ReportPage";
+import LoginTrackingPage from "./LoginTrackingPage";
 
 // ============================================================================
 // CONSTANTS - Hoisted outside component for performance (rendering-hoist-jsx)
@@ -57,6 +59,7 @@ const MENU_ITEMS = [
   { label: "Quản lý SubLesson", path: "sub-lessons", Icon: Topic },
   { label: "Câu hỏi theo bài", path: "questions", Icon: Quiz },
   { label: "Quản lý Phân bổ", path: "enrollments", Icon: Assignment },
+  { label: "Lịch sử đăng nhập", path: "login-tracking", Icon: History },
 ];
 
 // Transition timing - explicit properties instead of 'all' (Web Guidelines: Animation)
@@ -567,6 +570,7 @@ export default function AdminDashboard() {
           <Route path="sub-lessons" element={<SubLessonsCRUD />} />
           <Route path="questions" element={<QuestionsCRUD />} />
           <Route path="enrollments" element={<EnrollmentsCRUD />} />
+          <Route path="login-tracking" element={<LoginTrackingPage />} />
         </Routes>
       </Box>
     </Box>

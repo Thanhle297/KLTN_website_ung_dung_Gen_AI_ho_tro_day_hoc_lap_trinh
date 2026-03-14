@@ -109,6 +109,13 @@ export default function useAdminAPI() {
         API.get(`/enrollments/course/${courseId}/users`),
       getUserCourses: (userId) =>
         API.get(`/enrollments/user/${userId}/courses`),
+
+      /* ===== LOGIN SESSIONS (Tracking) ===== */
+      getLoginSessions: (params) => API.get("/sessions", { params }),
+      getSessionStats: (params) => API.get("/sessions/stats", { params }),
+      getUserSessions: (userId, params) =>
+        API.get(`/sessions/user/${userId}`, { params }),
+      getOnlineUsers: () => API.get("/sessions/online"),
     }),
     []
   );
