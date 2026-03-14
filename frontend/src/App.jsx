@@ -24,6 +24,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
 import Profile from "./pages/Profile";
+import { notifyLogout } from "./utils/sessionLogout";
 //dashboard admin
 import AdminRoute from "./routes/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -110,7 +111,8 @@ function AppContent() {
     location.pathname === "/login" || location.pathname.startsWith("/admin");
 
   useEffect(() => {
-    const handleLogout = () => {
+    const handleLogout = async () => {
+      await notifyLogout("timeout");
       localStorage.clear();
       navigate("/login");
     };
@@ -162,14 +164,16 @@ function AppContent() {
           onContinue={() => {
             setShowWarning(false);
             resetActivityTimer(
-              () => {
+              async () => {
+                await notifyLogout("timeout");
                 localStorage.clear();
                 navigate("/login");
               },
               () => setShowWarning(true)
             );
           }}
-          onLogout={() => {
+          onLogout={async () => {
+            await notifyLogout("manual");
             localStorage.clear();
             navigate("/login");
           }}

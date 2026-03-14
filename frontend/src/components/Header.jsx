@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useThemeMode } from "../context/ThemeContext";
+import { notifyLogout } from "../utils/sessionLogout";
 import logo from "../IMG/Logo_noback.png";
 import "../styles/Header.scss";
 
@@ -31,6 +32,7 @@ export default function Header() {
 
       // Token hết hạn → logout
       if (decoded.exp * 1000 < Date.now()) {
+        notifyLogout("token_expired");
         localStorage.removeItem("token");
         setUser(null);
         navigate("/login");
@@ -78,7 +80,8 @@ export default function Header() {
   // =========================
   // Logout
   // =========================
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await notifyLogout("manual");
     localStorage.removeItem("token");
     setUser(null);
     navigate("/login");
