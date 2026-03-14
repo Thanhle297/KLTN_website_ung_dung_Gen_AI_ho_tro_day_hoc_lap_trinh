@@ -36,6 +36,7 @@ import {
   NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
 import useReportAPI from "../../hook/useReportAPI";
+import SubmissionHistoryModal from "../../components/SubmissionHistoryModal";
 
 export default function CourseReportPage() {
   const { courseId } = useParams();
@@ -48,6 +49,8 @@ export default function CourseReportPage() {
   const [reportData, setReportData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
+  // State cho modal lịch sử nộp bài: { userId, subLessonId, studentName }
+  const [historyTarget, setHistoryTarget] = useState(null);
 
   useEffect(() => {
     if (courseId) {
@@ -534,12 +537,34 @@ export default function CourseReportPage() {
                           {student.fullname}
                         </TableCell>
 
-                        {/* Điểm từng bài */}
-                        {reportData.structure?.map((sub) => (
-                          <TableCell key={sub.subLessonId} align="center">
-                            {renderScoreCell(student.scores[sub.subLessonId])}
-                          </TableCell>
-                        ))}
+                        {/* Điểm từng bài - click để xem lịch sử nộp bài */}
+                        {reportData.structure?.map((sub) => {
+                          const score = student.scores[sub.subLessonId];
+                          const hasScore = score && score.progress > 0;
+                          return (
+                            <TableCell
+                              key={sub.subLessonId}
+                              align="center"
+                              onClick={hasScore ? () => setHistoryTarget({
+                                userId: student.userId,
+                                subLessonId: sub.subLessonId,
+                                studentName: student.fullname,
+                                subLessonTitle: sub.subLessonTitle,
+                              }) : undefined}
+                              sx={{
+                                ...(hasScore && {
+                                  cursor: "pointer",
+                                  transition: "background-color 0.2s",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(102, 126, 234, 0.15) !important",
+                                  },
+                                }),
+                              }}
+                            >
+                              {renderScoreCell(score)}
+                            </TableCell>
+                          );
+                        })}
 
                         {/* Điểm trung bình */}
                         <TableCell
@@ -632,6 +657,17 @@ export default function CourseReportPage() {
           ) : null}
         </Box>
       </Paper>
+
+      {/* Modal lịch sử nộp bài của học sinh */}
+      {historyTarget && (
+        <SubmissionHistoryModal
+          userId={historyTarget.userId}
+          subLessonId={historyTarget.subLessonId}
+          onClose={() => setHistoryTarget(null)}
+          from="admin"
+          courseId={courseId}
+        />
+      )}
     </Box>
   );
 }

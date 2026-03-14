@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/ReviewPage.scss";
 import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -13,6 +13,9 @@ export default function ReviewPage() {
   const { isDark } = useThemeMode();
   const { submissionId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromAdmin = searchParams.get("from") === "admin";
+  const courseIdParam = searchParams.get("courseId");
   const [submission, setSubmission] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +60,13 @@ export default function ReviewPage() {
   return (
     <div className="review-page-container">
       <div className="review-header">
-        <button type="button" className="back-btn" onClick={() => navigate(`/course/${submission.courseId}`)}>
+        <button type="button" className="back-btn" onClick={() => {
+          if (fromAdmin && courseIdParam) {
+            navigate(`/admin/course-report/${courseIdParam}`);
+          } else {
+            navigate(`/course/${submission.courseId}`);
+          }
+        }}>
           <FaArrowLeft /> Quay lại
         </button>
         <h1>

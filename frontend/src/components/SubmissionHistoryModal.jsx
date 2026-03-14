@@ -8,6 +8,8 @@ export default function SubmissionHistoryModal({
   userId,
   subLessonId,
   onClose,
+  from,
+  courseId,
 }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,12 @@ export default function SubmissionHistoryModal({
                       <button
                         type="button"
                         className="btn-review"
-                        onClick={() => navigate(`/review/${item._id}`)}
+                        onClick={() => {
+                          const query = from === "admin" && courseId
+                            ? `?from=admin&courseId=${courseId}`
+                            : "";
+                          navigate(`/review/${item._id}${query}`);
+                        }}
                       >
                         <FaEye /> Xem lại
                       </button>
