@@ -286,6 +286,19 @@
         animation: shake 0.5s ease;
       }
 
+      .form__warning {
+        width: 100%;
+        margin: 0;
+        padding: $spacing-3 $spacing-4;
+        border: 1px solid #f59e0b;
+        background: #fffbeb;
+        color: #92400e;
+        border-radius: $radius-md;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        animation: fadeIn 0.5s ease;
+      }
+
       /* ==========================================================================
          Forgot Password Link
          ========================================================================== */
@@ -371,6 +384,12 @@ html[data-theme="dark"] {
             box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3),
               0 2px 4px rgba(0, 0, 0, 0.3);
           }
+        }
+
+        .form__warning {
+          border-color: #b45309;
+          background: rgba(120, 53, 15, 0.2);
+          color: #fbbf24;
         }
       }
     }

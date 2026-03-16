@@ -85,6 +85,44 @@ router.post("/logout", authMiddleware, async (req, res) => {
 });
 
 // ============================================================
+// GET /api/sessions/check - Kiểm tra phiên còn hợp lệ không
+// (Dùng cho frontend polling, phát hiện bị force_logout)
+// ============================================================
+router.get("/check", authMiddleware, async (req, res) => {
+  try {
+    const { sessionId } = req.user;
+    const db = getDB();
+
+    if (!sessionId) {
+      return res.json({ valid: false, reason: "no_session" });
+    }
+
+    const session = await db
+      .collection("login_sessions")
+      .findOne({ sessionId }, { projection: { logoutAt: 1, logoutType: 1 } });
+
+    if (!session) {
+      return res.json({ valid: false, reason: "not_found" });
+    }
+
+    // Phiên đã bị đá bởi đăng nhập từ IP khác
+    if (session.logoutType === "force_logout") {
+      return res.json({ valid: false, reason: "force_logout" });
+    }
+
+    // Phiên đã logout bằng cách khác (manual, timeout, token_expired)
+    if (session.logoutAt) {
+      return res.json({ valid: false, reason: session.logoutType || "logged_out" });
+    }
+
+    return res.json({ valid: true });
+  } catch (err) {
+    console.error("❌ Lỗi kiểm tra phiên:", err);
+    res.status(500).json({ valid: false, reason: "server_error" });
+  }
+});
+
+// ============================================================
 // GET /api/sessions - Danh sách sessions (admin only)
 // ============================================================
 router.get("/", authMiddleware, adminOnly, async (req, res) => {

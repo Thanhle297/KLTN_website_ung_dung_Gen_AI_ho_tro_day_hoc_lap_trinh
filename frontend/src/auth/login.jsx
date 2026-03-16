@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
 import banner from "../IMG/Banner.png";
@@ -11,8 +11,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Hiển thị cảnh báo nếu bị đá phiên từ IP khác
+  useEffect(() => {
+    if (location.state?.forceLogout) {
+      setWarning("Tài khoản đã được đăng nhập từ thiết bị khác. Phiên này đã bị đăng xuất.");
+      // Xóa state để không hiển thị lại khi refresh
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +73,7 @@ export default function Login() {
           <img src={logo} alt="TEdu Logo" className="logo" width={80} height={80} />
           <h2>Đăng nhập hệ thống</h2>
 
+          {warning && <p className="form__warning">{warning}</p>}
           {error && <p className="form__error">{error}</p>}
 
           <div>

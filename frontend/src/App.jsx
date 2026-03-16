@@ -25,7 +25,7 @@ import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
 import DevToolsWarning from "./components/DevToolsWarning";
 import Profile from "./pages/Profile";
-import { notifyLogout } from "./utils/sessionLogout";
+import { notifyLogout, checkSessionValid } from "./utils/sessionLogout";
 //dashboard admin
 import AdminRoute from "./routes/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -151,6 +151,33 @@ function AppContent() {
     }, 1000);
     return () => clearInterval(timer);
   }, [showWarning]);
+
+  // Polling kiểm tra phiên (chỉ student) - phát hiện bị đá bởi đăng nhập từ IP khác
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch {
+      return;
+    }
+
+    // Chỉ polling cho student (role "user")
+    if (decoded.role !== "user") return;
+
+    const interval = setInterval(async () => {
+      const result = await checkSessionValid();
+      if (!result.valid && result.reason === "force_logout") {
+        clearInterval(interval);
+        localStorage.clear();
+        navigate("/login", { state: { forceLogout: true } });
+      }
+    }, 30000); // Kiểm tra mỗi 30 giây
+
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   return (
     <>

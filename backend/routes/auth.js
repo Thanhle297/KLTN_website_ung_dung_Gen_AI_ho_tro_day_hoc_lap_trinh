@@ -47,6 +47,30 @@ router.post("/auth/login", async (req, res) => {
       "unknown";
     const userAgent = req.headers["user-agent"] || "unknown";
 
+    // Student (role "user"): đá tất cả phiên active từ IP khác (chỉ cho phép 1 IP tại 1 thời điểm)
+    if (user.role === "user") {
+      await db.collection("login_sessions").updateMany(
+        {
+          userId: user._id,
+          logoutAt: null,
+          tokenExpiry: { $gt: now },
+          ipAddress: { $ne: ipAddress },
+        },
+        [{
+          $set: {
+            logoutAt: new Date(),
+            logoutType: "force_logout",
+            duration: {
+              $round: [
+                { $divide: [{ $subtract: [new Date(), "$loginAt"] }, 1000] },
+                0,
+              ],
+            },
+          },
+        }],
+      );
+    }
+
     await db.collection("login_sessions").insertOne({
       userId: user._id,
       username: user.username,
