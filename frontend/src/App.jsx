@@ -23,6 +23,7 @@ import Login from "./auth/login";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Contact from "./pages/Contact";
 import SessionWarning from "./components/SessionWarning";
+import DevToolsWarning from "./components/DevToolsWarning";
 import Profile from "./pages/Profile";
 import { notifyLogout } from "./utils/sessionLogout";
 //dashboard admin
@@ -281,6 +282,7 @@ export default function App() {
   return (
     <AppThemeProvider>
       <HeaderProvider>
+        <DevToolsWarning />
         <Router>
           <AppContent />
         </Router>

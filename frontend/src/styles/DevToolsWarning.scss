@@ -1,0 +1,103 @@
+@import "./design-tokens";
+
+.devtools-warning {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal + 100; // trên tất cả modal khác
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-overlay-heavy);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  &__box {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-radius: $radius-xl;
+    padding: $spacing-12 $spacing-10;
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--color-error-border);
+    text-align: center;
+    max-width: 460px;
+    width: 90%;
+    animation: devtools-appear $transition-smooth both;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: $radius-full;
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    margin-bottom: $spacing-5;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: var(--color-error-text);
+    margin: 0 0 $spacing-4;
+    line-height: $line-height-tight;
+  }
+
+  &__message {
+    font-size: $font-size-base;
+    color: var(--text-secondary);
+    line-height: $line-height-relaxed;
+    margin: 0 0 $spacing-6;
+  }
+
+  &__hint {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-2;
+    justify-content: center;
+    font-size: $font-size-sm;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border-radius: $radius-md;
+    padding: $spacing-3 $spacing-5;
+
+    kbd {
+      display: inline-block;
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: $radius-sm;
+      padding: 2px $spacing-2;
+      font-family: $font-family-code;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-semibold;
+      box-shadow: 0 1px 0 var(--border-medium);
+      line-height: 1.6;
+    }
+  }
+}
+
+@keyframes devtools-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
