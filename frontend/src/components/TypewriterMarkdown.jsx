@@ -16,7 +16,7 @@ import useTypewriter from "../hook/useTypewriter";
  */
 const TypewriterMarkdown = React.memo(function TypewriterMarkdown({
   content,
-  speed = 30,
+  speed = 50,
   onComplete,
   emptyText = "Không có hướng dẫn.",
   className = "",
