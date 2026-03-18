@@ -85,9 +85,12 @@ async function callPromptSimple({
 - Có thể nêu ví dụ mô tả (KHÔNG được đưa code hoàn chỉnh).
 - Gợi ý rõ ràng nhưng vẫn mang tính hướng dẫn.`;
     quizRule = `
-- Nếu bài SAI (FAIL), hãy tạo 1-2 câu hỏi trắc nghiệm gợi mở trong mảng "quizzes".
+- Nếu bài SAI (FAIL), hãy tạo **đúng 3** câu hỏi trắc nghiệm gợi mở trong mảng "quizzes".
 - Mỗi câu hỏi có đúng 3 đáp án, correctIndex là index đáp án đúng (0, 1, hoặc 2).
-- Câu hỏi giúp học sinh tự nhận ra lỗi sai.
+- Câu hỏi 1: giúp học sinh nhận ra vị trí hoặc dòng code bị sai.
+- Câu hỏi 2: giúp học sinh hiểu nguyên nhân lỗi sai.
+- Câu hỏi 3: giúp học sinh định hướng cách sửa lỗi.
+- LUÔN tạo đủ 3 câu, không ít hơn.
 - Nếu bài ĐÚNG (PASS), để mảng "quizzes" rỗng.`;
   } else if (difficulty === 1) {
     // VỪA: Hướng dẫn định hướng, không quiz
@@ -194,6 +197,7 @@ LƯU Ý:
 - Hướng dẫn ngắn gọn, dễ hiểu.
 - KHÔNG đưa code hoàn chỉnh cho học sinh.
 - Mỗi câu quiz có ĐÚNG 3 đáp án.
+- Khi bài SAI, PHẢI tạo đủ 3 câu quiz, không được ít hơn.
 `;
 
   try {

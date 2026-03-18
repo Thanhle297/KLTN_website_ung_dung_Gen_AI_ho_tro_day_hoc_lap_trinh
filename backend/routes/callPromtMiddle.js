@@ -167,9 +167,12 @@ QUY TẮC VỀ "instructs":
     quizRule = `
 QUY TẮC VỀ "quizzes":
 - Nếu PASS → mảng rỗng [].
-- Nếu PARTIAL hoặc FAIL → tạo 1-2 câu hỏi trắc nghiệm gợi mở.
+- Nếu PARTIAL hoặc FAIL → tạo **đúng 3** câu hỏi trắc nghiệm gợi mở.
 - Mỗi câu hỏi có ĐÚNG 3 đáp án, correctIndex là index đáp án đúng (0, 1, hoặc 2).
-- Câu hỏi giúp học sinh tự nhận ra vấn đề trong logic code.`;
+- Câu hỏi 1: giúp học sinh nhận ra vị trí hoặc đoạn code có vấn đề.
+- Câu hỏi 2: giúp học sinh hiểu nguyên nhân lỗi logic.
+- Câu hỏi 3: giúp học sinh định hướng cách sửa code.
+- LUÔN tạo đủ 3 câu, không ít hơn.`;
   } else if (difficulty === 1) {
     difficultyRule = `
 QUY TẮC VỀ "instructs":
@@ -257,6 +260,7 @@ LƯU Ý QUAN TRỌNG:
 - Trả lời bằng tiếng Việt.
 - KHÔNG đưa code hoàn chỉnh cho học sinh.
 - Mỗi câu quiz (nếu có) có ĐÚNG 3 đáp án.
+- Khi PARTIAL hoặc FAIL, PHẢI tạo đủ 3 câu quiz, không được ít hơn.
 `;
 
   try {

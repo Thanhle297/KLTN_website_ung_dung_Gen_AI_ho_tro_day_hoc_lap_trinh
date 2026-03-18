@@ -151,9 +151,13 @@ QUY TẮC VỀ "instructs":
 
 QUY TẮC VỀ "quizzes":
 - Nếu code đúng hoàn toàn → mảng rỗng [].
-- Nếu IDE báo lỗi → tạo câu hỏi trắc nghiệm gợi mở gồm: hỏi về vị trí dòng sai, hỏi về lỗi sai.
-- Nếu IDE không báo lỗi nhưng code sai ngữ nghĩa → tạo câu hỏi để định hướng tìm vị trí sai.
+- Nếu IDE báo lỗi → tạo **đúng 3** câu hỏi trắc nghiệm gợi mở:
+  + Câu 1: hỏi về vị trí dòng sai.
+  + Câu 2: hỏi về nguyên nhân lỗi sai.
+  + Câu 3: hỏi về cách sửa lỗi.
+- Nếu IDE không báo lỗi nhưng code sai ngữ nghĩa → tạo **đúng 3** câu hỏi trắc nghiệm để định hướng tìm vị trí sai và cách sửa.
 - Mỗi câu hỏi có ĐÚNG 3 đáp án, correctIndex là index đáp án đúng (0, 1, hoặc 2).
+- LUÔN tạo đủ 3 câu hỏi, không ít hơn.
 
 LƯU Ý QUAN TRỌNG:
 - KHÔNG đưa code hoàn chỉnh cho học sinh, chỉ gợi mở.
