@@ -17,6 +17,16 @@ const connectDB = async (app = null) => {
     await db.collection("login_sessions").createIndex({ loginAt: -1 });
     await db.collection("login_sessions").createIndex({ sessionId: 1 }, { unique: true });
     console.log("✅ Indexes cho login_sessions đã sẵn sàng");
+
+    // Tạo indexes cho categories (idempotent)
+    await db.collection("categories").createIndex({ courseId: 1, name: 1 }, { unique: true });
+    await db.collection("categories").createIndex({ courseId: 1, order: 1 });
+    console.log("✅ Indexes cho categories đã sẵn sàng");
+
+    // Tạo indexes cho question - hỗ trợ query theo bank + khóa + danh mục
+    await db.collection("question").createIndex({ isBank: 1, courseId: 1 });
+    await db.collection("question").createIndex({ isBank: 1, courseId: 1, categoryId: 1 });
+    console.log("✅ Indexes cho question (bank) đã sẵn sàng");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err.message);
     process.exit(1);

@@ -83,8 +83,15 @@ export default function useAdminAPI() {
       /* ===== QUESTION ===== */
       getQuestions: (lessonId, courseId) =>
         API.get(`/questions`, { params: { lessonId, courseId } }),
-      getBankQuestions: (category) =>
-        API.get(`/questions`, { params: { isBank: true, category } }),
+      getBankQuestions: (category, courseId, categoryId) =>
+        API.get(`/questions`, {
+          params: {
+            isBank: true,
+            category,
+            courseId: courseId !== undefined ? courseId : undefined,
+            categoryId,
+          },
+        }),
       getQuestion: (id) => API.get(`/questions/${id}`),
       createQuestion: (data) => API.post("/questions", data),
       updateQuestion: (id, data) => API.put(`/questions/${id}`, data),
@@ -97,6 +104,26 @@ export default function useAdminAPI() {
         }),
       reorderQuestions: (questionIds) =>
         API.put("/questions/reorder/batch", { questionIds }),
+
+      /* ===== QUESTION BANK - Import / Copy / Promote ===== */
+      importToCourseBank: (questionIds, targetCourseId) =>
+        API.post("/questions/import-to-course", {
+          questionIds,
+          targetCourseId,
+        }),
+      copyBetweenCourses: (questionIds, sourceCourseId, targetCourseId, copyCategories = true) =>
+        API.post("/questions/copy-between-courses", {
+          questionIds,
+          sourceCourseId,
+          targetCourseId,
+          copyCategories,
+        }),
+      promoteToGlobal: (questionIds, sourceCourseId, skipDuplicateCheck = false) =>
+        API.post("/questions/promote-to-global", {
+          questionIds,
+          sourceCourseId,
+          skipDuplicateCheck,
+        }),
 
       /* ===== ENROLLMENT ===== */
       enrollUserToCourse: (userId, courseId) =>

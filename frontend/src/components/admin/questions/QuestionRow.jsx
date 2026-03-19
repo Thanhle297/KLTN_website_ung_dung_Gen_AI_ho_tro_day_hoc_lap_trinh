@@ -7,10 +7,11 @@ import {
   Typography,
   useTheme,
   Chip,
+  Checkbox,
 } from "@mui/material";
 import { Edit, Delete, Assignment } from "@mui/icons-material";
 
-const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign }) => {
+const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign, selectable, selected, onSelect }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -25,6 +26,17 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign }) => {
         },
       }}
     >
+      {/* Checkbox */}
+      {selectable && (
+        <TableCell padding="checkbox">
+          <Checkbox
+            checked={!!selected}
+            onChange={onSelect}
+            size="small"
+          />
+        </TableCell>
+      )}
+
       {/* ID badge */}
       <TableCell>
         <Typography

@@ -8,44 +8,85 @@ import React, {
 import {
   Box,
   Typography,
-  TextField,
-  InputAdornment,
   Button,
   Stack,
   Paper,
   TablePagination,
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   useTheme,
 } from "@mui/material";
-import { Search, Add } from "@mui/icons-material";
+import {
+  Add,
+  Download,
+  ContentCopy,
+  Upload,
+  Settings,
+} from "@mui/icons-material";
 import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
+import useCategoryAPI from "../../hook/useCategoryAPI";
 import QuestionsTable from "../../components/admin/questions/QuestionsTable";
 import QuestionFormDialog from "../../components/admin/questions/QuestionFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
 import DistributeModal from "../../components/admin/questions/DistributeModal";
+import CategoryManager from "../../components/admin/categories/CategoryManager";
+import ImportFromGlobalModal from "../../components/admin/questions/ImportFromGlobalModal";
+import CopyFromCourseModal from "../../components/admin/questions/CopyFromCourseModal";
+import PromoteToGlobalModal from "../../components/admin/questions/PromoteToGlobalModal";
 
 export default function QuestionBank() {
   const api = useAdminAPI();
+  const categoryApi = useCategoryAPI();
   const apiRef = useRef(api);
   const theme = useTheme();
 
+  // Lấy user từ localStorage
+  const user = useMemo(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // === Core state ===
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState("");
-
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState(null);
-
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  // Distribute Modal
-  const [openDistribute, setOpenDistribute] = useState(false);
-  const [selectedForDistribute, setSelectedForDistribute] = useState([]);
-
-  // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // === Course + Category state ===
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(null); // null = global
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  // === Multi-select ===
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // === Modal state ===
+  const [openDistribute, setOpenDistribute] = useState(false);
+  const [openCategoryManager, setOpenCategoryManager] = useState(false);
+  const [openImportGlobal, setOpenImportGlobal] = useState(false);
+  const [openCopyFromCourse, setOpenCopyFromCourse] = useState(false);
+  const [openPromote, setOpenPromote] = useState(false);
+
+  // Computed
+  const isGlobalBank = selectedCourseId === null;
+  const isCourseBank = selectedCourseId !== null;
+  const hasSelection = selectedIds.length > 0;
+  const isAdmin = user?.role === "admin";
 
   const notify = useCallback((msg, severity = "success") => {
     if (severity === "error") toast.error(msg);
@@ -53,33 +94,89 @@ export default function QuestionBank() {
     else toast.success(msg);
   }, []);
 
+  /* ================= LOAD COURSES ================= */
+  useEffect(() => {
+    apiRef.current
+      .getCourses()
+      .then((res) => setCourses(res.data || []))
+      .catch(() => {});
+  }, []);
+
+  /* ================= LOAD CATEGORIES ================= */
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await categoryApi.getCategories(selectedCourseId);
+      setCategories(res.data.categories || []);
+    } catch {
+      setCategories([]);
+    }
+  }, [categoryApi, selectedCourseId]);
+
+  useEffect(() => {
+    loadCategories();
+    setSelectedCategoryId(null);
+    setSelectedIds([]);
+  }, [selectedCourseId, loadCategories]);
+
   /* ================= LOAD QUESTIONS ================= */
   const loadQuestions = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiRef.current.getBankQuestions(categoryFilter);
+      const res = await apiRef.current.getBankQuestions(
+        null, // category text (không dùng nữa)
+        selectedCourseId === null ? "null" : selectedCourseId,
+        selectedCategoryId
+      );
 
       const unique = Array.from(
         new Map(res.data.map((q) => [q.id, q])).values()
       );
-
       setQuestions(unique);
     } catch {
       notify("Lỗi tải ngân hàng câu hỏi", "error");
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, notify]);
+  }, [selectedCourseId, selectedCategoryId, notify]);
 
-  // Debounced load when filter changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadQuestions();
-      setPage(0); // Reset to first page when filter changes
-    }, 500); // Debounce 500ms
+    loadQuestions();
+    setPage(0);
+  }, [loadQuestions]);
 
-    return () => clearTimeout(timer);
-  }, [categoryFilter, loadQuestions]);
+  /* ================= COURSE CHANGE ================= */
+  const handleCourseChange = useCallback((e) => {
+    const val = e.target.value;
+    setSelectedCourseId(val === "__global__" ? null : val);
+  }, []);
+
+  /* ================= CATEGORY FILTER ================= */
+  const handleCategoryFilter = useCallback(
+    (catId) => {
+      setSelectedCategoryId((prev) => (prev === catId ? null : catId));
+    },
+    []
+  );
+
+  /* ================= CHECKBOX ================= */
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds((prevSelected) => {
+      const startIndex = page * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const currentPage = questions.slice(startIndex, endIndex);
+      if (prevSelected.length === currentPage.length) {
+        return [];
+      } else {
+        return currentPage.map((q) => q.id);
+      }
+    });
+  }, [questions, page, rowsPerPage]);
+
+  const handleSelectOne = useCallback((id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
 
   /* ================= FORM ================= */
   const handleAddClick = useCallback(() => {
@@ -106,19 +203,17 @@ export default function QuestionBank() {
 
       const payload = {
         ...formData,
-        isBank: true, // IMPORTANT: Mark as Bank Question
-        courseId: null,
+        isBank: true,
+        courseId: selectedCourseId,
         lessonId: null,
-        topic: formData.category || "Bank", // Use category as topic or separate field
+        topic: formData.category || "Bank",
       };
 
       try {
         if (editing) {
-          // Keep existing isBank true
           await api.updateQuestion(editing.id, payload);
           notify("Cập nhật thành công");
         } else {
-          // New Question
           await api.createQuestion(payload);
           notify("Thêm vào ngân hàng thành công");
         }
@@ -130,7 +225,7 @@ export default function QuestionBank() {
         notify("Lỗi lưu câu hỏi", "error");
       }
     },
-    [editing, api, notify, loadQuestions]
+    [editing, api, notify, loadQuestions, selectedCourseId]
   );
 
   /* ================= DELETE ================= */
@@ -140,7 +235,6 @@ export default function QuestionBank() {
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteTarget) return;
-
     try {
       await api.deleteQuestion(deleteTarget.id);
       notify("Xóa thành công");
@@ -155,38 +249,20 @@ export default function QuestionBank() {
     setDeleteTarget(null);
   }, []);
 
-  /* ================= DISTRIBUTE ================= */
-  // Future: Support checkbox selection. For now, maybe just "Distribute All" or manual select is needed?
-  // The logic request says: "Checkbox chọn nhiều câu hỏi" or just assign.
-  // QuestionsTable currently doesn't have checkboxes.
-  // I will implement "Distribute" button on each row? No, that's tedious.
-  // I'll implement "Distribute" button on header that distributes SELECTED items.
-  // BUT QuestionsTable doesn't support selection yet.
-
-  // Alternative: Add "Phân phối" button to each row temporarily, OR just "Distribute" button that assumes we need a selection mechanism.
-  // For this MVP, I can't easily add selection to QuestionsTable without modifying it significantly.
-  // Let's modify QuestionsTable to support selection or add a specific "actions" logic.
-  // Actually, the requirements said "Checkbox chọn nhiều câu hỏi".
-  // I haven't added Checkboxes to QuestionsTable.
-
-  // Workaround: I'll add a "Distribute" action to each row (Assign this question).
-  // AND/OR I'll add support for checkboxes later.
-  // Given I need to deliver, I will add a "Assign" icon/button to `QuestionRow`.
-
-  // Wait, I can wrap the table rows with Checkbox?
-  // Let's stick to "Assign" per question first for simplicity, or "Select Mode".
-  // Actually, the easiest path is:
-  // 1. Add "Assign" button to QuestionRow actions.
-  // 2. Click "Assign" -> Open DistributeModal with [questionId].
-
+  /* ================= DISTRIBUTE (single) ================= */
   const handleAssignClick = useCallback((question) => {
-    setSelectedForDistribute([question.id]);
+    setSelectedIds([question.id]);
     setOpenDistribute(true);
   }, []);
 
   const handleDistributeSuccess = useCallback(() => {
     notify("Đã phân phối câu hỏi thành công");
   }, [notify]);
+
+  /* ================= BULK DISTRIBUTE ================= */
+  const handleBulkDistribute = useCallback(() => {
+    setOpenDistribute(true);
+  }, []);
 
   /* ================= PAGINATION ================= */
   const paginatedQuestions = useMemo(() => {
@@ -205,85 +281,231 @@ export default function QuestionBank() {
   }, []);
 
   return (
-<Box
+    <Box
       sx={{
         minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+        background:
+          theme.palette.mode === "dark"
+            ? theme.palette.background.default
+            : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
         p: 3,
       }}
     >
       {/* HEADER */}
       <Box
         sx={{
-          mb: 4,
+          mb: 3,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
         }}
       >
-        <Stack spacing={1}>
-<Typography variant="h4" color={theme.palette.mode === "dark" ? theme.palette.text.primary : "white"} fontWeight={700}>
-            🏦 Ngân hàng câu hỏi
+        <Stack spacing={0.5}>
+          <Typography
+            variant="h4"
+            color={
+              theme.palette.mode === "dark"
+                ? theme.palette.text.primary
+                : "white"
+            }
+            fontWeight={700}
+          >
+            Ngân hàng câu hỏi
           </Typography>
-          <Typography variant="body2" color={theme.palette.mode === "dark" ? theme.palette.text.secondary : "rgba(255,255,255,0.8)"}>
+          <Typography
+            variant="body2"
+            color={
+              theme.palette.mode === "dark"
+                ? theme.palette.text.secondary
+                : "rgba(255,255,255,0.8)"
+            }
+          >
             Quản lý kho câu hỏi tập trung và phân phối về bài học
           </Typography>
         </Stack>
 
-        <Stack direction="row" spacing={2}>
-          <TextField
-            size="small"
-            placeholder="Lọc theo Category..."
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            sx={{
-              bgcolor: theme.palette.mode === "dark"
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={handleAddClick}
+          sx={{
+            bgcolor:
+              theme.palette.mode === "dark"
                 ? theme.palette.background.paper
                 : "white",
-              borderRadius: 2,
-              "& fieldset": { border: theme.palette.mode === "dark" ? undefined : "none" },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddClick}
-            sx={{
-              bgcolor: theme.palette.mode === "dark"
-                ? theme.palette.background.paper
-                : "white",
-              color: theme.palette.mode === "dark"
+            color:
+              theme.palette.mode === "dark"
                 ? theme.palette.primary.main
                 : "#2196F3",
-              fontWeight: 700,
-              "&:hover": { bgcolor: theme.palette.mode === "dark"
-                ? "rgba(255, 255, 255, 0.08)"
-                : "#f0f0f0" },
-            }}
-          >
-            Tạo câu hỏi
-          </Button>
-        </Stack>
+            fontWeight: 700,
+            borderRadius: 2,
+            textTransform: "none",
+            "&:hover": {
+              bgcolor:
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.08)"
+                  : "#f0f0f0",
+            },
+          }}
+        >
+          Tạo câu hỏi
+        </Button>
       </Box>
 
+      {/* COURSE SELECTOR */}
+      <Paper sx={{ p: 2, borderRadius: 3, mb: 2 }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ sm: "center" }}
+        >
+          <FormControl size="small" sx={{ minWidth: 280 }}>
+            <InputLabel>Khóa học</InputLabel>
+            <Select
+              value={selectedCourseId === null ? "__global__" : selectedCourseId}
+              onChange={handleCourseChange}
+              label="Khóa học"
+              sx={{ borderRadius: 2 }}
+            >
+              <MenuItem value="__global__">Ngân hàng chung (Global)</MenuItem>
+              {courses.map((c) => (
+                <MenuItem key={c.courseId} value={c.courseId}>
+                  {c.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Category chips */}
+          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", flex: 1 }}>
+            <Chip
+              label="Tất cả"
+              size="small"
+              variant={selectedCategoryId === null ? "filled" : "outlined"}
+              color={selectedCategoryId === null ? "primary" : "default"}
+              onClick={() => setSelectedCategoryId(null)}
+              sx={{ fontWeight: 600 }}
+            />
+            {categories.map((cat) => (
+              <Chip
+                key={cat._id}
+                label={cat.name}
+                size="small"
+                variant={
+                  selectedCategoryId === cat._id ? "filled" : "outlined"
+                }
+                color={
+                  selectedCategoryId === cat._id ? "primary" : "default"
+                }
+                onClick={() => handleCategoryFilter(cat._id)}
+                sx={{ fontWeight: 500 }}
+              />
+            ))}
+          </Box>
+
+          {/* Quản lý danh mục */}
+          <Button
+            startIcon={<Settings />}
+            size="small"
+            onClick={() => setOpenCategoryManager(true)}
+            sx={{ textTransform: "none", borderRadius: 2, whiteSpace: "nowrap" }}
+          >
+            Quản lý danh mục
+          </Button>
+        </Stack>
+      </Paper>
+
+      {/* ACTION TOOLBAR (Course Bank specific) */}
+      {isCourseBank && (
+        <Paper sx={{ p: 1.5, borderRadius: 3, mb: 2 }}>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button
+              startIcon={<Download />}
+              size="small"
+              variant="outlined"
+              onClick={() => setOpenImportGlobal(true)}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Import từ Ngân hàng chung
+            </Button>
+            <Button
+              startIcon={<ContentCopy />}
+              size="small"
+              variant="outlined"
+              onClick={() => setOpenCopyFromCourse(true)}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Sao chép từ khóa khác
+            </Button>
+            {isAdmin && hasSelection && (
+              <Button
+                startIcon={<Upload />}
+                size="small"
+                variant="outlined"
+                color="secondary"
+                onClick={() => setOpenPromote(true)}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Đẩy lên Ngân hàng chung ({selectedIds.length})
+              </Button>
+            )}
+          </Stack>
+        </Paper>
+      )}
+
+      {/* BULK ACTIONS BAR */}
+      {hasSelection && (
+        <Paper
+          sx={{
+            p: 1.5,
+            borderRadius: 3,
+            mb: 2,
+            background:
+              theme.palette.mode === "dark"
+                ? "rgba(102, 126, 234, 0.15)"
+                : "rgba(33, 150, 243, 0.08)",
+            border: "1px solid",
+            borderColor: "primary.main",
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Typography variant="body2" fontWeight={600}>
+              Đã chọn: {selectedIds.length} câu hỏi
+            </Typography>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleBulkDistribute}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Phân phối
+            </Button>
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => setSelectedIds([])}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Bỏ chọn
+            </Button>
+          </Stack>
+        </Paper>
+      )}
+
       {/* TABLE */}
-      {/* Note: passing 'bank' as true or selectedSubLesson="BANK" to show table */}
       <QuestionsTable
         questions={paginatedQuestions}
         loading={loading}
-        selectedSubLesson="BANK" // Fake ID to ensure table renders
+        selectedSubLesson="BANK"
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
         onAssign={handleAssignClick}
+        selectable
+        selectedIds={selectedIds}
+        onSelectAll={handleSelectAll}
+        onSelectOne={handleSelectOne}
       />
 
       {/* Pagination */}
@@ -310,16 +532,14 @@ export default function QuestionBank() {
         </Paper>
       )}
 
-      {/* HACK: floating button for distributing? No. 
-         I should updated QuestionRow to have Assign button.
-         But QuestionRow memoizes props.
-      */}
-
+      {/* DIALOGS */}
       <QuestionFormDialog
         open={openDialog}
         editing={editing}
         onClose={handleCloseDialog}
         onSave={handleSave}
+        courseId={selectedCourseId}
+        categories={categories}
       />
 
       <DeleteConfirmDialog
@@ -333,8 +553,48 @@ export default function QuestionBank() {
       <DistributeModal
         open={openDistribute}
         onClose={() => setOpenDistribute(false)}
-        selectedQuestionIds={selectedForDistribute}
+        selectedQuestionIds={selectedIds}
+        sourceCourseId={selectedCourseId}
         onSuccess={handleDistributeSuccess}
+      />
+
+      <CategoryManager
+        open={openCategoryManager}
+        onClose={() => {
+          setOpenCategoryManager(false);
+          loadCategories(); // Refresh categories khi đóng
+        }}
+        courseId={selectedCourseId}
+      />
+
+      {/* Import từ Global Bank */}
+      <ImportFromGlobalModal
+        open={openImportGlobal}
+        onClose={() => setOpenImportGlobal(false)}
+        targetCourseId={selectedCourseId}
+        onSuccess={loadQuestions}
+      />
+
+      {/* Sao chép từ khóa khác */}
+      <CopyFromCourseModal
+        open={openCopyFromCourse}
+        onClose={() => setOpenCopyFromCourse(false)}
+        targetCourseId={selectedCourseId}
+        courses={courses}
+        onSuccess={loadQuestions}
+      />
+
+      {/* Đẩy lên Global Bank */}
+      <PromoteToGlobalModal
+        open={openPromote}
+        onClose={() => {
+          setOpenPromote(false);
+          setSelectedIds([]);
+        }}
+        selectedQuestionIds={selectedIds}
+        sourceCourseId={selectedCourseId}
+        questions={questions.filter((q) => selectedIds.includes(q.id))}
+        onSuccess={loadQuestions}
       />
     </Box>
   );

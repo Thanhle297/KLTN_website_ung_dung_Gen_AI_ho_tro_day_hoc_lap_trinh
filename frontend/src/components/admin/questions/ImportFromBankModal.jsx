@@ -18,10 +18,17 @@ import {
   Paper,
   CircularProgress,
   Typography,
+  ToggleButtonGroup,
+  ToggleButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   useTheme,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import useAdminAPI from "../../../hook/useAdminAPI";
+import useCategoryAPI from "../../../hook/useCategoryAPI";
 
 // Helper to strip HTML tags
 const stripHtml = (html) => {
@@ -38,36 +45,85 @@ export default function ImportFromBankModal({
   onSuccess,
 }) {
   const api = useAdminAPI();
+  const categoryApi = useCategoryAPI();
   const theme = useTheme();
+
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // Load questions from Bank
+  // Toggle nguồn: "course" = Course Bank, "global" = Global Bank
+  const [source, setSource] = useState("course");
+
+  // Category filter
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  // Text search (giữ lại để tìm kiếm nội dung)
+  const [searchText, setSearchText] = useState("");
+
+  // Fetch categories khi source hoặc courseId thay đổi
+  useEffect(() => {
+    if (!open) return;
+    const cid = source === "course" ? courseId : null;
+    categoryApi
+      .getCategories(cid)
+      .then((res) => {
+        setCategories(res.data.categories || []);
+      })
+      .catch(() => setCategories([]));
+    setSelectedCategoryId(null);
+  }, [source, courseId, open, categoryApi]);
+
+  // Load questions từ Bank
   const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.getBankQuestions(categoryFilter);
-      setQuestions(res.data);
+      let res;
+      if (source === "course" && courseId) {
+        // Lấy từ Course Bank
+        res = await api.getBankQuestions(null, courseId, selectedCategoryId);
+      } else {
+        // Lấy từ Global Bank
+        res = await api.getBankQuestions(null, "null", selectedCategoryId);
+      }
+      setQuestions(res.data || []);
     } catch (error) {
-      console.error("Failed to load bank questions", error);
+      console.error("Lỗi tải câu hỏi từ ngân hàng", error);
     } finally {
       setLoading(false);
     }
-  }, [api, categoryFilter]);
+  }, [api, source, courseId, selectedCategoryId]);
 
   useEffect(() => {
     if (open) {
       fetchQuestions();
-      setSelectedIds([]); // Reset selection on open
+      setSelectedIds([]);
     }
   }, [open, fetchQuestions]);
+
+  // Reset khi mở lại
+  useEffect(() => {
+    if (open) {
+      setSource(courseId ? "course" : "global");
+      setSearchText("");
+    }
+  }, [open, courseId]);
+
+  // Lọc theo text search (client-side)
+  const filteredQuestions = questions.filter((q) => {
+    if (!searchText.trim()) return true;
+    const text = searchText.toLowerCase();
+    const content = stripHtml(q.question).toLowerCase();
+    const cat = (q.category || "").toLowerCase();
+    const id = String(q.id).toLowerCase();
+    return content.includes(text) || cat.includes(text) || id.includes(text);
+  });
 
   // Handle Selection
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedIds(questions.map((q) => q.id));
+      setSelectedIds(filteredQuestions.map((q) => q.id));
     } else {
       setSelectedIds([]);
     }
@@ -89,9 +145,8 @@ export default function ImportFromBankModal({
       if (onSuccess) onSuccess(selectedIds.length);
       onClose();
     } catch (error) {
-      console.error("Failed to import questions", error);
-      // Optional: show error toast?
-      alert("Lỗi khi import câu hỏi: " + (error.message || "Unknown error"));
+      console.error("Lỗi import câu hỏi", error);
+      alert("Lỗi khi import câu hỏi: " + (error.message || "Lỗi không xác định"));
     } finally {
       setLoading(false);
     }
@@ -99,24 +154,65 @@ export default function ImportFromBankModal({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{
-        fontWeight: 700,
-        background: theme.palette.mode === "dark"
-          ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-          : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        color: "white",
-      }}>
-        🏦 Lấy câu hỏi từ Ngân hàng
+      <DialogTitle
+        sx={{
+          fontWeight: 700,
+          background:
+            theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+        }}
+      >
+        Lấy câu hỏi từ Ngân hàng
       </DialogTitle>
       <DialogContent dividers>
-        {/* Filter */}
-        <Box sx={{ mb: 2 }}>
+        {/* Toggle nguồn Bank */}
+        {courseId && (
+          <ToggleButtonGroup
+            value={source}
+            exclusive
+            onChange={(e, val) => {
+              if (val) setSource(val);
+            }}
+            size="small"
+            sx={{ mb: 2, display: "flex" }}
+          >
+            <ToggleButton value="course" sx={{ flex: 1, textTransform: "none" }}>
+              Từ ngân hàng khóa học
+            </ToggleButton>
+            <ToggleButton value="global" sx={{ flex: 1, textTransform: "none" }}>
+              Từ ngân hàng chung
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
+
+        {/* Filter row */}
+        <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+          {/* Category dropdown */}
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Danh mục</InputLabel>
+            <Select
+              value={selectedCategoryId || ""}
+              onChange={(e) => setSelectedCategoryId(e.target.value || null)}
+              label="Danh mục"
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat._id} value={cat._id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Text search */}
           <TextField
             fullWidth
             size="small"
-            placeholder="Tìm theo danh mục (Category) hoặc nội dung..."
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            placeholder="Tìm theo nội dung, ID..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -132,7 +228,7 @@ export default function ImportFromBankModal({
           <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
             <CircularProgress />
           </Box>
-        ) : questions.length === 0 ? (
+        ) : filteredQuestions.length === 0 ? (
           <Typography align="center" color="textSecondary" sx={{ py: 4 }}>
             Không tìm thấy câu hỏi nào trong ngân hàng.
           </Typography>
@@ -149,22 +245,22 @@ export default function ImportFromBankModal({
                     <Checkbox
                       indeterminate={
                         selectedIds.length > 0 &&
-                        selectedIds.length < questions.length
+                        selectedIds.length < filteredQuestions.length
                       }
                       checked={
-                        questions.length > 0 &&
-                        selectedIds.length === questions.length
+                        filteredQuestions.length > 0 &&
+                        selectedIds.length === filteredQuestions.length
                       }
                       onChange={handleSelectAll}
                     />
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Danh mục</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Câu hỏi</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {questions.map((q) => {
+                {filteredQuestions.map((q) => {
                   const isSelected = selectedIds.includes(q.id);
                   return (
                     <TableRow

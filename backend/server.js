@@ -53,6 +53,7 @@ const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const csvRoutes = require("./routes/csvRoutes");
 const executeMiddleRoutes = require("./routes/executeMiddle");
 const sessionRoutes = require("./routes/sessionRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 
 /* =========================================================
    🚀 KHỞI ĐỘNG SERVER
@@ -80,6 +81,7 @@ async function startServer() {
     app.use("/api/csv", csvRoutes);
     app.use("/api", executeMiddleRoutes);
     app.use("/api/sessions", sessionRoutes);
+    app.use("/api/categories", categoryRoutes);
 
     /* ================== HEALTH CHECK ================== */
     app.get("/", (req, res) => {

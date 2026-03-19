@@ -15,7 +15,13 @@ import {
 } from "@mui/material";
 import useAdminAPI from "../../../hook/useAdminAPI";
 
-const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
+const DistributeModal = ({
+  open,
+  onClose,
+  selectedQuestionIds,
+  onSuccess,
+  sourceCourseId = null, // Khóa nguồn (nếu từ Course Bank → lock dropdown)
+}) => {
   const api = useAdminAPI();
   const theme = useTheme();
   const [courses, setCourses] = useState([]);
@@ -26,9 +32,10 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
   const [selectedLesson, setSelectedLesson] = useState("");
   const [selectedSubLesson, setSelectedSubLesson] = useState("");
 
+  const [lockCourse, setLockCourse] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Load Courses on Open
+  // Load Courses on Open + auto-select nếu có sourceCourseId
   useEffect(() => {
     if (open) {
       const fetchCourses = async () => {
@@ -40,8 +47,22 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
         }
       };
       fetchCourses();
+
+      // Nếu có sourceCourseId (đang distribute từ Course Bank)
+      // → tự động chọn khóa, disable dropdown course
+      if (sourceCourseId) {
+        setSelectedCourse(sourceCourseId);
+        setLockCourse(true);
+      } else {
+        setSelectedCourse("");
+        setLockCourse(false);
+      }
+
+      // Reset cascading selections
+      setSelectedLesson("");
+      setSelectedSubLesson("");
     }
-  }, [open, api]);
+  }, [open, sourceCourseId, api]);
 
   // Load Lessons when Course changes
   useEffect(() => {
@@ -85,7 +106,12 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
 
     try {
       setLoading(true);
-      await api.assignQuestionsToLesson(selectedQuestionIds, selectedSubLesson);
+      // Fix bug: truyền courseId khi assign
+      await api.assignQuestionsToLesson(
+        selectedQuestionIds,
+        selectedSubLesson,
+        selectedCourse
+      );
       onSuccess();
       onClose();
     } catch (err) {
@@ -97,13 +123,16 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{
-        fontWeight: 700,
-        background: theme.palette.mode === "dark"
-          ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-          : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        color: "white",
-      }}>
+      <DialogTitle
+        sx={{
+          fontWeight: 700,
+          background:
+            theme.palette.mode === "dark"
+              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
+              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+        }}
+      >
         Phân phối {selectedQuestionIds.length} câu hỏi
       </DialogTitle>
       <DialogContent>
@@ -114,6 +143,7 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
               value={selectedCourse}
               label="Chọn Khóa học"
               onChange={(e) => setSelectedCourse(e.target.value)}
+              disabled={lockCourse}
             >
               {courses.map((c) => (
                 <MenuItem key={c.courseId} value={c.courseId}>
@@ -122,6 +152,12 @@ const DistributeModal = ({ open, onClose, selectedQuestionIds, onSuccess }) => {
               ))}
             </Select>
           </FormControl>
+
+          {lockCourse && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>
+              Câu hỏi chỉ được phân phối vào bài học trong cùng khóa
+            </Typography>
+          )}
 
           <FormControl fullWidth size="small" disabled={!selectedCourse}>
             <InputLabel>Chọn Bài học</InputLabel>

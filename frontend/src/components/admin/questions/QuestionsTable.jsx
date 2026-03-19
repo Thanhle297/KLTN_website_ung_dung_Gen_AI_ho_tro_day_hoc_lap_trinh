@@ -9,12 +9,13 @@ import {
   TableContainer,
   Skeleton,
   Typography,
+  Checkbox,
   useTheme,
 } from "@mui/material";
 import QuestionRow from "./QuestionRow";
 
 const QuestionsTable = React.memo(
-  ({ questions, loading, selectedSubLesson, onEdit, onDelete, onAssign }) => {
+  ({ questions, loading, selectedSubLesson, onEdit, onDelete, onAssign, selectable, selectedIds, onSelectAll, onSelectOne }) => {
     const theme = useTheme();
     const isBankMode = selectedSubLesson === "BANK";
 
@@ -42,7 +43,6 @@ const QuestionsTable = React.memo(
       return (
         <Paper
           sx={{
-            borderRadius: 4,
             overflow: "hidden",
             boxShadow: theme.palette.mode === "dark"
               ? "0 8px 32px rgba(0, 0, 0, 0.3)"
@@ -70,9 +70,8 @@ const QuestionsTable = React.memo(
     }
 
     return (
-<Paper
+        <Paper
           sx={{
-            borderRadius: 4,
             overflow: "hidden",
             boxShadow: theme.palette.mode === "dark" 
               ? "0 8px 32px rgba(0, 0, 0, 0.3)"
@@ -90,6 +89,17 @@ const QuestionsTable = React.memo(
                     : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 }}
               >
+                {selectable && (
+                  <TableCell padding="checkbox" sx={{ width: "5%" }}>
+                    <Checkbox
+                      sx={{ color: "rgba(255,255,255,0.7)", "&.Mui-checked": { color: "white" }, "&.MuiCheckbox-indeterminate": { color: "white" } }}
+                      checked={selectedIds && selectedIds.length === questions.length && questions.length > 0}
+                      indeterminate={selectedIds && selectedIds.length > 0 && selectedIds.length < questions.length}
+                      onChange={onSelectAll}
+                      size="small"
+                    />
+                  </TableCell>
+                )}
                 <TableCell
                   sx={{
                     color: "white",
@@ -183,12 +193,15 @@ const QuestionsTable = React.memo(
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onAssign={isBankMode ? onAssign : null}
+                  selectable={selectable}
+                  selected={selectedIds && selectedIds.includes(question.id)}
+                  onSelect={() => onSelectOne && onSelectOne(question.id)}
                 />
               ))}
 
               {questions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={selectable ? 9 : 8} align="center" sx={{ py: 8 }}>
                     <Typography variant="h6" color="text.secondary">
                       😔 Không có câu hỏi nào
                     </Typography>
