@@ -331,22 +331,17 @@ export default function QuestionBank() {
           startIcon={<Add />}
           onClick={handleAddClick}
           sx={{
-            bgcolor:
-              theme.palette.mode === "dark"
-                ? theme.palette.background.paper
-                : "white",
-            color:
-              theme.palette.mode === "dark"
-                ? theme.palette.primary.main
-                : "#2196F3",
+            bgcolor: theme.palette.mode === "dark" ? theme.palette.primary.main : "#ffffff",
+            color: theme.palette.mode === "dark" ? "#ffffff" : "#1976d2",
             fontWeight: 700,
             borderRadius: 2,
+            px: 3,
+            py: 1,
             textTransform: "none",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             "&:hover": {
-              bgcolor:
-                theme.palette.mode === "dark"
-                  ? "rgba(255, 255, 255, 0.08)"
-                  : "#f0f0f0",
+              bgcolor: theme.palette.mode === "dark" ? theme.palette.primary.dark : "#f5f5f5",
+              boxShadow: "0px 6px 16px rgba(0, 0, 0, 0.2)",
             },
           }}
         >
