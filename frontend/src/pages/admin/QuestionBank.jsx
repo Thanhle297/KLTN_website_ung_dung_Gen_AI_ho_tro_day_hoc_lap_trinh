@@ -331,18 +331,32 @@ export default function QuestionBank() {
           startIcon={<Add />}
           onClick={handleAddClick}
           sx={{
-            bgcolor: theme.palette.mode === "dark" ? theme.palette.primary.main : "#ffffff",
-            color: theme.palette.mode === "dark" ? "#ffffff" : "#1976d2",
-            fontWeight: 700,
-            borderRadius: 2,
-            px: 3,
+            background: theme.palette.mode === "dark" 
+              ? theme.palette.primary.main 
+              : "#ffffff",
+            color: theme.palette.mode === "dark" 
+              ? "#ffffff" 
+              : theme.palette.primary.main,
+            fontWeight: 800,
+            fontSize: "0.95rem",
+            borderRadius: 3,
+            px: 3.5,
             py: 1,
             textTransform: "none",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            boxShadow: theme.palette.mode === "dark" 
+              ? "0px 4px 12px rgba(0, 0, 0, 0.3)"
+              : "0px 4px 20px rgba(0, 0, 0, 0.15)",
+            border: theme.palette.mode === "dark" ? "none" : "2px solid #ffffff",
             "&:hover": {
-              bgcolor: theme.palette.mode === "dark" ? theme.palette.primary.dark : "#f5f5f5",
-              boxShadow: "0px 6px 16px rgba(0, 0, 0, 0.2)",
+              background: theme.palette.mode === "dark" 
+                ? theme.palette.primary.dark 
+                : "#f8faff",
+              boxShadow: theme.palette.mode === "dark"
+                ? "0px 6px 16px rgba(0, 0, 0, 0.4)"
+                : "0px 6px 25px rgba(0, 0, 0, 0.25)",
+              transform: "translateY(-2px)",
             },
+            transition: "all 0.2s ease-in-out",
           }}
         >
           Tạo câu hỏi
