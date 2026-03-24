@@ -106,7 +106,6 @@ export default function CodeEditorMiddle({
     if (!localCode && results.length === 0 && !guide) return;
 
     const payload = {
-      userId,
       lessonId,
       questionId: String(question.id),
       data: {
@@ -123,9 +122,13 @@ export default function CodeEditorMiddle({
     if (fingerprint === lastSavedRef.current) return;
 
     const timer = setTimeout(() => {
+      const token = localStorage.getItem("token");
       fetch(`${apiBase}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       })
         .then((res) => {
@@ -162,9 +165,15 @@ export default function CodeEditorMiddle({
     onChangeResult?.("Đang chạy code...");
 
     try {
+      const token = localStorage.getItem("token");
+      const authHeaders = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
       const res = await fetch(`${apiBase}/api/execute-middle`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify({
           code: localCode,
           testcases: question.testcase,
@@ -208,7 +217,6 @@ export default function CodeEditorMiddle({
 
       // Save ngay sau run de dam bao F5 khong mat
       const savePayload = {
-        userId,
         lessonId,
         questionId: String(question.id),
         data: {
@@ -223,7 +231,7 @@ export default function CodeEditorMiddle({
 
       await fetch(`${apiBase}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify(savePayload),
       });
 

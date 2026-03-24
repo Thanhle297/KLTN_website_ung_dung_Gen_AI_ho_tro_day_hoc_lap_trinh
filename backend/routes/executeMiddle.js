@@ -2,6 +2,7 @@
 const express = require("express");
 const axios = require("axios");
 const { callPromptMiddle } = require("./callPromtMiddle");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 require("dotenv").config();
@@ -37,7 +38,7 @@ function getCombinedStatus(testcaseResults, aiResult) {
   return "wrong";
 }
 
-router.post("/execute-middle", async (req, res) => {
+router.post("/execute-middle", authMiddleware, async (req, res) => {
   const {
     code,
     testcases,

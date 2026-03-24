@@ -40,6 +40,8 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
     async function loadAll() {
       setLoading(true);
       try {
+        const token = localStorage.getItem("token");
+        const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
         const cQuery = courseId ? `&courseId=${courseId}` : "";
         const [lessonData, questionsData, tempData] = await Promise.all([
           fetch(
@@ -49,14 +51,16 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
             )}`,
             {
               signal: controller.signal,
+              headers: authHeaders,
             },
           ).then(safeJson),
           fetch(`${apiBase}/api/questions?lessonId=${lessonId}${cQuery}`, {
             signal: controller.signal,
+            headers: authHeaders,
           }).then(safeJson),
           fetch(
-            `${apiBase}/api/temp/load?userId=${userId}&lessonId=${lessonId}`,
-            { signal: controller.signal },
+            `${apiBase}/api/temp/load?lessonId=${lessonId}`,
+            { signal: controller.signal, headers: authHeaders },
           )
             .then((res) => (res.ok ? res.json() : {}))
             .catch(() => ({})),
@@ -95,7 +99,7 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
           const pQuery = courseId ? `?courseId=${courseId}` : "";
           const parentRes = await fetch(
             `${apiBase}/api/lessons/${lessonData.parentLesson.lessonId}${pQuery}`,
-            { signal: controller.signal },
+            { signal: controller.signal, headers: authHeaders },
           );
           const parentLesson = await safeJson(parentRes);
           finalLesson = {

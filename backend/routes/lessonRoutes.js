@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { getDB } = require("../config/mongodb");
+const authMiddleware = require("../middleware/authMiddleware");
+const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
 
 /* -------------------- Helper: Get Next Lesson ID (Atomic) -------------------- */
 async function getNextLessonId(db) {
@@ -16,7 +18,7 @@ async function getNextLessonId(db) {
 }
 
 /* -------- GET lessons by course -------- */
-router.get("/course/:courseId", async (req, res) => {
+router.get("/course/:courseId", authMiddleware, async (req, res) => {
   const list = await getDB()
     .collection("lessons")
     .find({ courseId: req.params.courseId })
@@ -26,7 +28,7 @@ router.get("/course/:courseId", async (req, res) => {
 });
 
 /* -------- GET 1 lesson -------- */
-router.get("/:lessonId", async (req, res) => {
+router.get("/:lessonId", authMiddleware, async (req, res) => {
   const { courseId } = req.query;
   const query = { lessonId: req.params.lessonId };
   if (courseId) query.courseId = courseId;
@@ -36,7 +38,7 @@ router.get("/:lessonId", async (req, res) => {
 });
 
 /* -------- GET bài lớn hoặc subLesson -------- */
-router.get("/detail/:lessonId", async (req, res) => {
+router.get("/detail/:lessonId", authMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const lessonId = req.params.lessonId;
@@ -96,7 +98,7 @@ router.get("/detail/:lessonId", async (req, res) => {
 });
 
 /* -------- CREATE -------- */
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const { lessonNumber } = req.body;
@@ -131,7 +133,7 @@ router.post("/", async (req, res) => {
 });
 
 /* -------- UPDATE -------- */
-router.put("/:lessonId", async (req, res) => {
+router.put("/:lessonId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { courseId } = req.query;
     const data = { ...req.body };
@@ -155,7 +157,7 @@ router.put("/:lessonId", async (req, res) => {
 });
 
 /* -------- DELETE -------- */
-router.delete("/:lessonId", async (req, res) => {
+router.delete("/:lessonId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   const { courseId } = req.query;
   const query = { lessonId: req.params.lessonId };
   if (courseId) query.courseId = courseId;
@@ -166,7 +168,7 @@ router.delete("/:lessonId", async (req, res) => {
 
 /* -------- REORDER LESSONS -------- */
 // Cập nhật thứ tự lessons theo mảng lessonIds
-router.put("/reorder/batch", async (req, res) => {
+router.put("/reorder/batch", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { courseId, lessonIds } = req.body;
 

@@ -21,8 +21,10 @@ export default function SubmissionHistoryModal({
 
   const fetchHistory = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/submit/history/${userId}/${subLessonId}`
+        `${process.env.REACT_APP_API_URL}/api/submit/history/${userId}/${subLessonId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
       const data = await res.json();
       setHistory(Array.isArray(data) ? data : []);

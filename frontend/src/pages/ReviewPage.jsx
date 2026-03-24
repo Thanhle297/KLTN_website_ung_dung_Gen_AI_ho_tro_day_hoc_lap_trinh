@@ -24,20 +24,25 @@ export default function ReviewPage() {
   useEffect(() => {
     async function fetchData() {
       try {
+        const token = localStorage.getItem("token");
+        const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
         const resSub = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/submit/detail/${submissionId}`
+          `${process.env.REACT_APP_API_URL}/api/submit/detail/${submissionId}`,
+          { headers: authHeaders }
         );
         const subData = await resSub.json();
         setSubmission(subData);
 
         if (subData.questions && subData.questions.length > 0) {
-          // ✅ Ưu tiên dùng snapshot câu hỏi đã lưu khi nộp bài
+          // Ưu tiên dùng snapshot câu hỏi đã lưu khi nộp bài
           setQuestions(subData.questions);
         } else if (subData.lessonId) {
           // 2. Fetch câu hỏi gốc (bao gồm đáp án đúng) - Fallback cho bài cũ
           const courseParam = subData.courseId ? `&courseId=${subData.courseId}` : "";
           const resQ = await fetch(
-            `${process.env.REACT_APP_API_URL}/api/questions?lessonId=${subData.lessonId}${courseParam}`
+            `${process.env.REACT_APP_API_URL}/api/questions?lessonId=${subData.lessonId}${courseParam}`,
+            { headers: authHeaders }
           );
           const qData = await resQ.json();
           setQuestions(qData);

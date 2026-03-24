@@ -1,9 +1,10 @@
 const express = require("express");
 const { callPromptSimple } = require("./callPromtSimple");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/simple", async (req, res) => {
+router.post("/simple", authMiddleware, async (req, res) => {
   const { code, question, input, output, difficulty, lessonNumber } = req.body;
 
   try {

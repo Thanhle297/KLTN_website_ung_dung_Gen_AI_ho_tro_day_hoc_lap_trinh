@@ -1,5 +1,6 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
+const bcrypt = require("bcryptjs");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -118,14 +119,17 @@ router.post("/", authMiddleware, adminOnly, async (req, res) => {
   const existed = await db.collection("users").findOne({ email });
   if (existed) return res.status(400).json({ message: "Email đã tồn tại" });
 
+  // Hash password trước khi lưu vào DB
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   await db.collection("users").insertOne({
     username,
     email,
-    password, // nếu muốn hash, bạn cho bcrypt vào đây
+    password: hashedPassword,
     fullname: fullname || "",
     role: role || "user",
     isActive: isActive ?? true,
-    enrolledCourses: [], // ✅ Thêm field mới
+    enrolledCourses: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   });

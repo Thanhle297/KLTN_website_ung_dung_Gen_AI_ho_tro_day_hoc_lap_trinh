@@ -82,11 +82,14 @@ export default function CodeEditorSimple({
     if (fingerprint === lastSavedRef.current) return;
 
     const timer = setTimeout(() => {
+      const token = localStorage.getItem("token");
       fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
-          userId,
           lessonId,
           questionId: String(question.id),
           data,
@@ -127,11 +130,14 @@ export default function CodeEditorSimple({
 
       // Save to backend
       if (userId && lessonId && question?.id) {
+        const token = localStorage.getItem("token");
         fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
-            userId,
             lessonId,
             questionId: String(question.id),
             data: newState,
@@ -199,12 +205,18 @@ export default function CodeEditorSimple({
     setActiveTab("guide"); // Chuyển sang tab Guide để hiển thị kết quả AI
 
     try {
+      const token = localStorage.getItem("token");
+      const authHeaders = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
       // Gọi AI chấm bài
       const aiResp = await fetch(
         `${process.env.REACT_APP_API_URL}/api/ai/simple`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders,
           body: JSON.stringify({
             code: localCode,
             question:
@@ -253,9 +265,8 @@ export default function CodeEditorSimple({
       // Save ngay
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify({
-          userId,
           lessonId,
           questionId: String(question.id),
           data: newState,

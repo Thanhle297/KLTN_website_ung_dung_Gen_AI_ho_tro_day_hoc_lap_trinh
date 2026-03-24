@@ -93,7 +93,6 @@ export default function CodeEditor({
     if (!localCode && results.length === 0 && !guide) return;
 
     const payload = {
-      userId,
       lessonId,
       questionId: String(question.id),
       data: {
@@ -109,9 +108,13 @@ export default function CodeEditor({
     if (fingerprint === lastSavedRef.current) return;
 
     const timer = setTimeout(() => {
+      const token = localStorage.getItem("token");
       fetch(`${apiBase}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       })
         .then((res) => {
@@ -140,9 +143,15 @@ export default function CodeEditor({
     onChangeResult?.("⏳ Đang chạy code...");
 
     try {
+      const token = localStorage.getItem("token");
+      const authHeaders = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
       const res = await fetch(`${apiBase}/api/execute`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify({
           code: localCode,
           testcases: question.testcase,
@@ -184,9 +193,8 @@ export default function CodeEditor({
         status: isAllPass ? "correct" : "wrong",
       });
 
-      // ✅ Save ngay sau run để đảm bảo F5 không mất (lưu full)
+      // Save ngay sau run để đảm bảo F5 không mất (lưu full)
       const payload = {
-        userId,
         lessonId,
         questionId: String(question.id),
         data: {
@@ -200,7 +208,7 @@ export default function CodeEditor({
 
       await fetch(`${apiBase}/api/temp/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify(payload),
       });
 

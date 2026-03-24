@@ -19,7 +19,7 @@ async function getNextCourseId(db) {
 }
 
 // GET all (admin only - trả về tất cả courses)
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   const data = await getDB().collection("courses").find().toArray();
   res.json(data);
 });
@@ -60,7 +60,7 @@ router.get("/my-courses", authMiddleware, async (req, res) => {
 });
 
 // GET one
-router.get("/:courseId", async (req, res) => {
+router.get("/:courseId", authMiddleware, async (req, res) => {
   const doc = await getDB()
     .collection("courses")
     .findOne({ courseId: req.params.courseId });
@@ -68,7 +68,14 @@ router.get("/:courseId", async (req, res) => {
 });
 
 // CREATE
-router.post("/", async (req, res) => {
+function adminOnly(req, res, next) {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập" });
+  }
+  next();
+}
+
+router.post("/", authMiddleware, adminOnly, async (req, res) => {
   try {
     const db = getDB();
 
@@ -542,7 +549,7 @@ router.put("/:courseId/teachers/remove", authMiddleware, async (req, res) => {
 });
 
 // DELETE - Cập nhật để xóa courseId khỏi enrolledCourses của students và teachingCourses của teachers
-router.delete("/:courseId", async (req, res) => {
+router.delete("/:courseId", authMiddleware, adminOnly, async (req, res) => {
   const db = getDB();
   const { courseId } = req.params;
 

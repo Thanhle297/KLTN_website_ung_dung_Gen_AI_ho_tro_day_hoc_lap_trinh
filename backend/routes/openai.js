@@ -1,10 +1,11 @@
 // routes/openai.js
 const express = require("express");
 const { callOpenAI } = require("../services/openaiService");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/generate", async (req, res) => {
+router.post("/generate", authMiddleware, async (req, res) => {
   const { prompt } = req.body;
 
   // Kiểm tra đầu vào chi tiết hơn

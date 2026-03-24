@@ -1,16 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const { getDB } = require("../config/mongodb");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const db = getDB();
-    const { userId, lessonId, courseId, editorStates } = req.body;
+    const userId = req.user.id; // Lấy từ JWT, KHÔNG từ req.body
+    const { lessonId, courseId, editorStates } = req.body;
 
-    if (!userId || !lessonId || !editorStates) {
+    if (!lessonId || !editorStates) {
       return res.status(400).json({
         success: false,
-        message: "Thiếu userId / lessonId / editorStates",
+        message: "Thiếu lessonId / editorStates",
       });
     }
 
@@ -111,11 +113,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ GET HISTORY
-router.get("/history/:userId/:subLessonId", async (req, res) => {
+// GET HISTORY
+router.get("/history/:userId/:subLessonId", authMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const { userId, subLessonId } = req.params;
+
+    // Kiểm tra quyền: chỉ chính user đó hoặc admin/teacher mới được xem
+    if (req.user.id !== userId && req.user.role !== "admin" && req.user.role !== "teacher") {
+      return res.status(403).json({ error: "Không có quyền xem lịch sử của người khác" });
+    }
 
     const history = await db
       .collection("submit_history")
@@ -142,8 +149,8 @@ router.get("/history/:userId/:subLessonId", async (req, res) => {
   }
 });
 
-// ✅ GET DETAIL
-router.get("/detail/:submissionId", async (req, res) => {
+// GET DETAIL
+router.get("/detail/:submissionId", authMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const { ObjectId } = require("mongodb");
@@ -155,6 +162,11 @@ router.get("/detail/:submissionId", async (req, res) => {
 
     if (!submission) {
       return res.status(404).json({ error: "Không tìm thấy bài nộp" });
+    }
+
+    // Kiểm tra quyền: chỉ chính user đó hoặc admin/teacher mới được xem
+    if (req.user.id !== submission.userId && req.user.role !== "admin" && req.user.role !== "teacher") {
+      return res.status(403).json({ error: "Không có quyền xem bài nộp của người khác" });
     }
 
     res.json(submission);

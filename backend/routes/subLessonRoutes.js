@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { getDB } = require("../config/mongodb");
+const authMiddleware = require("../middleware/authMiddleware");
+const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
 
 /* -------------------- Helper: Get Next SubLesson ID (Atomic) -------------------- */
 // Counter riêng cho mỗi lesson cha, đảm bảo format: BAI_1_1, BAI_1_2, ...
@@ -18,7 +20,7 @@ async function getNextSubLessonId(db, parentLessonId) {
 }
 
 /* -------- GET subLessons -------- */
-router.get("/:lessonId/sub", async (req, res) => {
+router.get("/:lessonId/sub", authMiddleware, async (req, res) => {
   const { courseId } = req.query;
   const query = { lessonId: req.params.lessonId };
   if (courseId) query.courseId = courseId;
@@ -29,7 +31,7 @@ router.get("/:lessonId/sub", async (req, res) => {
 });
 
 /* -------- CREATE subLesson -------- */
-router.post("/:lessonId/sub", async (req, res) => {
+router.post("/:lessonId/sub", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const parentLessonId = req.params.lessonId;
@@ -63,7 +65,7 @@ router.post("/:lessonId/sub", async (req, res) => {
 });
 
 /* -------- UPDATE subLesson -------- */
-router.put("/:lessonId/sub/:subId", async (req, res) => {
+router.put("/:lessonId/sub/:subId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const { courseId } = req.query || req.body;
@@ -99,7 +101,7 @@ router.put("/:lessonId/sub/:subId", async (req, res) => {
 });
 
 /* -------- DELETE subLesson -------- */
-router.delete("/:lessonId/sub/:subId", async (req, res) => {
+router.delete("/:lessonId/sub/:subId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   const { courseId } = req.query;
   const query = { lessonId: req.params.lessonId };
   if (courseId) query.courseId = courseId;
@@ -114,7 +116,7 @@ router.delete("/:lessonId/sub/:subId", async (req, res) => {
 
 /* -------- REORDER subLessons -------- */
 // Cập nhật thứ tự subLessons theo mảng subLessonIds
-router.put("/:lessonId/reorder", async (req, res) => {
+router.put("/:lessonId/reorder", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { courseId } = req.query;
     const { subLessonIds } = req.body;

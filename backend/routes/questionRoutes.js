@@ -3,6 +3,7 @@ const router = express.Router();
 const { getDB } = require("../config/mongodb");
 const { ObjectId } = require("mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
+const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
 const { requireCourseAccess, requireAdmin } = require("../middleware/coursePermission");
 
 /* -------------------- Helper: Get Next ID (Atomic) -------------------- */
@@ -59,7 +60,7 @@ async function findOrCreateCategory(db, courseId, categoryName) {
 }
 
 /* ------------ GET All / by lessonId or isBank ------------ */
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const { lessonId, isBank, category, courseId, categoryId } = req.query;
     const query = {};
@@ -96,7 +97,7 @@ router.get("/", async (req, res) => {
 });
 
 /* ------------ ASSIGN (Clone from Bank) ------------ */
-router.post("/assign", async (req, res) => {
+router.post("/assign", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { questionIds, targetLessonId, courseId } = req.body;
     const db = getDB();
@@ -146,7 +147,7 @@ router.post("/assign", async (req, res) => {
 });
 
 /* ------------ GET one ------------ */
-router.get("/:id", async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
   const doc = await getDB()
     .collection("question")
     .findOne({ id: Number(req.params.id) });
@@ -155,7 +156,7 @@ router.get("/:id", async (req, res) => {
 });
 
 /* ------------ CREATE ------------ */
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const newId = await getNextQuestionId(db);
@@ -181,7 +182,7 @@ router.post("/", async (req, res) => {
 });
 
 /* ------------ UPDATE ------------ */
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const db = getDB();
     const data = { ...req.body };
@@ -213,7 +214,7 @@ router.put("/:id", async (req, res) => {
 });
 
 /* ------------ DELETE ------------ */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   await getDB()
     .collection("question")
     .deleteOne({ id: Number(req.params.id) });
@@ -222,7 +223,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 /* ------------ REORDER QUESTIONS ------------ */
-router.put("/reorder/batch", async (req, res) => {
+router.put("/reorder/batch", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { questionIds } = req.body;
 

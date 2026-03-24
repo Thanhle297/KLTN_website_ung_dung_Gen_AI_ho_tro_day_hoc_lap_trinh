@@ -79,10 +79,16 @@ export default function SubmitButton({
     if (!userId || !lessonId) return;
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
+      const authHeaders = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, lessonId, courseId, editorStates }),
+        headers: authHeaders,
+        body: JSON.stringify({ lessonId, courseId, editorStates }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
@@ -95,8 +101,8 @@ export default function SubmitButton({
 
       await fetch(`${process.env.REACT_APP_API_URL}/api/temp/clear`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, lessonId }),
+        headers: authHeaders,
+        body: JSON.stringify({ lessonId }),
       });
     } catch (error) {
       console.error("❌ Lỗi:", error);

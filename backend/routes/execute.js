@@ -2,6 +2,7 @@
 const express = require("express");
 const axios = require("axios");
 const { callPromptAI } = require("./callpromt");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 require("dotenv").config();
@@ -12,7 +13,7 @@ const PYTHON_SERVICE_URL =
 // Giữ nguyên xuống dòng để so sánh chính xác
 const normalizeString = (str) => str.replace(/\r/g, "").trim();
 
-router.post("/execute", async (req, res) => {
+router.post("/execute", authMiddleware, async (req, res) => {
   const {
     code,
     testcases,

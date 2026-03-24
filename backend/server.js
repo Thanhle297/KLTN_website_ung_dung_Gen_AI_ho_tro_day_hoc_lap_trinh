@@ -1,10 +1,75 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { connectDB } = require("./config/mongodb");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+/* =========================================================
+   🛡️ SECURITY: HELMET (Security Headers)
+========================================================= */
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // MUI can inline styles
+      imgSrc: ["'self'", "data:", "https://cdn-icons-png.flaticon.com"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL || "http://localhost:3000"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Tắt nếu dùng external resources
+}));
+
+/* =========================================================
+   🛡️ SECURITY: RATE LIMITING
+========================================================= */
+// Helper: trích userId từ JWT token để rate limit per-user
+// Fallback về req.ip nếu không có token (chưa đăng nhập)
+function getUserIdFromToken(req) {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return req.ip;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.id || req.ip;
+  } catch {
+    return req.ip;
+  }
+}
+
+// Global limiter: 200 requests / 15 phút (per-user)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { message: "Quá nhiều yêu cầu, vui lòng thử lại sau" },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getUserIdFromToken,
+});
+app.use(globalLimiter);
+
+// Login limiter: 10 lần / 15 phút (per-IP, vì chưa đăng nhập)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: "Quá nhiều lần thử đăng nhập, vui lòng thử lại sau 15 phút" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// AI/Execute limiter: 20 requests / 1 phút (per-user)
+const aiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 20,
+  message: { message: "Quá nhiều yêu cầu AI, vui lòng chờ" },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getUserIdFromToken,
+});
 
 /* =========================================================
    🌐 MIDDLEWARE CƠ BẢN
@@ -64,12 +129,15 @@ async function startServer() {
     console.log("✅ MongoDB connected successfully.");
 
     /* ================== MOUNT ROUTES ================== */
+    app.use("/api/execute", aiLimiter); // Rate limit cho execute
+    app.use("/api/execute-middle", aiLimiter); // Rate limit cho execute-middle
     app.use("/api", executeRoutes);
-    app.use("/api/openai", openaiRoutes);
+    app.use("/api/openai", aiLimiter, openaiRoutes);
     app.use("/api/questions", questionRoutes);
+    app.use("/api/auth", loginLimiter); // Rate limit cho login
     app.use("/api", authRoutes);
     app.use("/api/temp", tempRoutes);
-    app.use("/api/ai", aiSimpleRoutes);
+    app.use("/api/ai", aiLimiter, aiSimpleRoutes);
     app.use("/api/users", userRoutes);
     app.use("/api/courses", courseRoutes);
     app.use("/api/lessons", lessonRoutes);

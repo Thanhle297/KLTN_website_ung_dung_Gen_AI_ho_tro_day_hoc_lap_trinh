@@ -167,7 +167,9 @@ function LessonsContent() {
   }, [classId, token]);
 
   const fetchLessons = useCallback(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/lessons/course/${classId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/lessons/course/${classId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((res) => res.json())
       .then((data) => {
         // Sắp xếp theo order
@@ -185,6 +187,7 @@ function LessonsContent() {
     try {
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/api/progress/sublesson/${userId}/${subLessonId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} },
       );
       if (!res.ok) return;
       const data = await res.json();
@@ -213,6 +216,7 @@ function LessonsContent() {
       try {
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/lessons/detail/${lessonId}?courseId=${classId}`,
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} },
         );
         const data = await res.json();
         if (data.subLessons) {
