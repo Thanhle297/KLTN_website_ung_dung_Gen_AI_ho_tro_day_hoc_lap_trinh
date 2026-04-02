@@ -18,44 +18,17 @@ root.render(
 reportWebVitals();
 
 
-// // Chặn phím tắt phổ biến
-// document.addEventListener('keydown', e => {
-//   if (
-//     e.key === 'F12' ||
-//     (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
-//     (e.ctrlKey && ['U', 'S'].includes(e.key))
-//   ) {
-//     e.preventDefault();
-//   }
-// });
+// Chặn phím tắt phổ biến
+document.addEventListener('keydown', e => {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'V', 'v'].includes(e.key)) ||
+    (e.ctrlKey && ['U', 'u', 'S', 's', 'C', 'c', 'V', 'v'].includes(e.key))
+  ) {
+    e.preventDefault();
+  }
+});
 
-// // Chặn chuột phải
-// document.addEventListener('contextmenu', e => e.preventDefault());
+// Chặn chuột phải
+document.addEventListener('contextmenu', e => e.preventDefault());
 
-// // --- Phát hiện DevTools và reload ---
-// (function detectDevTools() {
-//   const threshold = 160;
-
-//   function bySize() {
-//     const w = window.outerWidth - window.innerWidth;
-//     const h = window.outerHeight - window.innerHeight;
-//     return w > threshold || h > threshold;
-//   }
-
-//   function byDebugger() {
-//     const start = performance.now();
-//     debugger; // nếu DevTools mở sẽ tạm dừng ở đây
-//     return performance.now() - start > 100;
-//   }
-
-//   function check() {
-//     if (bySize() || byDebugger()) {
-//       window.location.reload(); // reload khi phát hiện mở DevTools
-//     }
-//   }
-
-//   setInterval(check, 800);
-//   window.addEventListener('resize', () => {
-//     if (bySize()) window.location.reload();
-//   });
-// })();

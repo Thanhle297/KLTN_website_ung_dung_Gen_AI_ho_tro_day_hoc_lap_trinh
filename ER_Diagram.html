@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ER Diagram - KLTN Database</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 30px 0 10px;
+      font-size: 28px;
+      color: #38bdf8;
+      text-align: center;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .legend {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+    .diagram-container {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 40px;
+      margin: 0 20px 40px;
+      max-width: 1400px;
+      width: 95%;
+      overflow-x: auto;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+    /* Schema detail section */
+    .schema-section {
+      max-width: 1400px;
+      width: 95%;
+      margin-bottom: 40px;
+    }
+    .schema-section h2 {
+      color: #38bdf8;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+    .collections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+    }
+    .collection-card {
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .collection-header {
+      padding: 14px 18px;
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .collection-header .icon { font-size: 18px; }
+    .collection-body { padding: 0 18px 14px; }
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 13px;
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-name { color: #f1f5f9; font-family: 'Consolas', monospace; }
+    .field-type { color: #94a3b8; font-family: 'Consolas', monospace; font-size: 12px; }
+    .field-key { color: #fbbf24; font-size: 11px; font-weight: 600; margin-left: 4px; }
+    .field-fk { color: #34d399; font-size: 11px; font-weight: 600; margin-left: 4px; }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .badge-count {
+      background: #334155;
+      color: #94a3b8;
+    }
+
+    /* Color coding for different entity types */
+    .bg-core { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; }
+    .bg-content { background: linear-gradient(135deg, #065f46, #10b981); color: white; }
+    .bg-activity { background: linear-gradient(135deg, #92400e, #f59e0b); color: white; }
+    .bg-system { background: linear-gradient(135deg, #581c87, #a855f7); color: white; }
+
+    .relationship-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .relationship-table th {
+      background: #334155;
+      padding: 10px 14px;
+      text-align: left;
+      color: #38bdf8;
+    }
+    .relationship-table td {
+      padding: 8px 14px;
+      border-bottom: 1px solid #334155;
+      color: #cbd5e1;
+    }
+    .relationship-table tr:hover td { background: #1e293b; }
+    .rel-type {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .rel-1n { background: #1e40af30; color: #60a5fa; }
+    .rel-nm { background: #7c3aed30; color: #a78bfa; }
+    .rel-embed { background: #065f4630; color: #34d399; }
+  </style>
+</head>
+<body>
+
+  <h1>ER Diagram - KLTN Database</h1>
+  <p class="subtitle">Database: KLTN (MongoDB) | 10 Collections | Learning Management System</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#3b82f6;"></div> Core Entities (Users, Courses)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#10b981;"></div> Content (Lessons, Categories, Questions)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f59e0b;"></div> Activity (Submissions, Progress)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#a855f7;"></div> System (Sessions, Counters)</div>
+  </div>
+
+  <div class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    USERS {
+        ObjectId _id PK
+        string username UK
+        string email
+        string password
+        string role "user | admin | teacher"
+        string fullname
+        boolean isActive
+        array enrolledCourses FK "array of courseId"
+        date createdAt
+        date updatedAt
+    }
+
+    COURSES {
+        ObjectId _id PK
+        string courseId UK "e.g. 10, G10"
+        string title
+        string description
+        string image
+        array teacherIds FK "array of user _id"
+    }
+
+    LESSONS {
+        ObjectId _id PK
+        string lessonId UK "e.g. bai20"
+        string courseId FK
+        string title
+        string description
+        number order
+        string mode "group"
+        boolean display
+        number lessonNumber
+        array subLessons "embedded subdocuments"
+    }
+
+    CATEGORIES {
+        ObjectId _id PK
+        string courseId FK "nullable"
+        string name
+        string description
+        number order
+        date createdAt
+    }
+
+    QUESTION {
+        ObjectId _id PK
+        number id UK "auto-increment"
+        string question
+        string topic
+        string category
+        string courseId FK
+        string lessonId FK
+        ObjectId categoryId FK
+        array ex "examples embedded"
+        array testcase "testcases embedded"
+        boolean echo_input
+        boolean isBank
+    }
+
+    SUBMIT_HISTORY {
+        ObjectId _id PK
+        string userId FK
+        string lessonId FK
+        string courseId FK "nullable"
+        number correct
+        number wrong
+        number total
+        number progress
+        number requiredProgress
+        object editorStates "embedded map"
+        array questions "embedded snapshot"
+        date createdAt
+    }
+
+    SUBLESSON_PROGRESS {
+        ObjectId _id PK
+        string userId FK
+        string subLessonId FK
+        string courseId FK "nullable"
+        boolean completed
+        number progress
+        number requiredProgress
+        date updatedAt
+    }
+
+    TEMP_SUBMISSIONS {
+        ObjectId _id PK
+        string userId FK
+        string lessonId FK
+        string questionId FK
+        object data "code, results, guide, status"
+        date updatedAt
+    }
+
+    LOGIN_SESSIONS {
+        ObjectId _id PK
+        string userId FK
+        string username
+        string fullname
+        string role
+        string sessionId UK
+        date loginAt
+        date logoutAt
+        string logoutType
+        number duration
+        string ipAddress
+        string userAgent
+        date tokenExpiry
+    }
+
+    COUNTERS {
+        string _id PK "e.g. question_id"
+        number seq
+    }
+
+    USERS ||--o{ SUBMIT_HISTORY : "submits"
+    USERS ||--o{ SUBLESSON_PROGRESS : "tracks progress"
+    USERS ||--o{ TEMP_SUBMISSIONS : "saves drafts"
+    USERS ||--o{ LOGIN_SESSIONS : "logs in"
+    USERS }o--o{ COURSES : "enrolledCourses"
+    COURSES ||--o{ LESSONS : "contains"
+    COURSES ||--o{ CATEGORIES : "has categories"
+    COURSES ||--o{ QUESTION : "has questions"
+    CATEGORIES ||--o{ QUESTION : "categorizes"
+    LESSONS ||--o{ QUESTION : "includes"
+    LESSONS ||--o{ SUBMIT_HISTORY : "receives submissions"
+    LESSONS ||--o{ SUBLESSON_PROGRESS : "subLesson progress"
+    LESSONS ||--o{ TEMP_SUBMISSIONS : "temp saves"
+    COURSES }o--o{ USERS : "teacherIds"
+    </pre>
+  </div>
+
+  <!-- Detailed Schema Section -->
+  <div class="schema-section">
+    <h2>Chi tiet cac Collection</h2>
+    <div class="collections-grid">
+
+      <!-- USERS -->
+      <div class="collection-card">
+        <div class="collection-header bg-core">
+          <span class="icon">👤</span> users <span class="badge badge-count">126 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">username</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">email</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">password</span><span class="field-type">string (bcrypt)</span></div>
+          <div class="field-row"><span class="field-name">role</span><span class="field-type">string (user|admin|teacher)</span></div>
+          <div class="field-row"><span class="field-name">fullname</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">isActive</span><span class="field-type">boolean</span></div>
+          <div class="field-row"><span class="field-name">enrolledCourses<span class="field-fk">FK[]</span></span><span class="field-type">array of courseId</span></div>
+          <div class="field-row"><span class="field-name">createdAt</span><span class="field-type">date</span></div>
+          <div class="field-row"><span class="field-name">updatedAt</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- COURSES -->
+      <div class="collection-card">
+        <div class="collection-header bg-core">
+          <span class="icon">📚</span> courses <span class="badge badge-count">4 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-key">UK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">title</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">description</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">image</span><span class="field-type">string (URL)</span></div>
+          <div class="field-row"><span class="field-name">teacherIds<span class="field-fk">FK[]</span></span><span class="field-type">array of user _id</span></div>
+        </div>
+      </div>
+
+      <!-- LESSONS -->
+      <div class="collection-card">
+        <div class="collection-header bg-content">
+          <span class="icon">📖</span> lessons <span class="badge badge-count">20 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">lessonId<span class="field-key">UK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">title</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">description</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">order</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">mode</span><span class="field-type">string (group)</span></div>
+          <div class="field-row"><span class="field-name">display</span><span class="field-type">boolean</span></div>
+          <div class="field-row"><span class="field-name">lessonNumber</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">subLessons<span class="field-fk">EMBED</span></span><span class="field-type">array of subdoc</span></div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="collection-card">
+        <div class="collection-header bg-content">
+          <span class="icon">🏷️</span> categories <span class="badge badge-count">11 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-fk">FK</span></span><span class="field-type">string (nullable)</span></div>
+          <div class="field-row"><span class="field-name">name</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">description</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">order</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">createdAt</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- QUESTION -->
+      <div class="collection-card">
+        <div class="collection-header bg-content">
+          <span class="icon">❓</span> question <span class="badge badge-count">279 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">id<span class="field-key">UK</span></span><span class="field-type">number (auto-incr)</span></div>
+          <div class="field-row"><span class="field-name">question</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">topic</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">category</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">lessonId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">categoryId<span class="field-fk">FK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">ex<span class="field-fk">EMBED</span></span><span class="field-type">array of {input, output}</span></div>
+          <div class="field-row"><span class="field-name">testcase<span class="field-fk">EMBED</span></span><span class="field-type">array of {input, expected}</span></div>
+          <div class="field-row"><span class="field-name">echo_input</span><span class="field-type">boolean</span></div>
+          <div class="field-row"><span class="field-name">isBank</span><span class="field-type">boolean</span></div>
+        </div>
+      </div>
+
+      <!-- SUBMIT_HISTORY -->
+      <div class="collection-card">
+        <div class="collection-header bg-activity">
+          <span class="icon">📝</span> submit_history <span class="badge badge-count">707 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">userId<span class="field-fk">FK</span></span><span class="field-type">string (user _id)</span></div>
+          <div class="field-row"><span class="field-name">lessonId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-fk">FK</span></span><span class="field-type">string (nullable)</span></div>
+          <div class="field-row"><span class="field-name">correct</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">wrong</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">total</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">progress</span><span class="field-type">number (%)</span></div>
+          <div class="field-row"><span class="field-name">requiredProgress</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">editorStates<span class="field-fk">EMBED</span></span><span class="field-type">object (map by questionId)</span></div>
+          <div class="field-row"><span class="field-name">questions<span class="field-fk">EMBED</span></span><span class="field-type">array (snapshot)</span></div>
+          <div class="field-row"><span class="field-name">createdAt</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- SUBLESSON_PROGRESS -->
+      <div class="collection-card">
+        <div class="collection-header bg-activity">
+          <span class="icon">📊</span> sublesson_progress <span class="badge badge-count">558 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">userId<span class="field-fk">FK</span></span><span class="field-type">string (user _id)</span></div>
+          <div class="field-row"><span class="field-name">subLessonId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">courseId<span class="field-fk">FK</span></span><span class="field-type">string (nullable)</span></div>
+          <div class="field-row"><span class="field-name">completed</span><span class="field-type">boolean</span></div>
+          <div class="field-row"><span class="field-name">progress</span><span class="field-type">number (%)</span></div>
+          <div class="field-row"><span class="field-name">requiredProgress</span><span class="field-type">number</span></div>
+          <div class="field-row"><span class="field-name">updatedAt</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- TEMP_SUBMISSIONS -->
+      <div class="collection-card">
+        <div class="collection-header bg-activity">
+          <span class="icon">💾</span> temp_submissions <span class="badge badge-count">426 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">userId<span class="field-fk">FK</span></span><span class="field-type">string (user _id)</span></div>
+          <div class="field-row"><span class="field-name">lessonId<span class="field-fk">FK</span></span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">questionId<span class="field-fk">FK</span></span><span class="field-type">string (question id)</span></div>
+          <div class="field-row"><span class="field-name">data<span class="field-fk">EMBED</span></span><span class="field-type">object {code, results, guide, status}</span></div>
+          <div class="field-row"><span class="field-name">updatedAt</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- LOGIN_SESSIONS -->
+      <div class="collection-card">
+        <div class="collection-header bg-system">
+          <span class="icon">🔐</span> login_sessions <span class="badge badge-count">89 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">ObjectId</span></div>
+          <div class="field-row"><span class="field-name">userId<span class="field-fk">FK</span></span><span class="field-type">string (user _id)</span></div>
+          <div class="field-row"><span class="field-name">username</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">fullname</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">role</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">sessionId<span class="field-key">UK</span></span><span class="field-type">string (UUID)</span></div>
+          <div class="field-row"><span class="field-name">loginAt</span><span class="field-type">date</span></div>
+          <div class="field-row"><span class="field-name">logoutAt</span><span class="field-type">date</span></div>
+          <div class="field-row"><span class="field-name">logoutType</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">duration</span><span class="field-type">number (seconds)</span></div>
+          <div class="field-row"><span class="field-name">ipAddress</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">userAgent</span><span class="field-type">string</span></div>
+          <div class="field-row"><span class="field-name">tokenExpiry</span><span class="field-type">date</span></div>
+        </div>
+      </div>
+
+      <!-- COUNTERS -->
+      <div class="collection-card">
+        <div class="collection-header bg-system">
+          <span class="icon">🔢</span> counters <span class="badge badge-count">9 docs</span>
+        </div>
+        <div class="collection-body">
+          <div class="field-row"><span class="field-name">_id<span class="field-key">PK</span></span><span class="field-type">string (e.g. question_id)</span></div>
+          <div class="field-row"><span class="field-name">seq</span><span class="field-type">number</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Relationship Table -->
+  <div class="schema-section">
+    <h2>Moi quan he giua cac Collection</h2>
+    <div class="diagram-container" style="padding: 20px;">
+      <table class="relationship-table">
+        <thead>
+          <tr>
+            <th>Tu</th>
+            <th>Den</th>
+            <th>Kieu</th>
+            <th>Truong lien ket</th>
+            <th>Mo ta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>users</td>
+            <td>courses</td>
+            <td><span class="rel-type rel-nm">N:M</span></td>
+            <td>users.enrolledCourses[] -> courses.courseId</td>
+            <td>Hoc sinh dang ky nhieu khoa hoc</td>
+          </tr>
+          <tr>
+            <td>courses</td>
+            <td>users</td>
+            <td><span class="rel-type rel-nm">N:M</span></td>
+            <td>courses.teacherIds[] -> users._id</td>
+            <td>Khoa hoc co nhieu giao vien</td>
+          </tr>
+          <tr>
+            <td>courses</td>
+            <td>lessons</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>lessons.courseId -> courses.courseId</td>
+            <td>Moi khoa hoc co nhieu bai hoc</td>
+          </tr>
+          <tr>
+            <td>courses</td>
+            <td>categories</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>categories.courseId -> courses.courseId</td>
+            <td>Moi khoa hoc co nhieu danh muc cau hoi</td>
+          </tr>
+          <tr>
+            <td>courses</td>
+            <td>question</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>question.courseId -> courses.courseId</td>
+            <td>Cau hoi thuoc ve khoa hoc</td>
+          </tr>
+          <tr>
+            <td>categories</td>
+            <td>question</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>question.categoryId -> categories._id</td>
+            <td>Cau hoi duoc phan loai theo danh muc</td>
+          </tr>
+          <tr>
+            <td>lessons</td>
+            <td>question</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>question.lessonId -> lessons.subLessons[].lessonId</td>
+            <td>Cau hoi thuoc ve sub-lesson</td>
+          </tr>
+          <tr>
+            <td>users</td>
+            <td>submit_history</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>submit_history.userId -> users._id</td>
+            <td>Hoc sinh nop bai nhieu lan</td>
+          </tr>
+          <tr>
+            <td>users</td>
+            <td>sublesson_progress</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>sublesson_progress.userId -> users._id</td>
+            <td>Theo doi tien do hoc cua hoc sinh</td>
+          </tr>
+          <tr>
+            <td>users</td>
+            <td>temp_submissions</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>temp_submissions.userId -> users._id</td>
+            <td>Luu tam bai lam chua nop</td>
+          </tr>
+          <tr>
+            <td>users</td>
+            <td>login_sessions</td>
+            <td><span class="rel-type rel-1n">1:N</span></td>
+            <td>login_sessions.userId -> users._id</td>
+            <td>Ghi nhan lich su dang nhap</td>
+          </tr>
+          <tr>
+            <td>lessons</td>
+            <td>subLessons</td>
+            <td><span class="rel-type rel-embed">EMBED</span></td>
+            <td>lessons.subLessons[]</td>
+            <td>Bai hoc con duoc nhung trong bai hoc cha</td>
+          </tr>
+          <tr>
+            <td>submit_history</td>
+            <td>questions</td>
+            <td><span class="rel-type rel-embed">EMBED</span></td>
+            <td>submit_history.questions[] & editorStates{}</td>
+            <td>Snapshot cau hoi va bai lam tai thoi diem nop</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      er: {
+        diagramPadding: 30,
+        layoutDirection: 'TB',
+        minEntityWidth: 100,
+        minEntityHeight: 75,
+        entityPadding: 15,
+        useMaxWidth: false
+      },
+      themeVariables: {
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#f1f5f9',
+        primaryBorderColor: '#475569',
+        lineColor: '#60a5fa',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#334155'
+      }
+    });
+  </script>
+</body>
+</html>
