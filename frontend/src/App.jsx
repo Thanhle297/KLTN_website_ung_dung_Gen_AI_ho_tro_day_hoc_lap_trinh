@@ -309,7 +309,7 @@ export default function App() {
   return (
     <AppThemeProvider>
       <HeaderProvider>
-        <DevToolsWarning />
+        {/* <DevToolsWarning />  */}
         <Router>
           <AppContent />
         </Router>

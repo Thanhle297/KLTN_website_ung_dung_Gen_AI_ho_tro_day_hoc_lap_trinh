@@ -1,6 +1,6 @@
 // routes/openai.js
 const express = require("express");
-const { callOpenAI } = require("../services/openaiService");
+const { callOpenAI } = require("../services/ai/openaiService");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();

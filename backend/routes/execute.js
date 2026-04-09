@@ -1,7 +1,7 @@
 // routes/execute.js
 const express = require("express");
 const axios = require("axios");
-const { callPromptAI } = require("./callpromt");
+const { callPromptAI } = require("../services/ai/callPrompt");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();

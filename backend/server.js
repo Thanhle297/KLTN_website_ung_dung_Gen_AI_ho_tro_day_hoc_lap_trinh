@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const { ipKeyGenerator } = rateLimit;
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { connectDB } = require("./config/mongodb");
@@ -34,11 +33,11 @@ app.use(helmet({
 function getUserIdFromToken(req) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return ipKeyGenerator(req.ip);
+    if (!token) return req.ip;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded.id || ipKeyGenerator(req.ip);
+    return decoded.id || req.ip;
   } catch {
-    return ipKeyGenerator(req.ip);
+    return req.ip;
   }
 }
 

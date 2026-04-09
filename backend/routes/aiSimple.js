@@ -1,5 +1,5 @@
 const express = require("express");
-const { callPromptSimple } = require("./callPromtSimple");
+const { callPromptSimple } = require("../services/ai/callPromptSimple");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();

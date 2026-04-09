@@ -2,25 +2,17 @@ const express = require("express");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
 const authMiddleware = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/coursePermission");
+const { getDB } = require("../config/mongodb");
 
 const router = express.Router();
-
-/* ============================================
-   Middleware: chỉ admin mới được đổi mật khẩu
-=============================================== */
-function adminOnly(req, res, next) {
-  if (!req.user || req.user.role !== "admin") {
-    return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập" });
-  }
-  next();
-}
 
 /* ============================================
    ADMIN ĐỔI MẬT KHẨU USER
 =============================================== */
 router.put("/:id/password", authMiddleware, adminOnly, async (req, res) => {
   try {
-    const db = req.app.locals.db;
+    const db = getDB();
     const { newPassword } = req.body;
 
     if (!newPassword) {

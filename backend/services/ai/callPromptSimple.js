@@ -1,4 +1,4 @@
-// routes/callPromtSimple.js
+// services/ai/callPromptSimple.js
 const OpenAI = require("openai");
 require("dotenv").config();
 

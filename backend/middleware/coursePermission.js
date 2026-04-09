@@ -68,4 +68,15 @@ function requireAdmin(req, res, next) {
   return res.status(403).json({ message: "Chỉ admin mới có quyền này" });
 }
 
-module.exports = { requireCourseAccess, requireAdmin };
+/**
+ * adminOnly - Alias cho requireAdmin, dùng chung cho tất cả route files
+ * Kiểm tra req.user tồn tại trước khi check role
+ */
+function adminOnly(req, res, next) {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập" });
+  }
+  next();
+}
+
+module.exports = { requireCourseAccess, requireAdmin, adminOnly };

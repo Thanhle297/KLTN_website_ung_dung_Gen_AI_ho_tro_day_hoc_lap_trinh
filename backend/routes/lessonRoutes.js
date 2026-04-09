@@ -1,97 +1,49 @@
 const express = require("express");
 const router = express.Router();
-const { getDB } = require("../config/mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
 const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware");
-
-/* -------------------- Helper: Get Next Lesson ID (Atomic) -------------------- */
-async function getNextLessonId(db) {
-  const result = await db
-    .collection("counters")
-    .findOneAndUpdate(
-      { _id: "lesson_id" },
-      { $inc: { seq: 1 } },
-      { upsert: true, returnDocument: "after" }
-    );
-
-  return `BAI_${result.seq}`;
-}
+const {
+  getLessonsByCourse,
+  getLesson,
+  getLessonDetail,
+  createLesson,
+  updateLesson,
+  deleteLesson,
+  reorderLessons,
+} = require("../services/lessonService");
 
 /* -------- GET lessons by course -------- */
 router.get("/course/:courseId", authMiddleware, async (req, res) => {
-  const list = await getDB()
-    .collection("lessons")
-    .find({ courseId: req.params.courseId })
-    .sort({ order: 1 })
-    .toArray();
-  res.json(list);
+  try {
+    const list = await getLessonsByCourse(req.params.courseId);
+    res.json(list);
+  } catch (err) {
+    console.error("❌ Get lessons error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* -------- GET 1 lesson -------- */
 router.get("/:lessonId", authMiddleware, async (req, res) => {
-  const { courseId } = req.query;
-  const query = { lessonId: req.params.lessonId };
-  if (courseId) query.courseId = courseId;
-
-  const doc = await getDB().collection("lessons").findOne(query);
-  res.json(doc);
+  try {
+    const doc = await getLesson(req.params.lessonId, req.query.courseId);
+    res.json(doc);
+  } catch (err) {
+    console.error("❌ Get lesson error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* -------- GET bài lớn hoặc subLesson -------- */
 router.get("/detail/:lessonId", authMiddleware, async (req, res) => {
   try {
-    const db = getDB();
-    const lessonId = req.params.lessonId;
-    const { courseId } = req.query;
+    const result = await getLessonDetail(req.params.lessonId, req.query.courseId);
 
-    // 1) BÀI LỚN
-    const query = { lessonId };
-    if (courseId) query.courseId = courseId;
-
-    const main = await db.collection("lessons").findOne(query);
-
-    if (main) {
-      if (Array.isArray(main.subLessons)) {
-        for (const sub of main.subLessons) {
-          // Khi đếm câu hỏi cho subLesson, cũng phải gán với courseId của bài lớn
-          const qQuery = { lessonId: sub.lessonId };
-          if (main.courseId) qQuery.courseId = main.courseId;
-
-          const count = await db.collection("question").countDocuments(qQuery);
-          sub.questionCount = count;
-        }
-      }
-      return res.json(main);
-    }
-
-    // 2) SUBLESSON (Trong trường hợp lessonId là của 1 subLesson)
-    const parentQuery = { "subLessons.lessonId": lessonId };
-    if (courseId) parentQuery.courseId = courseId;
-
-    const parent = await db.collection("lessons").findOne(parentQuery);
-
-    if (!parent) {
+    if (!result) {
       return res.status(404).json({ error: "Không tìm thấy bài học" });
     }
 
-    const sub = parent.subLessons.find((s) => s.lessonId === lessonId);
-
-    // Đếm câu hỏi cho subLesson này (gắn với courseId của bài cha)
-    const qQuerySub = { lessonId: sub.lessonId };
-    if (parent.courseId) qQuerySub.courseId = parent.courseId;
-    const count = await db.collection("question").countDocuments(qQuerySub);
-
-    sub.questionCount = count;
-    sub.parentLesson = {
-      lessonId: parent.lessonId,
-      title: parent.title,
-    };
-    // Fallback: nếu sublesson chưa có lessonNumber (dữ liệu cũ), kế thừa từ lesson cha
-    if (sub.lessonNumber === undefined || sub.lessonNumber === null) {
-      sub.lessonNumber = parent.lessonNumber;
-    }
-
-    res.json(sub);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -100,7 +52,6 @@ router.get("/detail/:lessonId", authMiddleware, async (req, res) => {
 /* -------- CREATE -------- */
 router.post("/", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
-    const db = getDB();
     const { lessonNumber } = req.body;
 
     // Validation lessonNumber
@@ -117,14 +68,7 @@ router.post("/", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
       });
     }
 
-    // Tự động sinh lessonId
-    const lessonId = await getNextLessonId(db);
-
-    // Đảm bảo lessonNumber lưu dạng Number
-    const data = { ...req.body, lessonNumber: num, lessonId };
-    delete data._id;
-
-    await db.collection("lessons").insertOne(data);
+    const lessonId = await createLesson(req.body);
     res.json({ message: "Lesson created", lessonId });
   } catch (err) {
     console.error("❌ Tạo lesson lỗi:", err);
@@ -135,17 +79,7 @@ router.post("/", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
 /* -------- UPDATE -------- */
 router.put("/:lessonId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
-    const { courseId } = req.query;
-    const data = { ...req.body };
-    delete data._id;
-
-    const query = { lessonId: req.params.lessonId };
-    if (courseId) query.courseId = courseId;
-
-    const result = await getDB()
-      .collection("lessons")
-      .updateOne(query, { $set: data });
-
+    const result = await updateLesson(req.params.lessonId, req.body, req.query.courseId);
     res.json({
       message: "Lesson updated",
       matched: result.matchedCount,
@@ -158,16 +92,16 @@ router.put("/:lessonId", authMiddleware, teacherOrAdminMiddleware, async (req, r
 
 /* -------- DELETE -------- */
 router.delete("/:lessonId", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
-  const { courseId } = req.query;
-  const query = { lessonId: req.params.lessonId };
-  if (courseId) query.courseId = courseId;
-
-  const result = await getDB().collection("lessons").deleteOne(query);
-  res.json({ message: "Lesson deleted", deletedCount: result.deletedCount });
+  try {
+    const deletedCount = await deleteLesson(req.params.lessonId, req.query.courseId);
+    res.json({ message: "Lesson deleted", deletedCount });
+  } catch (err) {
+    console.error("❌ Delete lesson error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* -------- REORDER LESSONS -------- */
-// Cập nhật thứ tự lessons theo mảng lessonIds
 router.put("/reorder/batch", authMiddleware, teacherOrAdminMiddleware, async (req, res) => {
   try {
     const { courseId, lessonIds } = req.body;
@@ -178,22 +112,8 @@ router.put("/reorder/batch", authMiddleware, teacherOrAdminMiddleware, async (re
       });
     }
 
-    const db = getDB();
-    const bulkOps = lessonIds.map((lessonId, index) => ({
-      updateOne: {
-        filter: { lessonId, courseId },
-        update: { $set: { order: index } },
-      },
-    }));
-
-    if (bulkOps.length > 0) {
-      await db.collection("lessons").bulkWrite(bulkOps);
-    }
-
-    res.json({
-      message: "Cập nhật thứ tự thành công",
-      count: bulkOps.length,
-    });
+    const count = await reorderLessons(courseId, lessonIds);
+    res.json({ message: "Cập nhật thứ tự thành công", count });
   } catch (err) {
     console.error("❌ Reorder lessons error:", err);
     res.status(500).json({ error: err.message });

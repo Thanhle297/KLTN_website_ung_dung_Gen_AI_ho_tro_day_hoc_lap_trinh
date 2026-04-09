@@ -19,16 +19,16 @@ reportWebVitals();
 
 
 // Chặn phím tắt phổ biến
-document.addEventListener('keydown', e => {
-  if (
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'V', 'v'].includes(e.key)) ||
-    (e.ctrlKey && ['U', 'u', 'S', 's', 'C', 'c', 'V', 'v'].includes(e.key))
-  ) {
-    e.preventDefault();
-  }
-});
+// document.addEventListener('keydown', e => {
+//   if (
+//     e.key === 'F12' ||
+//     (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'V', 'v'].includes(e.key)) ||
+//     (e.ctrlKey && ['U', 'u', 'S', 's', 'C', 'c', 'V', 'v'].includes(e.key))
+//   ) {
+//     e.preventDefault();
+//   }
+// });
 
 // Chặn chuột phải
-document.addEventListener('contextmenu', e => e.preventDefault());
+// document.addEventListener('contextmenu', e => e.preventDefault());
 

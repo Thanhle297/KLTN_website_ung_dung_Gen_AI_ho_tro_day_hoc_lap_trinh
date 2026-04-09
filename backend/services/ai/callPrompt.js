@@ -1,4 +1,4 @@
-// routes/callpromt.js
+// services/ai/callPrompt.js
 const OpenAI = require("openai");
 require("dotenv").config();
 
@@ -213,13 +213,13 @@ ${studentData}`;
     const rawContent = response.choices[0].message.content || "{}";
 
     // Log token usage
-    // if (response.usage) {
-    //   console.log("🔢 Token usage (callPromptAI):");
-    //   console.log("  Mode:", mode);
-    //   console.log("  Prompt:", response.usage.prompt_tokens);
-    //   console.log("  Completion:", response.usage.completion_tokens);
-    //   console.log("  Total:", response.usage.total_tokens);
-    // }
+    if (response.usage) {
+      console.log("🔢 Token usage (callPromptAI):");
+      console.log("  Mode:", mode);
+      console.log("  Prompt:", response.usage.prompt_tokens);
+      console.log("  Completion:", response.usage.completion_tokens);
+      console.log("  Total:", response.usage.total_tokens);
+    }
 
     // Parse JSON response
     let parsed;

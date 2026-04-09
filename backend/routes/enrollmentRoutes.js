@@ -1,18 +1,15 @@
 const express = require("express");
-const { ObjectId } = require("mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/coursePermission");
+const {
+  enrollUser,
+  unenrollUser,
+  bulkEnroll,
+  getCourseUsers,
+  getUserCourses,
+} = require("../services/enrollmentService");
 
 const router = express.Router();
-
-/* ============================================
-   Middleware: Chỉ admin mới được dùng route này
-=============================================== */
-function adminOnly(req, res, next) {
-  if (!req.user || req.user.role !== "admin") {
-    return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập" });
-  }
-  next();
-}
 
 /* ============================================
    POST /api/enrollments/enroll
@@ -20,7 +17,6 @@ function adminOnly(req, res, next) {
 =============================================== */
 router.post("/enroll", authMiddleware, adminOnly, async (req, res) => {
   try {
-    const db = req.app.locals.db;
     const { userId, courseId } = req.body;
 
     if (!userId || !courseId) {
@@ -29,37 +25,13 @@ router.post("/enroll", authMiddleware, adminOnly, async (req, res) => {
         .json({ message: "userId và courseId là bắt buộc" });
     }
 
-    // Kiểm tra user tồn tại
-    const user = await db
-      .collection("users")
-      .findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy user" });
+    const result = await enrollUser(userId, courseId);
+
+    if (!result.success) {
+      return res.status(result.status).json({ message: result.message });
     }
 
-    // Chỉ cho phép enroll students, teacher dùng teachingCourses
-    if (user.role === "teacher") {
-      return res.status(400).json({
-        message: "Không thể enroll giáo viên. Hãy dùng chức năng phân công giáo viên",
-      });
-    }
-
-    // Kiểm tra course tồn tại
-    const course = await db.collection("courses").findOne({ courseId });
-    if (!course) {
-      return res.status(404).json({ message: "Không tìm thấy khóa học" });
-    }
-
-    // Thêm courseId vào enrolledCourses (không trùng lặp)
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $addToSet: { enrolledCourses: courseId },
-        $set: { updatedAt: new Date() },
-      }
-    );
-
-    res.json({ message: "Phân bổ thành công" });
+    res.json({ message: result.message });
   } catch (error) {
     console.error("❌ Enroll error:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -72,7 +44,6 @@ router.post("/enroll", authMiddleware, adminOnly, async (req, res) => {
 =============================================== */
 router.post("/unenroll", authMiddleware, adminOnly, async (req, res) => {
   try {
-    const db = req.app.locals.db;
     const { userId, courseId } = req.body;
 
     if (!userId || !courseId) {
@@ -81,15 +52,7 @@ router.post("/unenroll", authMiddleware, adminOnly, async (req, res) => {
         .json({ message: "userId và courseId là bắt buộc" });
     }
 
-    // Gỡ courseId khỏi enrolledCourses
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $pull: { enrolledCourses: courseId },
-        $set: { updatedAt: new Date() },
-      }
-    );
-
+    await unenrollUser(userId, courseId);
     res.json({ message: "Gỡ phân bổ thành công" });
   } catch (error) {
     console.error("❌ Unenroll error:", error);
@@ -103,7 +66,6 @@ router.post("/unenroll", authMiddleware, adminOnly, async (req, res) => {
 =============================================== */
 router.post("/bulk-enroll", authMiddleware, adminOnly, async (req, res) => {
   try {
-    const db = req.app.locals.db;
     const { userIds, courseIds } = req.body;
 
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -118,26 +80,11 @@ router.post("/bulk-enroll", authMiddleware, adminOnly, async (req, res) => {
         .json({ message: "courseIds phải là mảng không rỗng" });
     }
 
-    // Phân bổ từng user vào tất cả courses
-    const updatePromises = userIds.map((userId) =>
-      db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        {
-          $addToSet: { enrolledCourses: { $each: courseIds } },
-          $set: { updatedAt: new Date() },
-        }
-      )
-    );
-
-    await Promise.all(updatePromises);
+    const enrolled = await bulkEnroll(userIds, courseIds);
 
     res.json({
       message: "Phân bổ hàng loạt thành công",
-      enrolled: {
-        users: userIds.length,
-        courses: courseIds.length,
-        total: userIds.length * courseIds.length,
-      },
+      enrolled,
     });
   } catch (error) {
     console.error("❌ Bulk enroll error:", error);
@@ -147,7 +94,6 @@ router.post("/bulk-enroll", authMiddleware, adminOnly, async (req, res) => {
 
 /* ============================================
    GET /api/enrollments/course/:courseId/users
-   Lấy danh sách user trong 1 course
 =============================================== */
 router.get(
   "/course/:courseId/users",
@@ -155,20 +101,7 @@ router.get(
   adminOnly,
   async (req, res) => {
     try {
-      const db = req.app.locals.db;
-      const { courseId } = req.params;
-
-      // Lấy tất cả user có courseId trong enrolledCourses
-      const users = await db
-        .collection("users")
-        .find({
-          enrolledCourses: courseId,
-          role: "user", // Chỉ lấy học sinh, không lấy admin
-        })
-        .project({ password: 0 }) // Không trả về password
-        .sort({ fullname: 1 })
-        .toArray();
-
+      const users = await getCourseUsers(req.params.courseId);
       res.json(users);
     } catch (error) {
       console.error("❌ Get course users error:", error);
@@ -179,7 +112,6 @@ router.get(
 
 /* ============================================
    GET /api/enrollments/user/:userId/courses
-   Lấy danh sách course của 1 user
 =============================================== */
 router.get(
   "/user/:userId/courses",
@@ -187,26 +119,11 @@ router.get(
   adminOnly,
   async (req, res) => {
     try {
-      const db = req.app.locals.db;
-      const { userId } = req.params;
+      const { user, courses } = await getUserCourses(req.params.userId);
 
-      // Lấy user
-      const user = await db
-        .collection("users")
-        .findOne({ _id: new ObjectId(userId) });
       if (!user) {
         return res.status(404).json({ message: "Không tìm thấy user" });
       }
-
-      const enrolledCourses = user.role === "teacher"
-        ? (user.teachingCourses || [])
-        : (user.enrolledCourses || []);
-
-      // Lấy thông tin chi tiết các courses
-      const courses = await db
-        .collection("courses")
-        .find({ courseId: { $in: enrolledCourses } })
-        .toArray();
 
       res.json(courses);
     } catch (error) {

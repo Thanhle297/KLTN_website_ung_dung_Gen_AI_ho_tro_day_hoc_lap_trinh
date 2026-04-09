@@ -1,4 +1,4 @@
-// routes/callPromtMiddle.js
+// services/ai/callPromptMiddle.js
 const OpenAI = require("openai");
 require("dotenv").config();
 
@@ -44,8 +44,7 @@ const fullSchema = {
         required: ["question", "answers", "correctIndex"],
         additionalProperties: false,
       },
-      description:
-        "Câu hỏi trắc nghiệm gợi mở (rỗng nếu PASS)",
+      description: "Câu hỏi trắc nghiệm gợi mở (rỗng nếu PASS)",
     },
   },
   required: ["result", "instructs", "quizzes"],
@@ -109,7 +108,7 @@ async function callPromptMiddle({
   // Validation lessonNumber
   if (!lessonNumber || lessonNumber < 16 || lessonNumber > 28) {
     throw new Error(
-      `lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`
+      `lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`,
     );
   }
 
@@ -141,7 +140,7 @@ Học sinh hiện tại đang học bài: ${lessonNumber}
   const testcaseTable = testcaseResults
     .map(
       (r, i) =>
-        `  Testcase ${i + 1}: Input="${r.input}" | Expected="${r.expected}" | Output="${r.actual}" | ${r.pass ? "PASS" : "FAIL"}`
+        `  Testcase ${i + 1}: Input="${r.input}" | Expected="${r.expected}" | Output="${r.actual}" | ${r.pass ? "PASS" : "FAIL"}`,
     )
     .join("\n");
 
@@ -280,6 +279,14 @@ LƯU Ý QUAN TRỌNG:
 
     const rawContent = response.choices[0].message.content || "{}";
 
+    //log token use
+    if (response.usage) {
+      console.log("🔢 Token usage (middle):");
+      console.log("  Difficulty:", difficulty);
+      console.log("  Prompt:", response.usage.prompt_tokens);
+      console.log("  Completion:", response.usage.completion_tokens);
+      console.log("  Total:", response.usage.total_tokens);
+    }
     // Parse JSON response
     let parsed;
     try {
