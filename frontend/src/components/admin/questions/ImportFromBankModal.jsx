@@ -24,9 +24,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Tooltip,
+  Chip,
+  Divider,
   useTheme,
 } from "@mui/material";
-import { Search } from "@mui/icons-material";
+import { Search, Visibility } from "@mui/icons-material";
 import useAdminAPI from "../../../hook/useAdminAPI";
 import useCategoryAPI from "../../../hook/useCategoryAPI";
 
@@ -51,6 +55,8 @@ export default function ImportFromBankModal({
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewQuestion, setPreviewQuestion] = useState(null);
 
   // Toggle nguồn: "course" = Course Bank, "global" = Global Bank
   const [source, setSource] = useState("course");
@@ -110,6 +116,13 @@ export default function ImportFromBankModal({
     }
   }, [open, courseId]);
 
+  useEffect(() => {
+    if (!open) {
+      setPreviewOpen(false);
+      setPreviewQuestion(null);
+    }
+  }, [open]);
+
   // Lọc theo text search (client-side)
   const filteredQuestions = questions.filter((q) => {
     if (!searchText.trim()) return true;
@@ -119,6 +132,15 @@ export default function ImportFromBankModal({
     const id = String(q.id).toLowerCase();
     return content.includes(text) || cat.includes(text) || id.includes(text);
   });
+
+  useEffect(() => {
+    if (!previewQuestion) return;
+    const stillVisible = filteredQuestions.some((q) => q.id === previewQuestion.id);
+    if (!stillVisible) {
+      setPreviewOpen(false);
+      setPreviewQuestion(null);
+    }
+  }, [filteredQuestions, previewQuestion]);
 
   // Handle Selection
   const handleSelectAll = (event) => {
@@ -133,6 +155,16 @@ export default function ImportFromBankModal({
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
     );
+  };
+
+  const handleOpenPreview = (question) => {
+    setPreviewQuestion(question);
+    setPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewOpen(false);
+    setPreviewQuestion(null);
   };
 
   // Handle Import
@@ -257,6 +289,7 @@ export default function ImportFromBankModal({
                   <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Danh mục</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Câu hỏi</TableCell>
+                  <TableCell sx={{ fontWeight: 700, width: 90 }}>Xem</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -302,6 +335,26 @@ export default function ImportFromBankModal({
                       >
                         {stripHtml(q.question)}
                       </TableCell>
+                      <TableCell>
+                        <Tooltip title="Xem trước câu hỏi">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenPreview(q);
+                            }}
+                            sx={{
+                              color: "#667eea",
+                              backgroundColor:
+                                previewQuestion?.id === q.id
+                                  ? "rgba(102, 126, 234, 0.12)"
+                                  : "transparent",
+                            }}
+                          >
+                            <Visibility fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -328,6 +381,146 @@ export default function ImportFromBankModal({
             : `Import (${selectedIds.length}) câu hỏi`}
         </Button>
       </DialogActions>
+
+      <Dialog
+        open={previewOpen}
+        onClose={handleClosePreview}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          Xem trước câu hỏi {previewQuestion ? `#${previewQuestion.id}` : ""}
+        </DialogTitle>
+        <DialogContent dividers>
+          {previewQuestion ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Chip
+                  size="small"
+                  label={`ID: ${previewQuestion.id}`}
+                  sx={{ fontWeight: 700 }}
+                />
+                <Chip
+                  size="small"
+                  label={`Danh mục: ${previewQuestion.category || "—"}`}
+                />
+                <Chip
+                  size="small"
+                  label={`Testcase: ${previewQuestion.testcase?.length || 0}`}
+                />
+                {typeof previewQuestion.echo_input === "boolean" && (
+                  <Chip
+                    size="small"
+                    label={`Hiển thị input: ${previewQuestion.echo_input ? "Bật" : "Tắt"}`}
+                  />
+                )}
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+                  Nội dung câu hỏi
+                </Typography>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    backgroundColor: "background.paper",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      previewQuestion.question || "<p><em>Không có nội dung câu hỏi</em></p>",
+                  }}
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+                  Danh sách testcase
+                </Typography>
+                {Array.isArray(previewQuestion.testcase) &&
+                previewQuestion.testcase.length > 0 ? (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {previewQuestion.testcase.map((tc, idx) => {
+                      const input = tc?.input ?? tc?.stdin ?? "";
+                      const expected =
+                        tc?.expected_output ??
+                        tc?.expectedOutput ??
+                        tc?.output ??
+                        tc?.result ??
+                        "";
+
+                      return (
+                        <Paper
+                          key={`${previewQuestion.id}_${idx}`}
+                          variant="outlined"
+                          sx={{ p: 1.5 }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ mb: 1, fontWeight: 700, color: "text.secondary" }}
+                          >
+                            Testcase {idx + 1}
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                            Đầu vào
+                          </Typography>
+                          <Box
+                            component="pre"
+                            sx={{
+                              mt: 0.5,
+                              mb: 1,
+                              p: 1,
+                              borderRadius: 1,
+                              bgcolor: "action.hover",
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            {input || "(rỗng)"}
+                          </Box>
+
+                          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                            Kết quả mong đợi
+                          </Typography>
+                          <Box
+                            component="pre"
+                            sx={{
+                              mt: 0.5,
+                              mb: 0,
+                              p: 1,
+                              borderRadius: 1,
+                              bgcolor: "action.hover",
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            {expected || "(rỗng)"}
+                          </Box>
+                        </Paper>
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Câu hỏi này chưa có testcase.
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          ) : null}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleClosePreview} variant="outlined">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }
