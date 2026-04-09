@@ -45,7 +45,15 @@ export default function ReviewPage() {
             { headers: authHeaders }
           );
           const qData = await resQ.json();
-          setQuestions(qData);
+          const sortedQuestions = (Array.isArray(qData) ? qData : []).sort(
+            (a, b) => {
+              const aOrder = a.order ?? a.id;
+              const bOrder = b.order ?? b.id;
+              if (aOrder !== bOrder) return aOrder - bOrder;
+              return a.id - b.id;
+            }
+          );
+          setQuestions(sortedQuestions);
         }
       } catch (err) {
         console.error("❌ Lỗi tải dữ liệu review:", err);

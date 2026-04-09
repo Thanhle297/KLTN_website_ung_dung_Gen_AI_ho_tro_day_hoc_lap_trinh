@@ -79,7 +79,13 @@ async function getQuestions(queryParams) {
   if (category) query.category = { $regex: category, $options: "i" };
   if (categoryId) query.categoryId = new ObjectId(categoryId);
 
-  return db.collection("question").find(query).sort({ id: 1 }).toArray();
+  const questions = await db.collection("question").find(query).toArray();
+  return questions.sort((a, b) => {
+    const aOrder = a.order ?? a.id;
+    const bOrder = b.order ?? b.id;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return a.id - b.id;
+  });
 }
 
 /**

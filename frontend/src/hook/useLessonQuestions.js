@@ -67,9 +67,16 @@ export default function useLessonQuestions(lessonId, userId, courseId) {
         ]);
 
         setLesson(lessonData);
-        setQuestions(Array.isArray(questionsData) ? questionsData : []);
+        const qList = (Array.isArray(questionsData) ? questionsData : []).sort(
+          (a, b) => {
+            const aOrder = a.order ?? a.id;
+            const bOrder = b.order ?? b.id;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+            return a.id - b.id;
+          },
+        );
+        setQuestions(qList);
 
-        const qList = Array.isArray(questionsData) ? questionsData : [];
         const tempMap =
           tempData && typeof tempData === "object" ? tempData : {};
 
