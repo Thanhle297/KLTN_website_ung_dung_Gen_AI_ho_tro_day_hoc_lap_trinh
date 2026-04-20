@@ -16,3 +16,4 @@ backup*/
 backend/scripts*/
 *.pdf
 *node_modules*
+*.yml
