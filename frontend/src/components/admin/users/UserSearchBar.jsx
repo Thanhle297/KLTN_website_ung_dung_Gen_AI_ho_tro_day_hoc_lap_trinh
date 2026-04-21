@@ -8,7 +8,7 @@ const UserSearchBar = ({ value, onChange }) => {
 
   return (
     <TextField
-      placeholder="🔍 Tìm kiếm theo username..."
+      placeholder="Tìm kiếm"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       fullWidth

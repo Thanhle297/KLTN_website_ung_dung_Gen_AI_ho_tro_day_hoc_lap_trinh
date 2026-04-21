@@ -75,7 +75,7 @@ export default function UsersCRUD() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   /* ============================== PAGINATION HANDLERS ============================== */
   const handleChangePage = useCallback((event, newPage) => {
@@ -226,9 +226,13 @@ export default function UsersCRUD() {
     setManagingUser(null);
   }, []);
   /* ============================== RENDER ============================== */
-  const filteredUsers = users.filter((u) =>
-    u.username.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const keyword = search.toLowerCase();
+    return (
+      u.username.toLowerCase().includes(keyword) ||
+      (u.fullname && u.fullname.toLowerCase().includes(keyword))
+    );
+  });
 
   // Pagination Logic
   const paginatedUsers = filteredUsers.slice(
