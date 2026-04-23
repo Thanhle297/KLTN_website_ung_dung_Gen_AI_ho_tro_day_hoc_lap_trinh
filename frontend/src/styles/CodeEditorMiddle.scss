@@ -31,11 +31,13 @@
     padding: 10px 16px;
     border-radius: $radius-md;
     cursor: pointer;
-    font-size: $font-size-sm;
+    font-size: inherit;
     font-weight: $font-weight-medium;
     transition: background $transition-fast;
     display: inline-flex;
     align-items: center;
+    line-height: normal;
+    box-sizing: border-box;
 
     &:hover {
       background: #4338ca;

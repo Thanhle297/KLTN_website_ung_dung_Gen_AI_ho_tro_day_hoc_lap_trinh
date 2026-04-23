@@ -310,6 +310,29 @@ export default function CodeEditorSimple({
       </div>
 
       <div className="code-editor__button-group">
+        <input
+          type="file"
+          accept=".py"
+          id="upload-file-simple"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const fileContent = event.target?.result?.toString?.() ?? "";
+              setLocalCode(fileContent);
+              onChangeCode?.(fileContent);
+              updateEditorState?.(question.id, { code: fileContent });
+            };
+            reader.readAsText(file);
+            e.target.value = "";
+          }}
+          aria-label="Tải file Python"
+        />
+        <label htmlFor="upload-file-simple" className="upload-btn">
+          Tải file Python
+        </label>
         {runningCode ? (
           <button
             type="button"
