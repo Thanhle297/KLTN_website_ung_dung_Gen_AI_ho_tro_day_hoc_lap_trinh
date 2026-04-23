@@ -67,11 +67,9 @@ async function callPromptSimple({
   difficulty = 2,
   lessonNumber,
 }) {
-  // Validation lessonNumber - chỉ bắt buộc khi cần gợi ý AI (difficulty 0, 1)
-  if (difficulty !== 2) {
-    if (!lessonNumber || lessonNumber < 16 || lessonNumber > 28) {
-      throw new Error(`lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`);
-    }
+  // Validation lessonNumber - luôn bắt buộc để kiểm tra kiến thức vượt bài
+  if (!lessonNumber || lessonNumber < 16 || lessonNumber > 28) {
+    throw new Error(`lessonNumber không hợp lệ: ${lessonNumber}. Phải là số từ 16-28`);
   }
 
   // Quy tắc theo difficulty level
@@ -110,16 +108,15 @@ async function callPromptSimple({
 - KHÔNG tạo câu hỏi trắc nghiệm, để mảng "quizzes" rỗng [].`;
   }
 
-  // Đoạn giới hạn kiến thức - chỉ thêm khi difficulty !== 2
-  const knowledgeLimit = difficulty !== 2 ? `
+  // Đoạn giới hạn kiến thức - luôn thêm để kiểm tra kiến thức vượt bài
+  const knowledgeLimit = `
 Học sinh hiện tại đang học bài: ${lessonNumber}
 **QUAN TRỌNG - GIỚI HẠN KIẾN THỨC**:
 - Học sinh CHỈ được học đến bài ${lessonNumber}.
 - TUYỆT ĐỐI KHÔNG gợi ý sử dụng kiến thức, cú pháp, hoặc khái niệm từ các bài sau bài ${lessonNumber}.
 - Chỉ sử dụng các khái niệm từ bài 16 đến bài ${lessonNumber} để hướng dẫn.
-- Nếu code học sinh sử dụng kiến thức vượt quá bài ${lessonNumber}, hãy nhắc em dùng cách đơn giản hơn phù hợp với trình độ.
 
-Danh sách bài học:
+Danh sách bài học (theo sách giáo khoa):
 - Bài 16: print đơn giản
 - Bài 17: biến và lệnh gán
 - Bài 18: vào ra đơn giản
@@ -133,7 +130,29 @@ Danh sách bài học:
 - Bài 26: hàm
 - Bài 27: tham số hàm
 - Bài 28: phạm vi biến
-` : "";
+
+Cú pháp Python tương ứng từng bài (dùng để phát hiện vượt kiến thức):
+- Bài 16: print()
+- Bài 17: biến, phép gán =, các kiểu dữ liệu cơ bản
+- Bài 18: input(), int(), float(), str()
+- Bài 19: if, elif, else, toán tử so sánh, toán tử logic
+- Bài 20: for, range()
+- Bài 21: while, break, continue
+- Bài 22: list [], append(), len(), truy cập phần tử
+- Bài 23: sort(), index(), slicing, list comprehension, del, remove(), pop()
+- Bài 24: chuỗi "", indexing chuỗi, len() với chuỗi, duyệt chuỗi
+- Bài 25: split(), join(), find(), replace(), strip(), upper(), lower()
+- Bài 26: def, return, gọi hàm
+- Bài 27: tham số, đối số, giá trị mặc định, *args, **kwargs
+- Bài 28: biến cục bộ, biến toàn cục, global
+
+**TIÊU CHÍ BẮT BUỘC VỀ KIẾN THỨC VƯỢT BÀI**:
+- Nếu code học sinh sử dụng cú pháp hoặc khái niệm từ bài SAU bài ${lessonNumber} → PHẢI đánh result = "FAIL".
+- Ví dụ: học sinh đang ở bài 20 (for) mà dùng def/return (bài 26) → FAIL.
+- Ví dụ: học sinh đang ở bài 19 (if) mà dùng for (bài 20) → FAIL.
+- Đây là lỗi "vượt kiến thức", KHÔNG ĐƯỢC cho PASS dù output đúng.
+- Khi FAIL do vượt kiến thức, hãy giải thích cho học sinh biết em đã dùng kiến thức chưa được học và gợi ý cách làm bằng kiến thức đã học.
+`;
 
   const prompt = `
 Bạn là giáo viên Tin học Việt Nam. Đánh giá bài làm Python của học sinh.

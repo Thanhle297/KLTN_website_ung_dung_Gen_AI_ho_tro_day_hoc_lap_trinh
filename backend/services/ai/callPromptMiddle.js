@@ -134,7 +134,28 @@ Học sinh hiện tại đang học bài: ${lessonNumber}
 - Học sinh CHỈ được học đến bài ${lessonNumber}.
 - TUYỆT ĐỐI KHÔNG gợi ý sử dụng kiến thức, cú pháp, hoặc khái niệm từ các bài sau bài ${lessonNumber}.
 - Chỉ sử dụng các khái niệm từ bài 16 đến bài ${lessonNumber} để hướng dẫn.
-- Nếu code học sinh sử dụng kiến thức vượt quá bài ${lessonNumber}, hãy nhắc em dùng cách đơn giản hơn phù hợp với trình độ.`;
+
+Cú pháp Python tương ứng từng bài (dùng để phát hiện vượt kiến thức):
+- Bài 16: print()
+- Bài 17: biến, phép gán =, các kiểu dữ liệu cơ bản
+- Bài 18: input(), int(), float(), str()
+- Bài 19: if, elif, else, toán tử so sánh, toán tử logic
+- Bài 20: for, range()
+- Bài 21: while, break, continue
+- Bài 22: list [], append(), len(), truy cập phần tử
+- Bài 23: sort(), index(), slicing, list comprehension, del, remove(), pop()
+- Bài 24: chuỗi "", indexing chuỗi, len() với chuỗi, duyệt chuỗi
+- Bài 25: split(), join(), find(), replace(), strip(), upper(), lower()
+- Bài 26: def, return, gọi hàm
+- Bài 27: tham số, đối số, giá trị mặc định, *args, **kwargs
+- Bài 28: biến cục bộ, biến toàn cục, global
+
+**TIÊU CHÍ BẮT BUỘC VỀ KIẾN THỨC VƯỢT BÀI**:
+- Nếu code học sinh sử dụng cú pháp hoặc khái niệm từ bài SAU bài ${lessonNumber} → PHẢI đánh result = "FAIL".
+- Ví dụ: học sinh đang ở bài 20 (for) mà dùng def/return (bài 26) → FAIL.
+- Ví dụ: học sinh đang ở bài 19 (if) mà dùng for (bài 20) → FAIL.
+- Đây là lỗi "vượt kiến thức", KHÔNG ĐƯỢC cho PASS hay PARTIAL dù output đúng.
+- Khi FAIL do vượt kiến thức, hãy giải thích cho học sinh biết em đã dùng kiến thức chưa được học và gợi ý cách làm bằng kiến thức đã học.`;
 
   // Format kết quả testcase thành bảng
   const testcaseTable = testcaseResults
@@ -201,18 +222,21 @@ Bạn nhận được code học sinh VÀ kết quả chạy testcase tự độ
 TIÊU CHÍ 3 MỨC:
 - **PASS**: Logic code đúng theo yêu cầu đề bài, cách giải phù hợp với kiến thức đã học (bài 16 đến ${lessonNumber}).
 - **PARTIAL** (đúng một phần):
-  + Output đúng (pass testcase) NHƯNG code dùng hardcode, trick, hoặc kiến thức vượt quá bài ${lessonNumber}.
   + Logic có hướng giải quyết đúng NHƯNG output chưa chính xác (sai format, thiếu edge case, lỗi nhỏ).
   + Code thể hiện sự hiểu biết về bài toán nhưng chưa hoàn chỉnh.
-- **FAIL**: Logic hoàn toàn sai, không thể hiện hiểu biết về yêu cầu đề bài. Code không liên quan đến bài toán.
+- **FAIL**:
+  + Logic hoàn toàn sai, không thể hiện hiểu biết về yêu cầu đề bài. Code không liên quan đến bài toán.
+  + Code dùng hardcode, trick để ra kết quả đúng mà không giải quyết bài toán thực sự.
+  + **Code sử dụng kiến thức vượt quá bài ${lessonNumber}** (ví dụ: dùng def/return khi chưa học bài 26, dùng while khi chưa học bài 21) → LUÔN LUÔN FAIL, dù output đúng.
 
 QUY TRÌNH ĐÁNH GIÁ:
 1. Phân tích yêu cầu đề bài: học sinh cần làm gì?
 2. Đọc code: logic có đúng không? Có dùng đúng kiến thức đã học không?
-3. Xem kết quả testcase: bao nhiêu pass / fail?
-4. Kết hợp:
-   - Code logic đúng + all testcase pass → PASS
-   - Code logic có vấn đề (hardcode/trick/vượt kiến thức) nhưng pass testcase → PARTIAL
+3. **KIỂM TRA VƯỢT KIẾN THỨC**: Code có dùng cú pháp từ bài sau bài ${lessonNumber} không? Nếu CÓ → FAIL ngay.
+4. Xem kết quả testcase: bao nhiêu pass / fail?
+5. Kết hợp:
+   - Code dùng kiến thức vượt bài ${lessonNumber} → FAIL (bất kể testcase)
+   - Code logic đúng + đúng kiến thức + all testcase pass → PASS
    - Code logic đúng nhưng fail một số testcase (thiếu edge case) → PARTIAL
    - Code logic sai + fail testcase → FAIL
    - Code logic có ý tưởng nhưng fail toàn bộ testcase → xem xét PARTIAL nếu ý tưởng rõ ràng đúng hướng, FAIL nếu không`;
