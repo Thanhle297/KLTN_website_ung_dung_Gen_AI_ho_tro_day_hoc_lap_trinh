@@ -82,10 +82,7 @@ const InteractiveTerminal = forwardRef(
       termRef.current = term;
       fitAddonRef.current = fitAddon;
 
-      // Hiển thị welcome message
-      term.write(
-        "\x1b[90m--- Terminal tương tác (nhấn Chạy code để bắt đầu) ---\x1b[0m\r\n"
-      );
+
 
       // Xử lý input từ user (xterm.js gọi callback này khi user gõ phím)
       term.onData((data) => {
@@ -162,9 +159,6 @@ const InteractiveTerminal = forwardRef(
         const term = termRef.current;
         if (term) {
           term.clear();
-          term.write(
-            "\x1b[90m--- Đang chạy chương trình... ---\x1b[0m\r\n\r\n"
-          );
         }
 
         // Đóng WS cũ nếu còn
@@ -274,9 +268,6 @@ const InteractiveTerminal = forwardRef(
 
       const term = termRef.current;
       if (term) {
-        term.write(
-          "\r\n\x1b[33m[Đã dừng chương trình]\x1b[0m\r\n"
-        );
         term.options.disableStdin = true;
       }
 
@@ -290,9 +281,6 @@ const InteractiveTerminal = forwardRef(
       const term = termRef.current;
       if (term) {
         term.clear();
-        term.write(
-          "\x1b[90m--- Terminal tương tác (nhấn Chạy code để bắt đầu) ---\x1b[0m\r\n"
-        );
       }
     }, []);
 
