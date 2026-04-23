@@ -12,6 +12,9 @@ except Exception:
 
 # VPS 8GB / 4 CPU: khuyến nghị 8 sandbox đồng thời
 MAX_CONCURRENT_SANDBOX = int(os.getenv("MAX_CONCURRENT_SANDBOX", "8"))
+# Giới hạn số sandbox chạy đồng thời trong 1 request (tránh 1 request chiếm hết slot)
+# Ví dụ: 15 TC nhưng chỉ chạy 2 TC song song → công bằng hơn khi nhiều học sinh nộp cùng lúc
+MAX_CONCURRENT_PER_REQUEST = int(os.getenv("MAX_CONCURRENT_PER_REQUEST", "2"))
 
 # Giới hạn mặc định cho mỗi lần chạy (có thể override theo endpoint nếu muốn)
 DEFAULT_TIMEOUT_SEC = int(os.getenv("DEFAULT_TIMEOUT_SEC", "15"))
