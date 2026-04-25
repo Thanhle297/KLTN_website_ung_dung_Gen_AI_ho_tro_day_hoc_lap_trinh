@@ -250,28 +250,50 @@ const InteractiveTerminal = forwardRef(
     // Dừng chương trình
     // ============================================================
     const stopExecution = useCallback(() => {
-      if (wsRef.current) {
+      const ws = wsRef.current;
+      if (ws) {
         try {
-          // Gửi stop message trước khi đóng
-          if (wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type: "stop" }));
+          if (ws.readyState === WebSocket.OPEN) {
+            // Gửi stop message - KHÔNG đóng WS ngay
+            // Chờ server phản hồi "error"/"done" rồi onmessage handler sẽ cleanup
+            ws.send(JSON.stringify({ type: "stop" }));
+
+            // Safety timeout: force close sau 3 giây nếu server không phản hồi
+            setTimeout(() => {
+              if (wsRef.current === ws) {
+                try {
+                  ws.close();
+                } catch (e) {
+                  // Bỏ qua
+                }
+                wsRef.current = null;
+                if (isRunningRef.current) {
+                  isRunningRef.current = false;
+                  onRunStateChange?.(false);
+                }
+              }
+            }, 3000);
+          } else {
+            // WS không ở trạng thái OPEN → đóng luôn
+            try {
+              ws.close();
+            } catch (e) {
+              // Bỏ qua
+            }
+            wsRef.current = null;
           }
-          wsRef.current.close();
         } catch (e) {
-          // Bỏ qua
+          wsRef.current = null;
         }
-        wsRef.current = null;
       }
 
       waitingInputRef.current = false;
-      isRunningRef.current = false;
 
       const term = termRef.current;
       if (term) {
         term.options.disableStdin = true;
       }
-
-      onRunStateChange?.(false);
+      // Không gọi onRunStateChange ở đây - chờ server phản hồi hoặc safety timeout
     }, [onRunStateChange]);
 
     // ============================================================

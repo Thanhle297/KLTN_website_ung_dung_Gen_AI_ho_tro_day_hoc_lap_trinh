@@ -22,6 +22,49 @@ from sandbox.interactive import run_code_interactive
 router = APIRouter()
 
 
+async def _listen_ws_stop(
+    websocket: WebSocket,
+    process: mp.Process,
+    stop_event: asyncio.Event,
+    input_queue: asyncio.Queue,
+):
+    """Task chạy song song: lắng nghe WS message 'stop' hoặc disconnect.
+    Khi nhận stop → kill process ngay, set event để relay loop biết.
+    """
+    try:
+        while not stop_event.is_set():
+            raw = await websocket.receive_text()
+            ws_msg = json.loads(raw)
+            if ws_msg.get("type") == "stop":
+                # Kill process ngay lập tức
+                if process.is_alive():
+                    try:
+                        process.terminate()
+                    except Exception:
+                        pass
+                    try:
+                        process.kill()
+                    except Exception:
+                        pass
+                stop_event.set()
+                return
+            elif ws_msg.get("type") == "input":
+                # Đẩy input message vào queue để relay loop xử lý
+                await input_queue.put(ws_msg)
+    except (WebSocketDisconnect, Exception):
+        # WS đóng hoặc lỗi → kill process
+        if process.is_alive():
+            try:
+                process.terminate()
+            except Exception:
+                pass
+            try:
+                process.kill()
+            except Exception:
+                pass
+        stop_event.set()
+
+
 async def _relay_pipe_to_ws(
     websocket: WebSocket,
     parent_conn,
@@ -29,9 +72,19 @@ async def _relay_pipe_to_ws(
 ) -> str:
     """Relay giữa child process (Pipe) và WebSocket client.
     Trả về toàn bộ output đã thu thập (cho AI grading).
+    Chạy song song với _listen_ws_stop để kill process ngay khi user bấm Stop.
     """
     loop = asyncio.get_running_loop()
     total_output = []
+
+    # Event + queue để giao tiếp giữa WS listener và relay loop
+    stop_event = asyncio.Event()
+    input_queue = asyncio.Queue()
+
+    # Chạy WS listener song song
+    ws_listener_task = asyncio.create_task(
+        _listen_ws_stop(websocket, process, stop_event, input_queue)
+    )
 
     def _recv_with_process_check(conn, proc, poll_interval=0.1):
         """Đọc từ Pipe, nhưng kiểm tra process còn sống không.
@@ -49,79 +102,104 @@ async def _relay_pipe_to_ws(
                 # Không còn data -> raise EOFError
                 raise EOFError("Child process đã kết thúc")
 
-    while True:
-        # Đọc từ child (blocking -> offload to thread)
-        try:
-            msg = await asyncio.wait_for(
-                loop.run_in_executor(
-                    None, _recv_with_process_check, parent_conn, process
-                ),
-                timeout=DEFAULT_TIMEOUT_SEC + 5  # Thêm buffer cho timeout
-            )
-        except asyncio.TimeoutError:
-            # Code chạy quá lâu
-            if process.is_alive():
+    try:
+        while True:
+            # Kiểm tra stop event trước mỗi lần đọc pipe
+            if stop_event.is_set():
                 try:
-                    process.terminate()
+                    await websocket.send_json({
+                        "type": "error",
+                        "data": "[Đã dừng chương trình]",
+                        "output": "".join(total_output),
+                    })
                 except Exception:
                     pass
-                try:
-                    process.kill()
-                except Exception:
-                    pass
-            try:
-                await websocket.send_json({
-                    "type": "error",
-                    "data": "Chương trình chạy quá thời gian (timeout).",
-                    "output": "".join(total_output),
-                })
-            except Exception:
-                pass
-            break
-        except (EOFError, OSError, BrokenPipeError):
-            # Child process đã chết hoặc pipe đã đóng
-            # Gửi done nếu chưa có error (code chạy xong bình thường nhưng pipe đóng trước khi gửi done)
-            try:
-                await websocket.send_json({
-                    "type": "done",
-                    "output": "".join(total_output),
-                })
-            except Exception:
-                pass
-            break
-
-        if msg["type"] == "stdout":
-            total_output.append(msg["data"])
-            try:
-                await websocket.send_json(msg)
-            except Exception:
                 break
 
-        elif msg["type"] == "input_request":
+            # Đọc từ child (blocking -> offload to thread)
             try:
-                await websocket.send_json(msg)
-            except Exception:
-                break
-
-            # Chờ user nhập từ WS
-            try:
-                ws_data = await asyncio.wait_for(
-                    websocket.receive_text(),
-                    timeout=300  # 5 phút chờ user nhập
+                msg = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None, _recv_with_process_check, parent_conn, process
+                    ),
+                    timeout=DEFAULT_TIMEOUT_SEC + 5  # Thêm buffer cho timeout
                 )
-                ws_msg = json.loads(ws_data)
+            except asyncio.TimeoutError:
+                # Code chạy quá lâu
+                if process.is_alive():
+                    try:
+                        process.terminate()
+                    except Exception:
+                        pass
+                    try:
+                        process.kill()
+                    except Exception:
+                        pass
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "data": "Chương trình chạy quá thời gian (timeout).",
+                        "output": "".join(total_output),
+                    })
+                except Exception:
+                    pass
+                break
+            except (EOFError, OSError, BrokenPipeError):
+                if stop_event.is_set():
+                    # Bị kill bởi stop → gửi thông báo dừng
+                    try:
+                        await websocket.send_json({
+                            "type": "error",
+                            "data": "[Đã dừng chương trình]",
+                            "output": "".join(total_output),
+                        })
+                    except Exception:
+                        pass
+                else:
+                    # Child process chết tự nhiên (code chạy xong)
+                    try:
+                        await websocket.send_json({
+                            "type": "done",
+                            "output": "".join(total_output),
+                        })
+                    except Exception:
+                        pass
+                break
 
-                if ws_msg.get("type") == "input":
-                    parent_conn.send({"data": ws_msg["data"]})
-                    # Echo input + newline vào output (giống terminal thật)
-                    total_output.append(ws_msg["data"] + "\n")
-                elif ws_msg.get("type") == "stop":
-                    # User bấm Stop
+            if msg["type"] == "stdout":
+                total_output.append(msg["data"])
+                try:
+                    await websocket.send_json(msg)
+                except Exception:
+                    break
+
+            elif msg["type"] == "input_request":
+                try:
+                    await websocket.send_json(msg)
+                except Exception:
+                    break
+
+                # Chờ input từ WS listener (qua queue) hoặc stop event
+                try:
+                    ws_msg = await asyncio.wait_for(
+                        input_queue.get(),
+                        timeout=300  # 5 phút chờ user nhập
+                    )
+                    if ws_msg.get("type") == "input":
+                        parent_conn.send({"data": ws_msg["data"]})
+                        # Echo input + newline vào output (giống terminal thật)
+                        total_output.append(ws_msg["data"] + "\n")
+                except asyncio.TimeoutError:
+                    # Quá lâu không nhập
                     if process.is_alive():
                         try:
                             process.terminate()
                         except Exception:
                             pass
+                    break
+
+                # Kiểm tra stop event sau khi chờ input
+                if stop_event.is_set():
                     try:
                         await websocket.send_json({
                             "type": "error",
@@ -131,30 +209,29 @@ async def _relay_pipe_to_ws(
                     except Exception:
                         pass
                     break
-            except (asyncio.TimeoutError, WebSocketDisconnect):
-                # User disconnect hoặc quá lâu không nhập
-                if process.is_alive():
-                    try:
-                        process.terminate()
-                    except Exception:
-                        pass
+
+            elif msg["type"] == "done":
+                msg["output"] = "".join(total_output)
+                try:
+                    await websocket.send_json(msg)
+                except Exception:
+                    pass
                 break
 
-        elif msg["type"] == "done":
-            msg["output"] = "".join(total_output)
-            try:
-                await websocket.send_json(msg)
-            except Exception:
-                pass
-            break
-
-        elif msg["type"] == "error":
-            msg["output"] = "".join(total_output)
-            try:
-                await websocket.send_json(msg)
-            except Exception:
-                pass
-            break
+            elif msg["type"] == "error":
+                msg["output"] = "".join(total_output)
+                try:
+                    await websocket.send_json(msg)
+                except Exception:
+                    pass
+                break
+    finally:
+        # Hủy WS listener task
+        ws_listener_task.cancel()
+        try:
+            await ws_listener_task
+        except (asyncio.CancelledError, Exception):
+            pass
 
     return "".join(total_output)
 
