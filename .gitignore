@@ -17,3 +17,15 @@ backend/scripts*/
 *.pdf
 *node_modules*
 *.yml
+
+# Jest - Backend test files
+backend/coverage/
+backend/**/__tests__/
+backend/**/*.test.js
+backend/**/*.spec.js
+backend/jest.config.js
+backend/jest.setup.js
+
+# Python Service
+python-service/__pycache__/
+python-service/**/__pycache__/
