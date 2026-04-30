@@ -200,3 +200,4 @@ router.post("/execute-middle", authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.getCombinedStatus = getCombinedStatus;

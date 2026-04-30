@@ -254,8 +254,8 @@ QUY TRÌNH ĐÁNH GIÁ:
     schemaName = "middle_evaluation_result";
   }
 
-  const prompt = `
-Bạn là giáo viên Tin học ở Việt Nam. Đánh giá bài làm Python của học sinh.
+  // System prompt: vai trò, quy tắc cố định, giới hạn kiến thức
+  const systemPrompt = `Bạn là giáo viên Tin học ở Việt Nam. Đánh giá bài làm Python của học sinh.
 ${knowledgeLimit}
 
 ${evaluationSection}
@@ -265,7 +265,15 @@ ${quizRule}
 
 ---
 
-ĐỀ BÀI:
+LƯU Ý QUAN TRỌNG:
+- PHẢI đánh giá "result" (PASS/PARTIAL/FAIL) dựa trên LOGIC CODE, không chỉ kết quả testcase.
+- Trả lời bằng tiếng Việt.
+- KHÔNG đưa code hoàn chỉnh cho học sinh.
+- Mỗi câu quiz (nếu có) có ĐÚNG 3 đáp án.
+- Khi PARTIAL hoặc FAIL, PHẢI tạo đủ 3 câu quiz, không được ít hơn.`;
+
+  // User prompt: dữ liệu cụ thể từng lần gọi
+  const userPrompt = `ĐỀ BÀI:
 ${question || "Không có đề"}
 
 MÃ NGUỒN HỌC SINH:
@@ -274,22 +282,15 @@ ${code || "Không có code"}
 \`\`\`
 
 KẾT QUẢ TESTCASE TỰ ĐỘNG (${testcaseSummary}):
-${testcaseTable}
-
----
-
-LƯU Ý QUAN TRỌNG:
-- PHẢI đánh giá "result" (PASS/PARTIAL/FAIL) dựa trên LOGIC CODE, không chỉ kết quả testcase.
-- Trả lời bằng tiếng Việt.
-- KHÔNG đưa code hoàn chỉnh cho học sinh.
-- Mỗi câu quiz (nếu có) có ĐÚNG 3 đáp án.
-- Khi PARTIAL hoặc FAIL, PHẢI tạo đủ 3 câu quiz, không được ít hơn.
-`;
+${testcaseTable}`;
 
   try {
     const response = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [{ role: "user", content: prompt }],
+      model: "gpt-5.4-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
       temperature: 0.4,
       response_format: {
         type: "json_schema",
@@ -305,11 +306,10 @@ LƯU Ý QUAN TRỌNG:
 
     //log token use
     if (response.usage) {
-      console.log("🔢 Token usage (middle):");
-      console.log("  Difficulty:", difficulty);
-      console.log("  Prompt:", response.usage.prompt_tokens);
-      console.log("  Completion:", response.usage.completion_tokens);
-      console.log("  Total:", response.usage.total_tokens);
+      const { prompt_tokens, completion_tokens, total_tokens, prompt_tokens_details } = response.usage;
+      const cached = prompt_tokens_details?.cached_tokens || 0;
+      const uncached = prompt_tokens - cached;
+      console.log(`🔢 Token usage (middle) | Difficulty: ${difficulty} | Prompt: ${prompt_tokens} (cached: ${cached}, uncached: ${uncached}) | Completion: ${completion_tokens} | Total: ${total_tokens}`);
     }
     // Parse JSON response
     let parsed;

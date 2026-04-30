@@ -33,8 +33,7 @@ const fullPromptSchema = {
         required: ["question", "answers", "correctIndex"],
         additionalProperties: false,
       },
-      description:
-        "Câu hỏi trắc nghiệm gợi mở (rỗng nếu code đúng hoàn toàn)",
+      description: "Câu hỏi trắc nghiệm gợi mở (rỗng nếu code đúng hoàn toàn)",
     },
     instructs: {
       type: "array",
@@ -108,18 +107,19 @@ Học sinh hiện tại đang học bài: ${lessonNumber}
 - Chỉ sử dụng các khái niệm từ bài 16 đến bài ${lessonNumber} để hướng dẫn.
 - Nếu code học sinh sử dụng kiến thức vượt quá bài ${lessonNumber}, hãy nhắc em dùng cách đơn giản hơn phù hợp với trình độ.`;
 
-  // Phần dữ liệu bài làm dùng chung
-  const studentData = `
-Code học sinh:
+  // Phần dữ liệu bài làm dùng chung (user prompt)
+  const userPrompt = `ĐỀ BÀI:
+${question || "Không có đề"}
+
+MÃ NGUỒN HỌC SINH:
 \`\`\`python
-${code}
+${code || "Không có code"}
 \`\`\`
 
-Đề bài: ${question || "Không có"}
-Kết quả sai: ${error}
-Expected: ${testcase.expected}`;
+KẾT QUẢ SAI TỪ IDE: ${error}
+EXPECTED: ${testcase.expected}`;
 
-  let prompt = "";
+  let systemPrompt = "";
   let schema = null;
   let schemaName = "";
 
@@ -127,8 +127,7 @@ Expected: ${testcase.expected}`;
   if (mode === "full") {
     schema = fullPromptSchema;
     schemaName = "code_evaluation_full";
-    prompt = `
-Bạn là một giáo viên Tin học ở Việt Nam.
+    systemPrompt = `Bạn là một giáo viên Tin học ở Việt Nam.
 ${knowledgeLimit}
 
 NHIỆM VỤ:
@@ -144,7 +143,7 @@ QUY TẮC VỀ "instructs":
 - Hướng dẫn đầu tiên: mô tả ngắn gọn tình trạng bài làm (đúng/sai ở đâu).
 - Hướng dẫn thứ hai: đưa ra CÁC BƯỚC CỤ THỂ để học sinh tự viết lại, KHÔNG đưa code.
   Dùng format có đánh số bước rõ ràng bên trong 1 chuỗi, ví dụ:
-  "Em hãy thử viết lại chương trình theo các bước sau:\n1. Dùng input() để nhập s1 và s2.\n2. Dùng toán tử in để kiểm tra s2 có trong s1 không.\n3. Dùng câu lệnh if để in ra \"Có\" nếu đúng, ngược lại in \"Không\".\nEm hãy thử lại nhé!"
+  "Em hãy thử viết lại chương trình theo các bước sau:\\n1. Dùng input() để nhập s1 và s2.\\n2. Dùng toán tử in để kiểm tra s2 có trong s1 không.\\n3. Dùng câu lệnh if để in ra \\"Có\\" nếu đúng, ngược lại in \\"Không\\".\\nEm hãy thử lại nhé!"
 - Nếu code đúng hoàn toàn, chỉ đưa ra lời khen ngắn gọn.
 - Nếu IDE báo lỗi cú pháp, gợi ý vị trí dòng sai và hướng sửa.
 - KHÔNG đưa code hoàn chỉnh, chỉ mô tả bằng lời các bước cần làm.
@@ -163,17 +162,14 @@ LƯU Ý QUAN TRỌNG:
 - KHÔNG đưa code hoàn chỉnh cho học sinh, chỉ gợi mở.
 - Gợi ý đơn giản nhất có thể.
 - Luôn khuyến khích học sinh tự suy nghĩ và thử lại code.
-- Trả lời bằng tiếng Việt.
-
-${studentData}`;
+- Trả lời bằng tiếng Việt.`;
   }
 
   // ---------------- INSTRUCT ONLY (KHÁ) ----------------
   else if (mode === "instruct_only") {
     schema = instructOnlySchema;
     schemaName = "code_evaluation_instruct";
-    prompt = `
-Bạn là giáo viên Tin học ở Việt Nam.
+    systemPrompt = `Bạn là giáo viên Tin học ở Việt Nam.
 ${knowledgeLimit}
 
 NHIỆM VỤ:
@@ -190,15 +186,16 @@ YÊU CẦU NGHIÊM NGẶT:
 - Trả lời bằng tiếng Việt.
 
 Ví dụ hợp lệ:
-["Hãy xem lại dòng 3, có thể em thiếu dấu hai chấm.", "Hãy kiểm tra biến n trước khi sử dụng."]
-
-${studentData}`;
+["Hãy xem lại dòng 3, có thể em thiếu dấu hai chấm.", "Hãy kiểm tra biến n trước khi sử dụng."]`;
   }
 
   try {
     const response = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [{ role: "user", content: prompt }],
+      model: "gpt-5.4-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
       temperature: 0.4,
       response_format: {
         type: "json_schema",
@@ -214,11 +211,8 @@ ${studentData}`;
 
     // Log token usage
     if (response.usage) {
-      console.log("🔢 Token usage (callPromptAI):");
-      console.log("  Mode:", mode);
-      console.log("  Prompt:", response.usage.prompt_tokens);
-      console.log("  Completion:", response.usage.completion_tokens);
-      console.log("  Total:", response.usage.total_tokens);
+      const cached = response.usage.prompt_tokens_details?.cached_tokens || 0;
+      console.log(`🔢 Token (callPromptAI) | Mode: ${mode} | Prompt: ${response.usage.prompt_tokens} | Cached: ${cached} | Completion: ${response.usage.completion_tokens} | Total: ${response.usage.total_tokens}${cached > 0 ? ` | 💰 Cache hit: ${cached}/${response.usage.prompt_tokens} (${((cached / response.usage.prompt_tokens) * 100).toFixed(1)}%)` : ""}`);
     }
 
     // Parse JSON response
