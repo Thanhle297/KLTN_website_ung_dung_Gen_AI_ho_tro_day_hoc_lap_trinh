@@ -1,48 +1,37 @@
 // src/pages/admin/CourseReportPage.jsx
 // Trang hiển thị báo cáo điểm học sinh theo khóa học
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
-  CircularProgress,
+  Chip,
+  Paper,
   Skeleton,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Tooltip,
-  Breadcrumbs,
-  Link,
   useTheme,
 } from "@mui/material";
 import {
   Assessment as AssessmentIcon,
-  Search as SearchIcon,
-  Download as DownloadIcon,
-  CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
-  ArrowBack as ArrowBackIcon,
-  School as SchoolIcon,
-  NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
+
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import ReportHeader from "../../components/admin/report/ReportHeader";
+import ReportSearchBar from "../../components/admin/report/ReportSearchBar";
+import ReportTable from "../../components/admin/report/ReportTable";
+import SubmissionHistoryDialog from "../../components/admin/report/SubmissionHistoryDialog";
 import useReportAPI from "../../hook/useReportAPI";
-import SubmissionHistoryModal from "../../components/SubmissionHistoryModal";
+import useNotify from "../../hook/useNotify";
+import { adminCardSx } from "../../styles/adminTokens";
 
 export default function CourseReportPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const reportAPI = useReportAPI();
   const theme = useTheme();
+  const notify = useNotify();
 
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -52,13 +41,8 @@ export default function CourseReportPage() {
   // State cho modal lịch sử nộp bài: { userId, subLessonId, studentName }
   const [historyTarget, setHistoryTarget] = useState(null);
 
-  useEffect(() => {
-    if (courseId) {
-      loadReport();
-    }
-  }, [courseId]);
-
-  const loadReport = async () => {
+  // --- Tải báo cáo ---
+  const loadReport = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -72,14 +56,19 @@ export default function CourseReportPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId, reportAPI]);
 
-  const handleExportCSV = async () => {
+  useEffect(() => {
+    if (courseId) loadReport();
+  }, [courseId, loadReport]);
+
+  // --- Xuất CSV ---
+  const handleExportCSV = useCallback(async () => {
     try {
       setExporting(true);
       const response = await reportAPI.exportScoresCSV(courseId);
 
-      // Tạo tên file
+      // Tạo tên file (loại bỏ dấu tiếng Việt)
       const courseName = reportData?.courseName
         ? reportData.courseName
             .normalize("NFD")
@@ -94,137 +83,37 @@ export default function CourseReportPage() {
       reportAPI.downloadCSV(response.data, filename);
     } catch (err) {
       console.error("❌ Export CSV error:", err);
-      alert("Lỗi khi xuất file CSV. Vui lòng thử lại.");
+      notify.error("Lỗi khi xuất file CSV. Vui lòng thử lại.");
     } finally {
       setExporting(false);
     }
-  };
+  }, [courseId, reportAPI, reportData?.courseName, notify]);
 
-  // Filter students theo search
-  const filteredStudents = reportData?.students?.filter(
-    (student) =>
-      student.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  // --- Lọc học sinh theo từ khoá tìm kiếm ---
+  const filteredStudents = useMemo(
+    () =>
+      reportData?.students?.filter(
+        (student) =>
+          student.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [reportData?.students, searchTerm]
   );
 
-  // Hàm render cell điểm với màu sắc
-  const renderScoreCell = (score) => {
-    if (!score || score.progress === 0) {
-      return (
-        <Typography variant="body2" color="text.disabled">
-          -
-        </Typography>
-      );
-    }
-
-    const progress = score.progress;
-    let color = "error";
-    if (progress >= 80) color = "success";
-    else if (progress >= 50) color = "warning";
-
-    return (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Typography variant="body2" fontWeight={600} color={`${color}.main`}>
-          {progress}%
-        </Typography>
-        {score.completed && (
-          <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />
-        )}
-      </Box>
-    );
-  };
+  // --- Callback đóng modal ---
+  const handleCloseHistory = useCallback(() => setHistoryTarget(null), []);
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        maxWidth: "100%",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-        overflow: "hidden",
-      }}
-    >
-      {/* Header với breadcrumb */}
+    <AdminPageWrapper>
+      {/* Breadcrumb + nút quay lại */}
+      <ReportHeader navigate={navigate} />
+
+      {/* Card chính */}
+      <Paper sx={{ ...adminCardSx(theme), overflow: "hidden" }}>
+        {/* Tiêu đề khóa học */}
         <Box
           sx={{
-            mb: 3,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-        <Box>
-          <Breadcrumbs
-            separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 1, color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white" }}
-          >
-            <Link
-              underline="hover"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
-                cursor: "pointer",
-              }}
-              onClick={() => navigate("/admin/courses")}
-            >
-              <SchoolIcon sx={{ mr: 0.5 }} fontSize="small" />
-              Quản lý Khóa học
-            </Link>
-            <Typography
-              sx={{ display: "flex", alignItems: "center", color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white" }}
-            >
-              <AssessmentIcon sx={{ mr: 0.5 }} fontSize="small" />
-              Báo cáo điểm
-            </Typography>
-          </Breadcrumbs>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={() => navigate("/admin/courses")}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                color: theme.palette.mode === "dark" ? theme.palette.text.primary : "white",
-                backgroundColor: theme.palette.mode === "dark"
-                  ? "rgba(255, 255, 255, 0.08)"
-                  : "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(10px)",
-                "&:hover": {
-                  backgroundColor: theme.palette.mode === "dark"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.25)",
-                },
-              }}
-            >
-              Quay lại
-            </Button>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Main content box */}
-<Paper
-        sx={{
-          borderRadius: 3,
-          boxShadow: theme.palette.mode === "dark" 
-            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-            : "0 8px 32px rgba(0, 0, 0, 0.15)",
-          overflow: "hidden",
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        {/* Title */}
-<Box
-          sx={{
-            background: theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: theme.palette.gradient.primary,
             color: "white",
             p: 3,
           }}
@@ -265,27 +154,42 @@ export default function CourseReportPage() {
           )}
         </Box>
 
-        {/* Content */}
+        {/* Nội dung */}
         <Box sx={{ p: 3 }}>
           {loading ? (
+            /* Skeleton loading */
             <Box sx={{ p: 3 }}>
-              {/* Header row skeleton */}
               <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 {Array.from({ length: 6 }).map((_, j) => (
-                  <Skeleton key={j} variant="text" width={j === 0 ? 40 : 100} sx={{ fontSize: "0.875rem", flex: j > 2 ? 1 : "none" }} />
+                  <Skeleton
+                    key={j}
+                    variant="text"
+                    width={j === 0 ? 40 : 100}
+                    sx={{
+                      fontSize: "0.875rem",
+                      flex: j > 2 ? 1 : "none",
+                    }}
+                  />
                 ))}
               </Box>
-              {/* Data rows skeleton */}
               {Array.from({ length: 8 }).map((_, i) => (
                 <Box key={i} sx={{ display: "flex", gap: 2, mb: 1 }}>
                   {Array.from({ length: 6 }).map((__, j) => (
-                    <Skeleton key={j} variant="rounded" height={32}
-                      sx={{ flex: j > 2 ? 1 : "none", width: j === 0 ? 40 : j <= 2 ? 100 : undefined }} />
+                    <Skeleton
+                      key={j}
+                      variant="rounded"
+                      height={32}
+                      sx={{
+                        flex: j > 2 ? 1 : "none",
+                        width: j === 0 ? 40 : j <= 2 ? 100 : undefined,
+                      }}
+                    />
                   ))}
                 </Box>
               ))}
             </Box>
           ) : error ? (
+            /* Trạng thái lỗi */
             <Box
               sx={{
                 display: "flex",
@@ -310,364 +214,30 @@ export default function CourseReportPage() {
             </Box>
           ) : reportData ? (
             <>
-              {/* Toolbar */}
-              <Box
-                sx={{
-                  mb: 3,
-                  display: "flex",
-                  gap: 2,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <TextField
-                  placeholder="Tìm kiếm học sinh..."
-                  size="small"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ minWidth: 250 }}
-                />
-
-                <Box sx={{ flex: 1 }} />
-
-                <Button
-                  variant="contained"
-                  startIcon={
-                    exporting ? (
-                      <CircularProgress size={18} color="inherit" />
-                    ) : (
-                      <DownloadIcon />
-                    )
-                  }
-                  onClick={handleExportCSV}
-                  disabled={exporting}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 600,
-                    background:
-                      "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #38ef7d 0%, #11998e 100%)",
-                    },
-                  }}
-                >
-                  {exporting ? "Đang xuất..." : "Xuất CSV"}
-                </Button>
-
-                <Tooltip title="Tải lại dữ liệu">
-                  <IconButton onClick={loadReport} disabled={loading}>
-                    <RefreshIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-
-              {/* Bảng điểm */}
-              <TableContainer
-                component={Paper}
-                sx={{
-                  maxHeight: "calc(100vh - 400px)",
-                  maxWidth: "100%",
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  borderRadius: 2,
-                }}
-              >
-                <Table stickyHeader size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          backgroundColor: theme.palette.mode === "dark"
-                            ? theme.palette.background.paper
-                            : "#f5f5f5",
-                          position: "sticky",
-                          left: 0,
-                          zIndex: 3,
-                          minWidth: 50,
-                        }}
-                      >
-                        STT
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          backgroundColor: theme.palette.mode === "dark"
-                            ? theme.palette.background.paper
-                            : "#f5f5f5",
-                          position: "sticky",
-                          left: 50,
-                          zIndex: 3,
-                          minWidth: 120,
-                        }}
-                      >
-                        Username
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          backgroundColor: theme.palette.mode === "dark"
-                            ? theme.palette.background.paper
-                            : "#f5f5f5",
-                          position: "sticky",
-                          left: 170,
-                          zIndex: 3,
-                          minWidth: 180,
-                        }}
-                      >
-                        Họ tên
-                      </TableCell>
-
-                      {/* Cột động cho từng bài học */}
-                      {reportData.structure?.map((sub) => (
-                        <TableCell
-                          key={sub.subLessonId}
-                          align="center"
-                          sx={{
-                            fontWeight: 600,
-                            backgroundColor: theme.palette.mode === "dark"
-                              ? theme.palette.background.paper
-                              : "#f5f5f5",
-                            minWidth: 100,
-                            fontSize: "0.75rem",
-                          }}
-                        >
-                          <Tooltip
-                            title={`${sub.lessonTitle} - ${sub.subLessonTitle}`}
-                          >
-                            <Box>
-                              <Typography
-                                variant="caption"
-                                display="block"
-                                noWrap
-                                sx={{ maxWidth: 100 }}
-                              >
-                                {sub.subLessonTitle}
-                              </Typography>
-                            </Box>
-                          </Tooltip>
-                        </TableCell>
-                      ))}
-
-                      <TableCell
-                        align="center"
-                        sx={{
-                          fontWeight: 700,
-                          backgroundColor: theme.palette.mode === "dark"
-                            ? "rgba(33, 150, 243, 0.15)"
-                            : "#e3f2fd",
-                          minWidth: 80,
-                        }}
-                      >
-                        TB
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-                    {filteredStudents?.map((student, index) => (
-                      <TableRow
-                        key={student.userId}
-                        sx={{
-                          "&:nth-of-type(odd)": {
-                            backgroundColor: "rgba(0, 0, 0, 0.02)",
-                          },
-                          "&:hover": {
-                            backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          },
-                        }}
-                      >
-                        <TableCell
-                          sx={{
-                            position: "sticky",
-                            left: 0,
-                            backgroundColor: theme.palette.mode === "dark"
-                              ? theme.palette.background.paper
-                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
-                            zIndex: 2,
-                            boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
-                            "&:hover": {
-                              backgroundColor: "rgba(102, 126, 234, 0.08)",
-                            },
-                          }}
-                        >
-                          {index + 1}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            position: "sticky",
-                            left: 50,
-                            backgroundColor: theme.palette.mode === "dark"
-                              ? theme.palette.background.paper
-                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
-                            zIndex: 2,
-                            fontWeight: 500,
-                            boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
-                            "&:hover": {
-                              backgroundColor: "rgba(102, 126, 234, 0.08)",
-                            },
-                          }}
-                        >
-                          {student.username}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            position: "sticky",
-                            left: 170,
-                            backgroundColor: theme.palette.mode === "dark"
-                              ? theme.palette.background.paper
-                              : index % 2 === 0 ? "#fafafa" : "#ffffff",
-                            zIndex: 2,
-                            fontWeight: 600,
-                            boxShadow: "2px 0 5px rgba(0,0,0,0.05)",
-                            "&:hover": {
-                              backgroundColor: "rgba(102, 126, 234, 0.08)",
-                            },
-                          }}
-                        >
-                          {student.fullname}
-                        </TableCell>
-
-                        {/* Điểm từng bài - click để xem lịch sử nộp bài */}
-                        {reportData.structure?.map((sub) => {
-                          const score = student.scores[sub.subLessonId];
-                          const hasScore = score && score.progress > 0;
-                          return (
-                            <TableCell
-                              key={sub.subLessonId}
-                              align="center"
-                              onClick={hasScore ? () => setHistoryTarget({
-                                userId: student.userId,
-                                subLessonId: sub.subLessonId,
-                                studentName: student.fullname,
-                                subLessonTitle: sub.subLessonTitle,
-                              }) : undefined}
-                              sx={{
-                                ...(hasScore && {
-                                  cursor: "pointer",
-                                  transition: "background-color 0.2s",
-                                  "&:hover": {
-                                    backgroundColor: "rgba(102, 126, 234, 0.15) !important",
-                                  },
-                                }),
-                              }}
-                            >
-                              {renderScoreCell(score)}
-                            </TableCell>
-                          );
-                        })}
-
-                        {/* Điểm trung bình */}
-                        <TableCell
-                          align="center"
-                          sx={{ backgroundColor: theme.palette.mode === "dark"
-                            ? "rgba(33, 150, 243, 0.15)"
-                            : "#e3f2fd" }}
-                        >
-                          <Chip
-                            label={`${student.averageProgress}%`}
-                            size="small"
-                            color={
-                              student.averageProgress >= 80
-                                ? "success"
-                                : student.averageProgress >= 50
-                                ? "warning"
-                                : "error"
-                            }
-                            sx={{ fontWeight: 700, minWidth: 60 }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-
-                    {filteredStudents?.length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={reportData.structure?.length + 4}
-                          align="center"
-                          sx={{ py: 5 }}
-                        >
-                          <Typography color="text.secondary">
-                            Không tìm thấy học sinh nào
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {/* Chú thích */}
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  gap: 3,
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="caption" color="text.secondary">
-                  Chú thích:
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <CheckCircleIcon
-                    sx={{ fontSize: 14, color: "success.main" }}
-                  />
-                  <Typography variant="caption">Đã hoàn thành</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Chip
-                    label="≥80%"
-                    size="small"
-                    color="success"
-                    sx={{ height: 20 }}
-                  />
-                  <Typography variant="caption">Hoàn thành tốt</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Chip
-                    label="50-79%"
-                    size="small"
-                    color="warning"
-                    sx={{ height: 20 }}
-                  />
-                  <Typography variant="caption">Hoàn thành</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Chip
-                    label="<50%"
-                    size="small"
-                    color="error"
-                    sx={{ height: 20 }}
-                  />
-                  <Typography variant="caption">Chưa hoàn thành</Typography>
-                </Box>
-              </Box>
+              <ReportSearchBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onExport={handleExportCSV}
+                exporting={exporting}
+                onRefresh={loadReport}
+                loading={loading}
+              />
+              <ReportTable
+                reportData={reportData}
+                filteredStudents={filteredStudents}
+                onCellClick={setHistoryTarget}
+              />
             </>
           ) : null}
         </Box>
       </Paper>
 
       {/* Modal lịch sử nộp bài của học sinh */}
-      {historyTarget && (
-        <SubmissionHistoryModal
-          userId={historyTarget.userId}
-          subLessonId={historyTarget.subLessonId}
-          onClose={() => setHistoryTarget(null)}
-          from="admin"
-          courseId={courseId}
-        />
-      )}
-    </Box>
+      <SubmissionHistoryDialog
+        target={historyTarget}
+        courseId={courseId}
+        onClose={handleCloseHistory}
+      />
+    </AdminPageWrapper>
   );
 }

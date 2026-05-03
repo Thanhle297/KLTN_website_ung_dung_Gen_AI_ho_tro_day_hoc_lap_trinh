@@ -14,6 +14,18 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý 401: token hết hạn → redirect về login
+API.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
 export default function useReportAPI() {
   return useMemo(
     () => ({
