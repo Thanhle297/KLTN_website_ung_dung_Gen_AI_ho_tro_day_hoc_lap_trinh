@@ -104,9 +104,7 @@ export default function BulkEnrollDialog({ open, onClose, onSave, api }) {
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`
-            : "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+          background: theme.palette.gradient.primary,
           color: "white",
           display: "flex",
           alignItems: "center",

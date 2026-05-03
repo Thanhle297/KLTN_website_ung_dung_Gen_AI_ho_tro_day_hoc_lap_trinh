@@ -1,4 +1,5 @@
 const express = require("express");
+const { ObjectId } = require("mongodb");
 const authMiddleware = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/coursePermission");
 const {
@@ -8,6 +9,7 @@ const {
   getCourseUsers,
   getUserCourses,
 } = require("../services/enrollmentService");
+const { getDB } = require("../config/mongodb");
 
 const router = express.Router();
 
@@ -89,6 +91,45 @@ router.post("/bulk-enroll", authMiddleware, adminOnly, async (req, res) => {
   } catch (error) {
     console.error("❌ Bulk enroll error:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+});
+
+/* ============================================
+   POST /api/enrollments/bulk
+   Bulk add/remove enrollments
+=============================================== */
+router.post("/bulk", authMiddleware, async (req, res) => {
+  try {
+    const { add = [], remove = [] } = req.body;
+    const db = getDB();
+    let addCount = 0, removeCount = 0;
+
+    // Process additions
+    for (const item of add) {
+      await db.collection("users").updateOne(
+        { _id: new ObjectId(item.userId) },
+        { $addToSet: { enrolledCourses: item.courseId } }
+      );
+      addCount++;
+    }
+
+    // Process removals
+    for (const item of remove) {
+      await db.collection("users").updateOne(
+        { _id: new ObjectId(item.userId) },
+        { $pull: { enrolledCourses: item.courseId } }
+      );
+      removeCount++;
+    }
+
+    res.json({ 
+      message: `Đã thêm ${addCount}, gỡ ${removeCount} phân bổ`,
+      addCount,
+      removeCount 
+    });
+  } catch (err) {
+    console.error("❌ Bulk enrollment error:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 });
 
