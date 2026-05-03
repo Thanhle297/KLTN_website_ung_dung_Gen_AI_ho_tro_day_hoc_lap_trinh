@@ -10,16 +10,28 @@ import {
   useTheme,
 } from "@mui/material";
 import { Warning } from "@mui/icons-material";
+import { dangerButtonSx } from "../../../styles/adminTokens";
 
+/**
+ * Dialog xác nhận xóa dùng chung cho mọi trang admin.
+ *
+ * @param {boolean}  open         - Hiển thị dialog
+ * @param {string}   itemName     - Tên item sẽ xóa (hiển thị nổi bật)
+ * @param {string}   itemType     - Loại item ("khóa học", "bài học", "người dùng"…)
+ * @param {Array}    itemDetails  - (Tuỳ chọn) Mảng { label, value } để hiển thị thêm thông tin
+ * @param {Function} onConfirm    - Callback khi xác nhận xóa
+ * @param {Function} onCancel     - Callback khi huỷ / đóng dialog
+ */
 const DeleteConfirmDialog = ({
   open,
   itemName,
-  itemType = "item",
+  itemType = "mục này",
+  itemDetails,
   onConfirm,
   onCancel,
 }) => {
   const theme = useTheme();
-  
+
   return (
     <Dialog
       open={open}
@@ -27,7 +39,7 @@ const DeleteConfirmDialog = ({
       disableRestoreFocus
       maxWidth="sm"
       fullWidth
-PaperProps={{
+      PaperProps={{
         sx: {
           borderRadius: 4,
           background: theme.palette.background.paper,
@@ -35,11 +47,9 @@ PaperProps={{
         },
       }}
     >
-<DialogTitle
+      <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
-            : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+          background: theme.palette.gradient.danger,
           color: "white",
           fontWeight: 700,
           fontSize: "1.5rem",
@@ -55,31 +65,58 @@ PaperProps={{
       <DialogContent sx={{ mt: 3 }}>
         <Box sx={{ textAlign: "center", py: 2 }}>
           <Typography variant="h6" gutterBottom>
-            Bạn có chắc chắn muốn xóa {itemType} này?
+            Bạn có chắc chắn muốn xóa {itemType}?
           </Typography>
-<Typography
-            variant="body1"
-            sx={{
-              mt: 2,
-              p: 2,
-              background: theme.palette.mode === "dark"
-                ? "rgba(244, 63, 94, 0.1)"
-                : "linear-gradient(135deg, #fa709a15 0%, #fee14015 100%)",
-              borderRadius: 2,
-              fontWeight: 600,
-              color: theme.palette.error.main,
-            }}
-          >
-            {itemName}
-          </Typography>
+
+          {/* Tên item nổi bật */}
+          {itemName && (
+            <Typography
+              variant="body1"
+              sx={{
+                mt: 2,
+                p: 2,
+                backgroundColor: theme.palette.action.selected,
+                borderRadius: 2,
+                fontWeight: 600,
+                color: theme.palette.error.main,
+              }}
+            >
+              {itemName}
+            </Typography>
+          )}
+
+          {/* Chi tiết bổ sung (vd: email, username cho user) */}
+          {itemDetails && itemDetails.length > 0 && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: theme.palette.action.selected,
+                border: `1px solid ${theme.palette.error.light}30`,
+                textAlign: "left",
+              }}
+            >
+              {itemDetails.map((detail, idx) => (
+                <Typography
+                  key={idx}
+                  variant="body2"
+                  sx={{ fontWeight: 600, mb: idx < itemDetails.length - 1 ? 0.5 : 0 }}
+                >
+                  {detail.label}: {detail.value}
+                </Typography>
+              ))}
+            </Box>
+          )}
+
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            ⚠️ Hành động này không thể hoàn tác!
+            Hành động này không thể hoàn tác!
           </Typography>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 0 }}>
-<Button
+        <Button
           onClick={onCancel}
           variant="outlined"
           sx={{
@@ -96,21 +133,14 @@ PaperProps={{
         >
           Hủy
         </Button>
-<Button
+        <Button
           onClick={onConfirm}
           variant="contained"
           sx={{
-            background: theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
-              : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            ...dangerButtonSx(theme),
             borderRadius: 2,
             textTransform: "none",
             px: 3,
-            "&:hover": {
-              background: theme.palette.mode === "dark"
-                ? `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`
-                : "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
-            },
           }}
         >
           Xác nhận xóa
@@ -120,4 +150,4 @@ PaperProps={{
   );
 };
 
-export default DeleteConfirmDialog;
+export default React.memo(DeleteConfirmDialog);

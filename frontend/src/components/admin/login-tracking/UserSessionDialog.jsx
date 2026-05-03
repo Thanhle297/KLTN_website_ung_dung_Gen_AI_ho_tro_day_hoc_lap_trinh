@@ -164,8 +164,7 @@ const UserSessionDialog = ({ open, onClose, user }) => {
               width: 48,
               height: 48,
               fontWeight: 700,
-              background:
-                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: theme.palette.gradient.primary,
             }}
           >
             {getInitials(user.fullname)}
@@ -207,7 +206,7 @@ const UserSessionDialog = ({ open, onClose, user }) => {
                   icon: <LoginIcon />,
                   label: "Tổng lượt",
                   value: stats.totalLogins || 0,
-                  gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  gradient: theme.palette.gradient.primary,
                 },
                 {
                   icon: <Timer />,
@@ -221,7 +220,7 @@ const UserSessionDialog = ({ open, onClose, user }) => {
                   value: stats.lastLogin
                     ? new Date(stats.lastLogin).toLocaleDateString("vi-VN")
                     : "—",
-                  gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                  gradient: theme.palette.gradient.danger,
                 },
                 {
                   icon: <TrendingUp />,
@@ -336,8 +335,8 @@ const UserSessionDialog = ({ open, onClose, user }) => {
                     />
                     <defs>
                       <linearGradient id="colorLoginDialog" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#667eea" />
-                        <stop offset="100%" stopColor="#764ba2" />
+                        <stop offset="0%" stopColor={theme.palette.primary.main} />
+                        <stop offset="100%" stopColor={theme.palette.primary.dark} />
                       </linearGradient>
                     </defs>
                   </BarChart>

@@ -34,9 +34,7 @@ const ChangePasswordDialog = ({
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
-            : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.gradient.danger,
           color: "white",
           fontWeight: 700,
         }}
@@ -74,12 +72,12 @@ const ChangePasswordDialog = ({
           variant="contained"
           onClick={onSave}
           sx={{
-            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            background: theme.palette.gradient.danger,
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              background: "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
+              background: theme.palette.gradient.danger,
             },
           }}
         >

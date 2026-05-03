@@ -13,6 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import CourseRow from "./CourseRow";
+import { adminCardSx } from "../../../styles/adminTokens";
 
 const CoursesTable = React.memo(
   ({ courses, loading, onEdit, onDelete, onManageUsers, onManageTeachers, onViewReport }) => {
@@ -39,24 +40,13 @@ const CoursesTable = React.memo(
     }
 
     return (
-<Paper
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: theme.palette.mode === "dark" 
-            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-            : "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
+<Paper sx={adminCardSx(theme)}>
         <TableContainer>
           <Table>
             <TableHead>
 <TableRow
                 sx={{
-                  background: theme.palette.mode === "dark"
-                    ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background: theme.palette.gradient.primary,
                 }}
               >
                 <TableCell

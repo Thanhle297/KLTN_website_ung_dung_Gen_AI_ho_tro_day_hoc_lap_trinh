@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -13,26 +18,33 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { toast } from "sonner";
+import { People, PersonAdd } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
+import useNotify from "../../hook/useNotify";
+import { adminCardSx, gradientButtonSx } from "../../styles/adminTokens";
 
-// Import các component con
-import UserTableHeader from "../../components/admin/users/UserTableHeader";
+// Import các component dùng chung
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
+import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
+
+// Import các component riêng của trang Users
 import UserSearchBar from "../../components/admin/users/UserSearchBar";
 import UserTableRow from "../../components/admin/users/UserTableRow";
 import UserFormDialog from "../../components/admin/users/UserFormDialog";
 import ChangePasswordDialog from "../../components/admin/users/ChangePasswordDialog";
-import DeleteConfirmDialog from "../../components/admin/users/DeleteConfirmDialog";
 import UserCoursesDialog from "../../components/admin/users/UserCoursesDialog";
+
 export default function UsersCRUD() {
   const api = useAdminAPI();
   const theme = useTheme();
+  const notify = useNotify();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Pagination state
+  // Phân trang
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -43,11 +55,15 @@ export default function UsersCRUD() {
   const [openPassDialog, setOpenPassDialog] = useState(false);
   const [passForm, setPassForm] = useState({ userId: "", newPassword: "" });
 
-  // Delete confirmation dialog state
+  // Bộ lọc vai trò và trạng thái
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+
+  // Trạng thái dialog xác nhận xóa
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingUser, setDeletingUser] = useState(null);
 
-  // Courses dialog state
+  // Trạng thái dialog quản lý khóa học
   const [openCoursesDialog, setOpenCoursesDialog] = useState(false);
   const [managingUser, setManagingUser] = useState(null);
 
@@ -60,24 +76,24 @@ export default function UsersCRUD() {
     isActive: true,
   });
 
-  /* ============================== LOAD USERS ============================== */
+  /* ============================== TẢI DANH SÁCH USERS ============================== */
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.getUsers();
       setUsers(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi tải user");
+      notify.error(err.response?.data?.message || "Lỗi tải user");
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, [api, notify]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
-  /* ============================== PAGINATION HANDLERS ============================== */
+  /* ============================== XỬ LÝ PHÂN TRANG ============================== */
   const handleChangePage = useCallback((event, newPage) => {
     setPage(newPage);
   }, []);
@@ -87,13 +103,13 @@ export default function UsersCRUD() {
     setPage(0);
   }, []);
 
-  /* ============================== SEARCH HANDLER ============================== */
+  /* ============================== XỬ LÝ TÌM KIẾM ============================== */
   const handleSearchChange = useCallback((value) => {
     setSearch(value);
-    setPage(0); // Reset page on search
+    setPage(0); // Reset trang khi tìm kiếm
   }, []);
 
-  /* ============================== FORM HANDLERS ============================== */
+  /* ============================== XỬ LÝ FORM ============================== */
   const openCreateDialog = useCallback(() => {
     setEditingUser(null);
     setForm({
@@ -128,11 +144,11 @@ export default function UsersCRUD() {
     setOpenDialog(false);
   }, []);
 
-  /* ============================== SAVE (CREATE / UPDATE) ============================== */
+  /* ============================== LƯU (TẠO / CẬP NHẬT) ============================== */
   const handleSave = useCallback(async () => {
     try {
       if (!form.email || !form.username || (!editingUser && !form.password)) {
-        toast.warning("Email, Username và Password (khi tạo) là bắt buộc");
+        notify.warning("Email, Username và Password (khi tạo) là bắt buộc");
         return;
       }
 
@@ -144,7 +160,7 @@ export default function UsersCRUD() {
           role: form.role,
           isActive: form.isActive,
         });
-        toast.success("Cập nhật user thành công");
+        notify.success("Cập nhật user thành công");
       } else {
         await api.createUser({
           email: form.email,
@@ -154,17 +170,17 @@ export default function UsersCRUD() {
           role: form.role,
           isActive: form.isActive,
         });
-        toast.success("Tạo user mới thành công");
+        notify.success("Tạo user mới thành công");
       }
 
       setOpenDialog(false);
       loadUsers();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi lưu user");
+      notify.error(err.response?.data?.message || "Lỗi lưu user");
     }
-  }, [form, editingUser, api, loadUsers]);
+  }, [form, editingUser, api, loadUsers, notify]);
 
-  /* ============================== DELETE ============================== */
+  /* ============================== XÓA ============================== */
   const handleDelete = useCallback((user) => {
     setDeletingUser(user);
     setOpenDeleteDialog(true);
@@ -180,16 +196,16 @@ export default function UsersCRUD() {
 
     try {
       await api.deleteUser(deletingUser._id);
-      toast.success("Xóa user thành công");
+      notify.success("Xóa user thành công");
       setOpenDeleteDialog(false);
       setDeletingUser(null);
       loadUsers();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi xóa user");
+      notify.error(err.response?.data?.message || "Lỗi xóa user");
     }
-  }, [deletingUser, api, loadUsers]);
+  }, [deletingUser, api, loadUsers, notify]);
 
-  /* ============================== CHANGE PASSWORD ============================== */
+  /* ============================== ĐỔI MẬT KHẨU ============================== */
   const openChangePass = useCallback((user) => {
     setPassForm({ userId: user._id, newPassword: "" });
     setOpenPassDialog(true);
@@ -206,16 +222,18 @@ export default function UsersCRUD() {
   const handleChangePass = useCallback(async () => {
     try {
       if (!passForm.newPassword) {
-        toast.warning("Vui lòng nhập mật khẩu mới");
+        notify.warning("Vui lòng nhập mật khẩu mới");
         return;
       }
       await api.adminChangePassword(passForm.userId, passForm.newPassword);
-      toast.success("Đổi mật khẩu thành công");
+      notify.success("Đổi mật khẩu thành công");
       setOpenPassDialog(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi đổi mật khẩu");
+      notify.error(err.response?.data?.message || "Lỗi đổi mật khẩu");
     }
-  }, [passForm, api]);
+  }, [passForm, api, notify]);
+
+  /* ============================== QUẢN LÝ KHÓA HỌC ============================== */
   const handleManageCourses = useCallback((user) => {
     setManagingUser(user);
     setOpenCoursesDialog(true);
@@ -225,153 +243,171 @@ export default function UsersCRUD() {
     setOpenCoursesDialog(false);
     setManagingUser(null);
   }, []);
-  /* ============================== RENDER ============================== */
+
+  /* ============================== LỌC & PHÂN TRANG ============================== */
   const filteredUsers = users.filter((u) => {
     const keyword = search.toLowerCase();
-    return (
+    const matchSearch =
       u.username.toLowerCase().includes(keyword) ||
-      (u.fullname && u.fullname.toLowerCase().includes(keyword))
-    );
+      (u.fullname && u.fullname.toLowerCase().includes(keyword));
+    const matchRole = filterRole === "all" || u.role === filterRole;
+    const matchStatus =
+      filterStatus === "all" ||
+      (filterStatus === "active" ? u.isActive : !u.isActive);
+    return matchSearch && matchRole && matchStatus;
   });
 
-  // Pagination Logic
   const paginatedUsers = filteredUsers.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
 
+  /* ============================== RENDER ============================== */
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-        overflowX: "hidden",
-      }}
-    >
-      {/* Header Section */}
-      <UserTableHeader onAddUser={openCreateDialog} />
+    <AdminPageWrapper>
+      {/* Header với tiêu đề, nút thêm, bộ lọc và thanh tìm kiếm */}
+      <AdminPageHeader
+        icon={<People />}
+        title="Quản lý Người dùng"
+        subtitle={`Tổng cộng: ${users.length} người dùng`}
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<PersonAdd />}
+            onClick={openCreateDialog}
+            sx={gradientButtonSx(theme)}
+          >
+            Thêm người dùng
+          </Button>
+        }
+        filters={
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap" }}>
+            <UserSearchBar value={search} onChange={handleSearchChange} />
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Vai trò</InputLabel>
+              <Select
+                label="Vai trò"
+                value={filterRole}
+                onChange={(e) => {
+                  setFilterRole(e.target.value);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="teacher">Giáo viên</MenuItem>
+                <MenuItem value="user">Học sinh</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Trạng thái</InputLabel>
+              <Select
+                label="Trạng thái"
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="active">Đang hoạt động</MenuItem>
+                <MenuItem value="locked">Bị khóa</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        }
+      />
 
-{/* Search Bar */}
-      <Box
-        sx={{
-          background: theme.palette.background.paper,
-          backdropFilter: "blur(10px)",
-          borderRadius: 4,
-          p: 3,
-          mb: 3,
-          boxShadow: theme.palette.mode === "dark" 
-            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-            : "0 8px 32px rgba(0, 0, 0, 0.1)",
-          border: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <UserSearchBar value={search} onChange={handleSearchChange} />
-      </Box>
-
-      {/* Users Table */}
-      <Paper
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            boxShadow: theme.palette.mode === "dark" 
-              ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-              : "0 8px 32px rgba(0, 0, 0, 0.1)",
-            backgroundColor: theme.palette.background.paper,
-          }}
-        >
-          <TableContainer>
-            <Table>
-              <TableHead>
-<TableRow
+      {/* Bảng danh sách người dùng */}
+      <Paper sx={adminCardSx(theme)}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow
+                sx={{
+                    background: theme.palette.gradient.primary,
+                }}
+              >
+                <TableCell
                   sx={{
-                    background: theme.palette.mode === "dark"
-                      ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-                      : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    py: 2,
                   }}
                 >
-                  <TableCell
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                      py: 2,
-                    }}
-                  >
-                    Người dùng
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Email
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Username
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Vai trò
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Trạng thái
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Khóa học
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    Thao tác
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        {Array.from({ length: 7 }).map((__, j) => (
-                          <TableCell key={j}>
-                            <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  : paginatedUsers.map((user, index) => (
+                  Người dùng
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Email
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Username
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Vai trò
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Trạng thái
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Khóa học
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Thao tác
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 7 }).map((__, j) => (
+                        <TableCell key={j}>
+                          <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : paginatedUsers.map((user, index) => (
                     <UserTableRow
                       key={user._id}
                       user={user}
@@ -383,37 +419,37 @@ export default function UsersCRUD() {
                     />
                   ))}
 
-                {!loading && paginatedUsers.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        😔 Không tìm thấy user nào
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              {!loading && paginatedUsers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      Không tìm thấy user nào
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-<TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={filteredUsers.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage="Số hàng mỗi trang:"
-            labelDisplayedRows={({ from, to, count }) =>
-              `${from}-${to} của ${count}`
-            }
-            sx={{
-              borderTop: `1px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
-            }}
-          />
-        </Paper>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredUsers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Số hàng mỗi trang:"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} của ${count}`
+          }
+          sx={{
+            borderTop: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          }}
+        />
+      </Paper>
 
       {/* Dialog thêm / sửa */}
       <UserFormDialog
@@ -425,7 +461,7 @@ export default function UsersCRUD() {
         onFormChange={handleFormChange}
       />
 
-      {/* Dialog Đổi mật khẩu */}
+      {/* Dialog đổi mật khẩu */}
       <ChangePasswordDialog
         open={openPassDialog}
         password={passForm.newPassword}
@@ -434,26 +470,34 @@ export default function UsersCRUD() {
         onPasswordChange={handlePasswordChange}
       />
 
-      {/* Dialog Xác nhận xóa */}
+      {/* Dialog xác nhận xóa */}
       <DeleteConfirmDialog
         open={openDeleteDialog}
-        user={deletingUser}
-        onClose={handleCloseDeleteDialog}
+        itemName={deletingUser?.fullname || deletingUser?.username || ""}
+        itemType="người dùng này"
+        itemDetails={
+          deletingUser
+            ? [
+                { label: "Email", value: deletingUser.email },
+                { label: "Username", value: deletingUser.username },
+              ]
+            : undefined
+        }
         onConfirm={handleConfirmDelete}
+        onCancel={handleCloseDeleteDialog}
       />
 
-      {/* Snackbar thông báo */}
       {/* Dialog quản lý khóa học */}
       <UserCoursesDialog
         open={openCoursesDialog}
         user={managingUser}
         onClose={handleCloseCoursesDialog}
         onSave={() => {
-          toast.success("Cập nhật khóa học thành công");
+          notify.success("Cập nhật khóa học thành công");
           loadUsers();
         }}
         api={api}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

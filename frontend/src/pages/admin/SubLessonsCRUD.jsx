@@ -1,22 +1,40 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Box, useTheme } from "@mui/material";
-import { toast } from "sonner";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  useTheme,
+} from "@mui/material";
+import { Article } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
-import SubLessonsHeader from "../../components/admin/sublessons/SubLessonsHeader";
+import useNotify from "../../hook/useNotify";
+import useCascadeSelector from "../../hook/useCascadeSelector";
+
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
 import SubLessonsTable from "../../components/admin/sublessons/SubLessonsTable";
 import SubLessonFormDialog from "../../components/admin/sublessons/SubLessonFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
+import { gradientButtonSx } from "../../styles/adminTokens";
 
 export default function SubLessonsCRUD() {
   const api = useAdminAPI();
   const theme = useTheme();
+  const notify = useNotify();
 
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
-
-  const [lessonList, setLessonList] = useState([]);
-  const [selectedLesson, setSelectedLesson] = useState("");
+  const cascade = useCascadeSelector(api, { pageKey: "sublessons", depth: 2 });
+  const {
+    courses,
+    selectedCourse,
+    setCourseId: handleCourseChange,
+    lessons: lessonList,
+    selectedLesson,
+    setLessonId: handleLessonChange,
+  } = cascade;
 
   const [subLessons, setSubLessons] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,40 +43,6 @@ export default function SubLessonsCRUD() {
   const [editing, setEditing] = useState(null);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const notify = useCallback((msg, severity = "success") => {
-    if (severity === "error") toast.error(msg);
-    else if (severity === "warning") toast.warning(msg);
-    else toast.success(msg);
-  }, []);
-
-  /* ------- LOAD danh sách Khóa học ------- */
-  const loadCourses = useCallback(async () => {
-    try {
-      const res = await api.getCourses();
-      const list = Array.isArray(res.data) ? res.data : [];
-      setCourses(list);
-      if (!selectedCourse && list.length > 0) {
-        setSelectedCourse(list[0].courseId);
-      }
-    } catch {
-      notify("Không thể tải danh sách khóa học", "error");
-    }
-  }, [api, notify, selectedCourse]);
-
-  /* ------- LOAD danh sách bài lớn theo khóa học ------- */
-  const loadLessons = useCallback(async () => {
-    if (!selectedCourse) return;
-    try {
-      const res = await api.getLessonsByCourse(selectedCourse);
-      setLessonList(res.data);
-      // Reset selected lesson khi đổi course
-      setSelectedLesson("");
-      setSubLessons([]);
-    } catch {
-      notify("Lỗi tải danh sách bài học", "error");
-    }
-  }, [api, notify, selectedCourse]);
 
   /* ------- LOAD subLessons theo bài và khóa học ------- */
   const loadSubLessons = useCallback(async () => {
@@ -69,19 +53,11 @@ export default function SubLessonsCRUD() {
       const res = await api.getSubLessons(selectedLesson, selectedCourse);
       setSubLessons(res.data);
     } catch {
-      notify("Lỗi tải sublesson", "error");
+      notify.error("Lỗi tải sublesson");
     } finally {
       setLoading(false);
     }
   }, [selectedLesson, selectedCourse, api, notify]);
-
-  useEffect(() => {
-    loadCourses();
-  }, [loadCourses]);
-
-  useEffect(() => {
-    if (selectedCourse) loadLessons();
-  }, [loadLessons, selectedCourse]);
 
   useEffect(() => {
     if (selectedLesson && selectedCourse) loadSubLessons();
@@ -102,19 +78,11 @@ export default function SubLessonsCRUD() {
     setOpenDialog(false);
   }, []);
 
-  const handleCourseChange = useCallback((value) => {
-    setSelectedCourse(value);
-  }, []);
-
-  const handleLessonChange = useCallback((value) => {
-    setSelectedLesson(value);
-  }, []);
-
   /* ------- SAVE ------- */
   const handleSave = useCallback(
     async (formData) => {
       if (!selectedLesson || !formData.title) {
-        notify("Vui lòng chọn bài học cha và nhập title", "warning");
+        notify.warning("Vui lòng chọn bài học cha và nhập title");
         return;
       }
 
@@ -126,15 +94,15 @@ export default function SubLessonsCRUD() {
             formData,
             selectedCourse
           );
-          notify("Cập nhật thành công");
+          notify.success("Cập nhật thành công");
         } else {
           await api.createSubLesson(selectedLesson, formData, selectedCourse);
-          notify("Thêm sublesson thành công");
+          notify.success("Thêm sublesson thành công");
         }
         setOpenDialog(false);
         loadSubLessons();
       } catch {
-        notify("Lỗi lưu sublesson", "error");
+        notify.error("Lỗi lưu sublesson");
       }
     },
     [selectedLesson, selectedCourse, editing, api, notify, loadSubLessons]
@@ -154,11 +122,11 @@ export default function SubLessonsCRUD() {
         deleteTarget.lessonId,
         selectedCourse
       );
-      notify("Xóa thành công");
+      notify.success("Xóa thành công");
       setDeleteTarget(null);
       loadSubLessons();
     } catch {
-      notify("Lỗi xóa sublesson", "error");
+      notify.error("Lỗi xóa sublesson");
     }
   }, [
     deleteTarget,
@@ -175,23 +143,58 @@ export default function SubLessonsCRUD() {
 
   /* ------- RENDER ------- */
   return (
-<Box
-      sx={{
-        minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-      }}
-    >
-      <SubLessonsHeader
-        courses={courses}
-        selectedCourse={selectedCourse}
-        onCourseChange={handleCourseChange}
-        lessonList={lessonList}
-        selectedLesson={selectedLesson}
-        onLessonChange={handleLessonChange}
-        onAddClick={handleAddClick}
+    <AdminPageWrapper>
+      <AdminPageHeader
+        icon={<Article />}
+        title="Quản lý SubLesson"
+        subtitle={
+          selectedLesson
+            ? `Bài: ${lessonList.find((l) => l.lessonId === selectedLesson)?.title || selectedLesson}`
+            : "Chọn bài học"
+        }
+        actions={
+          selectedLesson && (
+            <Button
+              variant="contained"
+              onClick={handleAddClick}
+              sx={gradientButtonSx(theme)}
+            >
+              Thêm SubLesson
+            </Button>
+          )
+        }
+        filters={
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap" }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Khóa học</InputLabel>
+              <Select
+                label="Khóa học"
+                value={selectedCourse}
+                onChange={(e) => handleCourseChange(e.target.value)}
+              >
+                {courses?.map((c) => (
+                  <MenuItem key={c.courseId} value={c.courseId}>
+                    {c.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Bài học</InputLabel>
+              <Select
+                label="Bài học"
+                value={selectedLesson}
+                onChange={(e) => handleLessonChange(e.target.value)}
+              >
+                {lessonList.map((l) => (
+                  <MenuItem key={l.lessonId} value={l.lessonId}>
+                    {l.lessonId} — {l.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        }
       />
 
       <SubLessonsTable
@@ -216,6 +219,6 @@ export default function SubLessonsCRUD() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

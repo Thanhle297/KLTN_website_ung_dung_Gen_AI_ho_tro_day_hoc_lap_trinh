@@ -84,7 +84,7 @@ const LessonRow = React.memo(({ lesson, onEdit, onDelete, onToggleDisplay }) => 
             size="small"
             sx={{
               fontWeight: 600,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: theme.palette.gradient.primary,
               color: "white",
             }}
           />
@@ -139,12 +139,12 @@ const LessonRow = React.memo(({ lesson, onEdit, onDelete, onToggleDisplay }) => 
           <IconButton
             onClick={() => onDelete(lesson)}
             sx={{
-              background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+              background: theme.palette.gradient.danger,
               color: "white",
               width: 36,
               height: 36,
               "&:hover": {
-                background: "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                background: theme.palette.gradient.danger,
               },
               transition: "all 0.2s ease",
             }}

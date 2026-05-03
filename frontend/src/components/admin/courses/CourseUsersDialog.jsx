@@ -130,9 +130,7 @@ export default function CourseUsersDialog({
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`
-            : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.gradient.danger,
           color: "white",
           display: "flex",
           alignItems: "center",
@@ -195,9 +193,9 @@ export default function CourseUsersDialog({
                       checked={selectedUsers.includes(user._id)}
                       onChange={() => handleToggleUser(user._id)}
                       sx={{
-                        color: "#f093fb",
+                        color: theme.palette.error.main,
                         "&.Mui-checked": {
-                          color: "#f5576c",
+                          color: theme.palette.error.dark,
                         },
                       }}
                     />
@@ -222,7 +220,7 @@ export default function CourseUsersDialog({
                     borderRadius: 2,
                     border: "1px solid",
                     borderColor: selectedUsers.includes(user._id)
-                      ? "#f5576c"
+                      ? theme.palette.error.main
                       : theme.palette.divider,
                     backgroundColor: selectedUsers.includes(user._id)
                       ? "rgba(245, 87, 108, 0.05)"
@@ -230,7 +228,7 @@ export default function CourseUsersDialog({
                     transition: "all 0.2s ease",
                     "&:hover": {
                       backgroundColor: "rgba(245, 87, 108, 0.08)",
-                      borderColor: "#f5576c",
+                      borderColor: theme.palette.error.main,
                     },
                   }}
                 />
@@ -272,9 +270,9 @@ export default function CourseUsersDialog({
             borderRadius: 2,
             textTransform: "none",
             fontWeight: 600,
-            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            background: theme.palette.gradient.danger,
             "&:hover": {
-              background: "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
+              background: theme.palette.gradient.danger,
             },
           }}
         >

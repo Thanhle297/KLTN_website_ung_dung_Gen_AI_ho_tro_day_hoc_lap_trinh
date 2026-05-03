@@ -24,23 +24,23 @@ import {
 } from "@mui/icons-material";
 
 // Helper function để lấy cấu hình role
-const getRoleConfig = (role) => {
+const getRoleConfig = (role, theme) => {
   const configs = {
     admin: {
       icon: <AdminPanelSettings />,
-      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      color: theme.palette.gradient.primary,
       label: "Admin",
       chipColor: "secondary",
     },
     teacher: {
       icon: <School />,
-      color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      color: theme.palette.gradient.danger,
       label: "Teacher",
       chipColor: "primary",
     },
     user: {
       icon: <Person />,
-      color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      color: theme.palette.gradient.secondary,
       label: "User",
       chipColor: "info",
     },
@@ -68,7 +68,7 @@ const UserTableRow = ({
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const roleConfig = getRoleConfig(user.role);
+  const roleConfig = getRoleConfig(user.role, theme);
   // Teacher dùng teachingCourses, student dùng enrolledCourses
   const courseCount = user.role === "teacher"
     ? (user.teachingCourses?.length || 0)
@@ -193,7 +193,7 @@ const UserTableRow = ({
               fontSize: "0.8rem",
               background:
                 courseCount > 0
-                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                  ? theme.palette.gradient.primary
                   : isDark ? "rgba(255, 255, 255, 0.1)" : "#e0e0e0",
               color: courseCount > 0 ? "white" : isDark ? theme.palette.text.secondary : "#666",
             }}
@@ -207,13 +207,12 @@ const UserTableRow = ({
             <IconButton
               onClick={() => onManageCourses(user)}
               sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: theme.palette.gradient.primary,
                 color: "white",
                 width: 36,
                 height: 36,
                 "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                  background: theme.palette.gradient.primaryHover,
                 },
                 transition: "all 0.2s ease",
               }}
@@ -225,13 +224,13 @@ const UserTableRow = ({
             <IconButton
               onClick={() => onChangePassword(user)}
               sx={{
-                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                background: theme.palette.gradient.danger,
                 color: "white",
                 width: 36,
                 height: 36,
                 "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #f5576c 0%, #f093fb 100%)",
+                  background: theme.palette.gradient.danger,
+                  filter: "brightness(0.95)",
                 },
                 transition: "all 0.2s ease",
               }}
@@ -259,13 +258,13 @@ const UserTableRow = ({
             <IconButton
               onClick={() => onDelete(user)}
               sx={{
-                background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                background: theme.palette.gradient.danger,
                 color: "white",
                 width: 36,
                 height: 36,
                 "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                  background: theme.palette.gradient.danger,
+                  filter: "brightness(0.95)",
                 },
                 transition: "all 0.2s ease",
               }}

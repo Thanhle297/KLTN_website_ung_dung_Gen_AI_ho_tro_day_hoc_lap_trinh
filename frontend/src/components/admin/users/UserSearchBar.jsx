@@ -20,17 +20,17 @@ const UserSearchBar = ({ value, onChange }) => {
             borderColor: theme.palette.divider,
           },
           "&:hover fieldset": {
-            borderColor: "#667eea",
+            borderColor: theme.palette.primary.main,
           },
           "&.Mui-focused fieldset": {
-            borderColor: "#667eea",
+            borderColor: theme.palette.primary.main,
           },
         },
       }}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <Search sx={{ color: "#667eea" }} />
+            <Search sx={{ color: theme.palette.primary.main }} />
           </InputAdornment>
         ),
       }}

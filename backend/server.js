@@ -119,6 +119,7 @@ const csvRoutes = require("./routes/csvRoutes");
 const executeMiddleRoutes = require("./routes/executeMiddle");
 const sessionRoutes = require("./routes/sessionRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const adminStatsRoutes = require("./routes/adminStatsRoutes");
 
 /* =========================================================
    🚀 KHỞI ĐỘNG SERVER
@@ -150,6 +151,7 @@ async function startServer() {
     app.use("/api", executeMiddleRoutes);
     app.use("/api/sessions", sessionRoutes);
     app.use("/api/categories", categoryRoutes);
+    app.use("/api/admin", adminStatsRoutes);
 
     /* ================== HEALTH CHECK ================== */
     app.get("/", (req, res) => {

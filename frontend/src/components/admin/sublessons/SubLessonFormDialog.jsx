@@ -76,9 +76,7 @@ const SubLessonFormDialog = ({ open, editing, onClose, onSave }) => {
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.gradient.primary,
           color: "white",
           fontWeight: 700,
           fontSize: "1.5rem",
@@ -207,12 +205,12 @@ const SubLessonFormDialog = ({ open, editing, onClose, onSave }) => {
           variant="contained"
           onClick={handleSubmit}
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: theme.palette.gradient.primary,
             borderRadius: 2,
             textTransform: "none",
             px: 3,
             "&:hover": {
-              background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+              background: theme.palette.gradient.primaryHover,
             },
           }}
         >

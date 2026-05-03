@@ -2,7 +2,6 @@ import React, {
   useEffect,
   useState,
   useCallback,
-  useRef,
   useMemo,
 } from "react";
 import {
@@ -25,11 +24,14 @@ import {
   ContentCopy,
   Upload,
   Settings,
+  AccountBalance,
 } from "@mui/icons-material";
-import { toast } from "sonner";
 
 import useAdminAPI from "../../hook/useAdminAPI";
+import useNotify from "../../hook/useNotify";
 import useCategoryAPI from "../../hook/useCategoryAPI";
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
 import QuestionsTable from "../../components/admin/questions/QuestionsTable";
 import QuestionFormDialog from "../../components/admin/questions/QuestionFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
@@ -38,11 +40,12 @@ import CategoryManager from "../../components/admin/categories/CategoryManager";
 import ImportFromGlobalModal from "../../components/admin/questions/ImportFromGlobalModal";
 import CopyFromCourseModal from "../../components/admin/questions/CopyFromCourseModal";
 import PromoteToGlobalModal from "../../components/admin/questions/PromoteToGlobalModal";
+import { gradientButtonSx } from "../../styles/adminTokens";
 
 export default function QuestionBank() {
   const api = useAdminAPI();
   const categoryApi = useCategoryAPI();
-  const apiRef = useRef(api);
+  const notify = useNotify();
   const theme = useTheme();
 
   // Lấy user từ localStorage
@@ -83,24 +86,17 @@ export default function QuestionBank() {
   const [openPromote, setOpenPromote] = useState(false);
 
   // Computed
-  const isGlobalBank = selectedCourseId === null;
   const isCourseBank = selectedCourseId !== null;
   const hasSelection = selectedIds.length > 0;
   const isAdmin = user?.role === "admin";
 
-  const notify = useCallback((msg, severity = "success") => {
-    if (severity === "error") toast.error(msg);
-    else if (severity === "warning") toast.warning(msg);
-    else toast.success(msg);
-  }, []);
-
   /* ================= LOAD COURSES ================= */
   useEffect(() => {
-    apiRef.current
+    api
       .getCourses()
       .then((res) => setCourses(res.data || []))
       .catch(() => {});
-  }, []);
+  }, [api]);
 
   /* ================= LOAD CATEGORIES ================= */
   const loadCategories = useCallback(async () => {
@@ -122,7 +118,7 @@ export default function QuestionBank() {
   const loadQuestions = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiRef.current.getBankQuestions(
+      const res = await api.getBankQuestions(
         null, // category text (không dùng nữa)
         selectedCourseId === null ? "null" : selectedCourseId,
         selectedCategoryId
@@ -133,11 +129,11 @@ export default function QuestionBank() {
       );
       setQuestions(unique);
     } catch {
-      notify("Lỗi tải ngân hàng câu hỏi", "error");
+      notify.error("Lỗi tải ngân hàng câu hỏi");
     } finally {
       setLoading(false);
     }
-  }, [selectedCourseId, selectedCategoryId, notify]);
+  }, [api, selectedCourseId, selectedCategoryId, notify]);
 
   useEffect(() => {
     loadQuestions();
@@ -197,7 +193,7 @@ export default function QuestionBank() {
   const handleSave = useCallback(
     async (formData) => {
       if (!formData.question) {
-        notify("Thiếu câu hỏi", "warning");
+        notify.warning("Thiếu câu hỏi");
         return;
       }
 
@@ -212,17 +208,17 @@ export default function QuestionBank() {
       try {
         if (editing) {
           await api.updateQuestion(editing.id, payload);
-          notify("Cập nhật thành công");
+          notify.success("Cập nhật thành công");
         } else {
           await api.createQuestion(payload);
-          notify("Thêm vào ngân hàng thành công");
+          notify.success("Thêm vào ngân hàng thành công");
         }
 
         setOpenDialog(false);
         loadQuestions();
       } catch (err) {
         console.error(err);
-        notify("Lỗi lưu câu hỏi", "error");
+        notify.error("Lỗi lưu câu hỏi");
       }
     },
     [editing, api, notify, loadQuestions, selectedCourseId]
@@ -237,11 +233,11 @@ export default function QuestionBank() {
     if (!deleteTarget) return;
     try {
       await api.deleteQuestion(deleteTarget.id);
-      notify("Xóa thành công");
+      notify.success("Xóa thành công");
       setDeleteTarget(null);
       loadQuestions();
     } catch {
-      notify("Lỗi xóa câu hỏi", "error");
+      notify.error("Lỗi xóa câu hỏi");
     }
   }, [deleteTarget, api, notify, loadQuestions]);
 
@@ -256,7 +252,7 @@ export default function QuestionBank() {
   }, []);
 
   const handleDistributeSuccess = useCallback(() => {
-    notify("Đã phân phối câu hỏi thành công");
+    notify.success("Đã phân phối câu hỏi thành công");
   }, [notify]);
 
   /* ================= BULK DISTRIBUTE ================= */
@@ -281,87 +277,23 @@ export default function QuestionBank() {
   }, []);
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background:
-          theme.palette.mode === "dark"
-            ? theme.palette.background.default
-            : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-      }}
-    >
+    <AdminPageWrapper>
       {/* HEADER */}
-      <Box
-        sx={{
-          mb: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Stack spacing={0.5}>
-          <Typography
-            variant="h4"
-            color={
-              theme.palette.mode === "dark"
-                ? theme.palette.text.primary
-                : "white"
-            }
-            fontWeight={700}
+      <AdminPageHeader
+        icon={<AccountBalance />}
+        title="Ngân hàng câu hỏi"
+        subtitle="Quản lý kho câu hỏi tập trung và phân phối về bài học"
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={handleAddClick}
+            sx={gradientButtonSx(theme)}
           >
-            Ngân hàng câu hỏi
-          </Typography>
-          <Typography
-            variant="body2"
-            color={
-              theme.palette.mode === "dark"
-                ? theme.palette.text.secondary
-                : "rgba(255,255,255,0.8)"
-            }
-          >
-            Quản lý kho câu hỏi tập trung và phân phối về bài học
-          </Typography>
-        </Stack>
-
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleAddClick}
-          sx={{
-            background: theme.palette.mode === "dark" 
-              ? theme.palette.primary.main 
-              : "#ffffff",
-            color: theme.palette.mode === "dark" 
-              ? "#ffffff" 
-              : theme.palette.primary.main,
-            fontWeight: 800,
-            fontSize: "0.95rem",
-            borderRadius: 3,
-            px: 3.5,
-            py: 1,
-            textTransform: "none",
-            boxShadow: theme.palette.mode === "dark" 
-              ? "0px 4px 12px rgba(0, 0, 0, 0.3)"
-              : "0px 4px 20px rgba(0, 0, 0, 0.15)",
-            border: theme.palette.mode === "dark" ? "none" : "2px solid #ffffff",
-            "&:hover": {
-              background: theme.palette.mode === "dark" 
-                ? theme.palette.primary.dark 
-                : "#f8faff",
-              boxShadow: theme.palette.mode === "dark"
-                ? "0px 6px 16px rgba(0, 0, 0, 0.4)"
-                : "0px 6px 25px rgba(0, 0, 0, 0.25)",
-              transform: "translateY(-2px)",
-            },
-            transition: "all 0.2s ease-in-out",
-          }}
-        >
-          Tạo câu hỏi
-        </Button>
-      </Box>
+            Tạo câu hỏi
+          </Button>
+        }
+      />
 
       {/* COURSE SELECTOR */}
       <Paper sx={{ p: 2, borderRadius: 3, mb: 2 }}>
@@ -471,10 +403,7 @@ export default function QuestionBank() {
             p: 1.5,
             borderRadius: 3,
             mb: 2,
-            background:
-              theme.palette.mode === "dark"
-                ? "rgba(102, 126, 234, 0.15)"
-                : "rgba(33, 150, 243, 0.08)",
+            backgroundColor: theme.palette.action.selected,
             border: "1px solid",
             borderColor: "primary.main",
           }}
@@ -605,6 +534,6 @@ export default function QuestionBank() {
         questions={questions.filter((q) => selectedIds.includes(q.id))}
         onSuccess={loadQuestions}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

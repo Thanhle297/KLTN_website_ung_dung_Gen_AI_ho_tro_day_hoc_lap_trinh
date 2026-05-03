@@ -258,9 +258,7 @@ export default function QuestionManagerDialog({
       >
         <DialogTitle
           sx={{
-            background: theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`
-              : "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+            background: theme.palette.gradient.primary,
             color: "white",
             fontWeight: 700,
             fontSize: "1.3rem",
@@ -287,9 +285,7 @@ export default function QuestionManagerDialog({
               p: 2,
               display: "flex",
               gap: 2,
-              background: theme.palette.mode === "dark"
-                ? theme.palette.background.default
-                : "#f8f9fa",
+              backgroundColor: theme.palette.action.hover,
               borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
@@ -298,13 +294,13 @@ export default function QuestionManagerDialog({
               startIcon={<Add />}
               onClick={handleAddQuestion}
               sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: theme.palette.gradient.primary,
                 borderRadius: 2,
                 textTransform: "none",
                 fontWeight: 600,
                 "&:hover": {
                   background:
-                    "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                    theme.palette.gradient.primaryHover,
                 },
               }}
             >
@@ -316,13 +312,13 @@ export default function QuestionManagerDialog({
               startIcon={<CloudDownload />}
               onClick={() => setImportModal(true)}
               sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
+                borderColor: theme.palette.primary.main,
+                color: theme.palette.primary.main,
                 borderRadius: 2,
                 textTransform: "none",
                 fontWeight: 600,
                 "&:hover": {
-                  borderColor: "#764ba2",
+                  borderColor: theme.palette.primary.dark,
                   background: "rgba(102, 126, 234, 0.08)",
                 },
               }}
@@ -336,7 +332,7 @@ export default function QuestionManagerDialog({
               label={`${questions.length} câu hỏi`}
               sx={{
                 background: "rgba(102, 126, 234, 0.1)",
-                color: "#667eea",
+                color: theme.palette.primary.main,
                 fontWeight: 600,
               }}
             />
@@ -426,9 +422,7 @@ export default function QuestionManagerDialog({
 
         <DialogActions sx={{
           p: 2,
-          background: theme.palette.mode === "dark"
-            ? theme.palette.background.default
-            : "#f8f9fa",
+          backgroundColor: theme.palette.action.hover,
         }}>
           <Button
             onClick={onClose}
@@ -513,7 +507,7 @@ function SortableQuestionRow({ question, index, onEdit, onDelete }) {
             alignItems: "center",
             color: theme.palette.text.disabled,
             cursor: isDragging ? "grabbing" : "grab",
-            "&:hover": { color: "#667eea" },
+            "&:hover": { color: theme.palette.primary.main },
           }}
         >
           <DragIndicator fontSize="small" sx={{ mr: 0.5 }} />
@@ -563,7 +557,7 @@ function SortableQuestionRow({ question, index, onEdit, onDelete }) {
           size="small"
           sx={{
             background: "rgba(250, 112, 154, 0.1)",
-            color: "#fa709a",
+            color: theme.palette.error.main,
           }}
         />
       </TableCell>
@@ -590,11 +584,11 @@ function SortableQuestionRow({ question, index, onEdit, onDelete }) {
               size="small"
               onClick={() => onDelete(question)}
               sx={{
-                background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                background: theme.palette.gradient.danger,
                 color: "white",
                 "&:hover": {
                   background:
-                    "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                    theme.palette.gradient.danger,
                 },
               }}
             >

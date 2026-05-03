@@ -1,20 +1,24 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, useTheme } from "@mui/material";
-import { toast } from "sonner";
+import { Button, useTheme } from "@mui/material";
+import { School, Add } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
-import CoursesHeader from "../../components/admin/courses/CoursesHeader";
+import useNotify from "../../hook/useNotify";
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
 import CoursesTable from "../../components/admin/courses/CoursesTable";
 import CourseFormDialog from "../../components/admin/courses/CourseFormDialog";
-import DeleteConfirmDialog from "../../components/admin/courses/DeleteConfirmDialog";
+import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
 import CourseUsersDialog from "../../components/admin/courses/CourseUsersDialog";
 import CourseTeachersDialog from "../../components/admin/courses/CourseTeachersDialog";
+import { gradientButtonSx } from "../../styles/adminTokens";
 
 export default function CoursesCRUD() {
   const api = useAdminAPI();
   const navigate = useNavigate();
   const theme = useTheme();
+  const notify = useNotify();
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,12 +34,6 @@ export default function CoursesCRUD() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const showMessage = useCallback((msg, severity = "success") => {
-    if (severity === "error") toast.error(msg);
-    else if (severity === "warning") toast.warning(msg);
-    else toast.success(msg);
-  }, []);
-
   /* ==================== LOAD ==================== */
   const loadCourses = useCallback(async () => {
     try {
@@ -43,11 +41,11 @@ export default function CoursesCRUD() {
       const res = await api.getCourses();
       setCourses(res.data);
     } catch (err) {
-      showMessage("Lỗi tải khóa học", "error");
+      notify.error("Lỗi tải khóa học");
     } finally {
       setLoading(false);
     }
-  }, [api, showMessage]);
+  }, [api, notify]);
 
   useEffect(() => {
     loadCourses();
@@ -73,30 +71,27 @@ export default function CoursesCRUD() {
     async (formData) => {
       try {
         if (!formData.title) {
-          showMessage("title là bắt buộc", "warning");
+          notify.warning("title là bắt buộc");
           return;
         }
 
         if (editing) {
           await api.updateCourse(editing.courseId, formData);
-          showMessage("Cập nhật khóa học thành công");
+          notify.success("Cập nhật khóa học thành công");
         } else {
           await api.createCourse(formData);
-          showMessage("Thêm khóa học thành công");
+          notify.success("Thêm khóa học thành công");
         }
 
         setOpenDialog(false);
         loadCourses();
       } catch {
-        showMessage("Lỗi lưu khóa học", "error");
+        notify.error("Lỗi lưu khóa học");
       }
     },
-    [editing, api, showMessage, loadCourses]
+    [editing, api, notify, loadCourses]
   );
 
-  const handleCloseDelete = useCallback(() => {
-    setDeleteTarget(null);
-  }, []);
   // ✅ Thêm handlers cho CourseUsersDialog
   const handleManageUsers = useCallback((course) => {
     setManagingCourse(course);
@@ -135,13 +130,13 @@ export default function CoursesCRUD() {
 
     try {
       await api.deleteCourse(deleteTarget.courseId);
-      showMessage("Xóa thành công");
+      notify.success("Xóa thành công");
       setDeleteTarget(null);
       loadCourses();
     } catch {
-      showMessage("Lỗi xóa khóa học", "error");
+      notify.error("Lỗi xóa khóa học");
     }
-  }, [deleteTarget, api, showMessage, loadCourses]);
+  }, [deleteTarget, api, notify, loadCourses]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteTarget(null);
@@ -149,16 +144,22 @@ export default function CoursesCRUD() {
 
   /* ==================== RENDER ==================== */
   return (
-<Box
-      sx={{
-        minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-      }}
-    >
-      <CoursesHeader onAddClick={handleAddClick} />
+    <AdminPageWrapper>
+      <AdminPageHeader
+        icon={<School />}
+        title="Quản lý Khóa học"
+        subtitle={`Tổng cộng: ${courses.length} khóa học`}
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={handleAddClick}
+            sx={gradientButtonSx(theme)}
+          >
+            Thêm khóa học
+          </Button>
+        }
+      />
 
       <CoursesTable
         courses={courses}
@@ -179,7 +180,8 @@ export default function CoursesCRUD() {
 
       <DeleteConfirmDialog
         open={!!deleteTarget}
-        courseName={deleteTarget?.title || ""}
+        itemName={deleteTarget?.title || ""}
+        itemType="khóa học này"
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
@@ -189,7 +191,7 @@ export default function CoursesCRUD() {
         course={managingCourse}
         onClose={handleCloseUsersDialog}
         onSave={() => {
-          showMessage("Cập nhật học sinh thành công");
+          notify.success("Cập nhật học sinh thành công");
           loadCourses();
         }}
         api={api}
@@ -200,9 +202,9 @@ export default function CoursesCRUD() {
         course={managingTeachersCourse}
         onClose={handleCloseTeachersDialog}
         onTeachersChanged={() => {
-          showMessage("Cập nhật giáo viên thành công");
+          notify.success("Cập nhật giáo viên thành công");
         }}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

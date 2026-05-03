@@ -12,24 +12,15 @@ import {
   useTheme,
 } from "@mui/material";
 import SubLessonRow from "./SubLessonRow";
+import { adminCardSx } from "../../../styles/adminTokens";
 
 const SubLessonsTable = React.memo(
   ({ subLessons, loading, selectedLesson, onEdit, onDelete }) => {
     const theme = useTheme();
-    const isDark = theme.palette.mode === "dark";
-
     if (!selectedLesson) {
       return (
         <Paper
-          sx={{
-            borderRadius: 4,
-            p: 8,
-            textAlign: "center",
-            boxShadow: isDark
-              ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-              : "0 8px 32px rgba(0, 0, 0, 0.1)",
-            backgroundColor: theme.palette.background.paper,
-          }}
+          sx={{ ...adminCardSx(theme), p: 8, textAlign: "center" }}
         >
           <Typography variant="h6" color="text.secondary">
             📚 Hãy chọn một bài học để xem subLessons
@@ -41,14 +32,7 @@ const SubLessonsTable = React.memo(
     if (loading) {
       return (
         <Paper
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            boxShadow: isDark
-              ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-              : "0 8px 32px rgba(0, 0, 0, 0.1)",
-            backgroundColor: theme.palette.background.paper,
-          }}
+          sx={adminCardSx(theme)}
         >
           <TableContainer>
             <Table>
@@ -71,23 +55,14 @@ const SubLessonsTable = React.memo(
 
     return (
       <Paper
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: isDark
-            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-            : "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backgroundColor: theme.palette.background.paper,
-        }}
+        sx={adminCardSx(theme)}
       >
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow
                 sx={{
-                  background: isDark
-                    ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`
-                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background: theme.palette.gradient.primary,
                 }}
               >
                 <TableCell

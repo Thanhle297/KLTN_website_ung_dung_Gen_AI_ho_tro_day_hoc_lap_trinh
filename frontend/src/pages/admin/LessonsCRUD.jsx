@@ -1,35 +1,42 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Box, useTheme } from "@mui/material";
-import { toast } from "sonner";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  useTheme,
+} from "@mui/material";
+import { MenuBook } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
-import LessonsHeader from "../../components/admin/lessons/LessonsHeader";
+import useNotify from "../../hook/useNotify";
+import useCascadeSelector from "../../hook/useCascadeSelector";
+
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
 import LessonsTable from "../../components/admin/lessons/LessonsTable";
 import LessonFormDialog from "../../components/admin/lessons/LessonFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
-
-const DEFAULT_COURSE_ID = "10";
+import { gradientButtonSx } from "../../styles/adminTokens";
 
 export default function LessonsCRUD() {
   const api = useAdminAPI();
   const theme = useTheme();
+  const notify = useNotify();
+
+  const cascade = useCascadeSelector(api, { pageKey: "lessons", depth: 1 });
+  const { courses, selectedCourse, setCourseId: handleCourseChange } = cascade;
 
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState(null);
 
   const [filterDisplay, setFilterDisplay] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const showMessage = useCallback((msg, severity = "success") => {
-    if (severity === "error") toast.error(msg);
-    else if (severity === "warning") toast.warning(msg);
-    else toast.success(msg);
-  }, []);
 
   /* ============================ LOAD ============================ */
   const loadLessons = useCallback(async () => {
@@ -39,29 +46,11 @@ export default function LessonsCRUD() {
       const res = await api.getLessonsByCourse(selectedCourse);
       setLessons(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      showMessage("Lỗi tải bài học", "error");
+      notify.error("Lỗi tải bài học");
     } finally {
       setLoading(false);
     }
-  }, [api, showMessage, selectedCourse]);
-
-  const loadCourses = useCallback(async () => {
-    try {
-      const res = await api.getCourses();
-      const list = Array.isArray(res.data) ? res.data : [];
-      setCourses(list);
-      // Nếu chưa chọn course, tự động chọn course đầu tiên
-      if (!selectedCourse && list.length > 0) {
-        setSelectedCourse(list[0].courseId);
-      }
-    } catch {
-      showMessage("Không thể tải danh sách khóa học", "error");
-    }
-  }, [api, showMessage, selectedCourse]);
-
-  useEffect(() => {
-    loadCourses();
-  }, [loadCourses]);
+  }, [api, notify, selectedCourse]);
 
   useEffect(() => {
     if (selectedCourse) loadLessons();
@@ -96,15 +85,11 @@ export default function LessonsCRUD() {
     setFilterDisplay(value);
   }, []);
 
-  const handleCourseChange = useCallback((value) => {
-    setSelectedCourse(value);
-  }, []);
-
   /* ============================ SAVE ============================ */
   const handleSave = useCallback(
     async (formData) => {
       if (!formData.courseId || !formData.title) {
-        showMessage("courseId và title là bắt buộc", "warning");
+        notify.warning("courseId và title là bắt buộc");
         return;
       }
 
@@ -112,19 +97,19 @@ export default function LessonsCRUD() {
         if (editing) {
           // Lưu ý: truyền thêm current courseId để định vị chính xác
           await api.updateLesson(formData.lessonId, formData, selectedCourse);
-          showMessage("Cập nhật bài học thành công");
+          notify.success("Cập nhật bài học thành công");
         } else {
           await api.createLesson(formData);
-          showMessage("Thêm bài học thành công");
+          notify.success("Thêm bài học thành công");
         }
 
         setOpenDialog(false);
         await loadLessons();
       } catch {
-        showMessage("Lỗi lưu bài học", "error");
+        notify.error("Lỗi lưu bài học");
       }
     },
-    [editing, api, showMessage, loadLessons, selectedCourse]
+    [editing, api, notify, loadLessons, selectedCourse]
   );
 
   /* ============================ DELETE ============================ */
@@ -137,13 +122,13 @@ export default function LessonsCRUD() {
 
     try {
       await api.deleteLesson(deleteTarget.lessonId, selectedCourse);
-      showMessage("Xóa thành công");
+      notify.success("Xóa thành công");
       setDeleteTarget(null);
       await loadLessons();
     } catch {
-      showMessage("Lỗi xóa bài học", "error");
+      notify.error("Lỗi xóa bài học");
     }
-  }, [deleteTarget, api, showMessage, loadLessons, selectedCourse]);
+  }, [deleteTarget, api, notify, loadLessons, selectedCourse]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteTarget(null);
@@ -161,33 +146,47 @@ export default function LessonsCRUD() {
           },
           selectedCourse
         );
-        showMessage(next ? "Đã hiển thị bài học" : "Đã ẩn bài học");
+        notify.success(next ? "Đã hiển thị bài học" : "Đã ẩn bài học");
         await loadLessons();
       } catch {
-        showMessage("Lỗi cập nhật trạng thái hiển thị", "error");
+        notify.error("Lỗi cập nhật trạng thái hiển thị");
       }
     },
-    [api, showMessage, loadLessons, selectedCourse]
+    [api, notify, loadLessons, selectedCourse]
   );
 
   /* ============================ RENDER ============================ */
   return (
-<Box
-      sx={{
-        minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-      }}
-    >
-      <LessonsHeader
-        courses={courses}
-        selectedCourse={selectedCourse}
-        onCourseChange={handleCourseChange}
-        filterDisplay={filterDisplay}
-        onFilterChange={handleFilterChange}
-        onAddClick={handleAddClick}
+    <AdminPageWrapper>
+      <AdminPageHeader
+        icon={<MenuBook />}
+        title="Quản lý Bài học"
+        subtitle={selectedCourse ? `Khóa: ${courses.find(c => c.courseId === selectedCourse)?.title || selectedCourse}` : "Chọn khóa học"}
+        actions={
+          <Button variant="contained" onClick={handleAddClick} sx={gradientButtonSx(theme)}>
+            Thêm bài học
+          </Button>
+        }
+        filters={
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap" }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Khóa học</InputLabel>
+              <Select label="Khóa học" value={selectedCourse} onChange={(e) => handleCourseChange(e.target.value)}>
+                {courses?.map((c) => (
+                  <MenuItem key={c.courseId} value={c.courseId}>{c.title}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Hiển thị</InputLabel>
+              <Select label="Hiển thị" value={filterDisplay} onChange={(e) => handleFilterChange(e.target.value)}>
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="true">Đang hiển thị</MenuItem>
+                <MenuItem value="false">Đang ẩn</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        }
       />
 
       <LessonsTable
@@ -214,6 +213,6 @@ export default function LessonsCRUD() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

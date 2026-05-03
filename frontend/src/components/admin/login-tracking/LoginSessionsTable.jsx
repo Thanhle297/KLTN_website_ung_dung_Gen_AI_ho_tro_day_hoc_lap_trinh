@@ -113,9 +113,7 @@ const LoginSessionsTable = ({
           <TableHead>
             <TableRow
               sx={{
-                background: isDark
-                  ? "rgba(102, 126, 234, 0.1)"
-                  : "linear-gradient(135deg, #667eea08 0%, #764ba208 100%)",
+                backgroundColor: theme.palette.action.selected,
               }}
             >
               <TableCell sx={{ fontWeight: 700 }}>Người dùng</TableCell>
@@ -172,8 +170,7 @@ const LoginSessionsTable = ({
                               height: 36,
                               fontSize: "0.85rem",
                               fontWeight: 700,
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              background: theme.palette.gradient.primary,
                             }}
                           >
                             {getInitials(session.fullname)}
@@ -280,14 +277,12 @@ const LoginSessionsTable = ({
                             onClick={() => onViewUser(session)}
                             size="small"
                             sx={{
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              background: theme.palette.gradient.primary,
                               color: "white",
                               width: 32,
                               height: 32,
                               "&:hover": {
-                                background:
-                                  "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                                background: theme.palette.gradient.primaryHover,
                               },
                             }}
                           >

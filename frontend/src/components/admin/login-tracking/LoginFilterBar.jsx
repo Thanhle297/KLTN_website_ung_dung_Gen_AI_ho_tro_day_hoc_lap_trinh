@@ -33,8 +33,8 @@ const LoginFilterBar = ({
       borderRadius: 2,
       backgroundColor: isDark ? theme.palette.background.default : "white",
       "& fieldset": { borderColor: theme.palette.divider },
-      "&:hover fieldset": { borderColor: "#667eea" },
-      "&.Mui-focused fieldset": { borderColor: "#667eea" },
+      "&:hover fieldset": { borderColor: theme.palette.primary.main },
+      "&.Mui-focused fieldset": { borderColor: theme.palette.primary.main },
     },
   };
 
@@ -55,7 +55,7 @@ const LoginFilterBar = ({
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Search sx={{ color: "#667eea", fontSize: 20 }} />
+              <Search sx={{ color: theme.palette.primary.main, fontSize: 20 }} />
             </InputAdornment>
           ),
         }}
@@ -94,7 +94,7 @@ const LoginFilterBar = ({
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <CalendarMonth sx={{ color: "#667eea", fontSize: 20 }} />
+              <CalendarMonth sx={{ color: theme.palette.primary.main, fontSize: 20 }} />
             </InputAdornment>
           ),
         }}
@@ -112,7 +112,7 @@ const LoginFilterBar = ({
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <CalendarMonth sx={{ color: "#667eea", fontSize: 20 }} />
+              <CalendarMonth sx={{ color: theme.palette.primary.main, fontSize: 20 }} />
             </InputAdornment>
           ),
         }}
@@ -130,10 +130,10 @@ const LoginFilterBar = ({
             fontWeight: 600,
             px: 2,
             "&.Mui-selected": {
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: theme.palette.gradient.primary,
               color: "white",
               "&:hover": {
-                background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                background: theme.palette.gradient.primaryHover,
               },
             },
           },

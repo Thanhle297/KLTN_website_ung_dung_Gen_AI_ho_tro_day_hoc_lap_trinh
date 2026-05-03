@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, Box, CircularProgress } from "@mui/material";
 import { History } from "@mui/icons-material";
-import AdminPageCard from "../../components/admin/AdminPageCard";
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
+import AdminTableSkeleton from "../../components/admin/shared/AdminTableSkeleton";
 import LoginFilterBar from "../../components/admin/login-tracking/LoginFilterBar";
 import LoginStatsCards from "../../components/admin/login-tracking/LoginStatsCards";
 import LoginChart from "../../components/admin/login-tracking/LoginChart";
 import LoginSessionsTable from "../../components/admin/login-tracking/LoginSessionsTable";
 import UserSessionDialog from "../../components/admin/login-tracking/UserSessionDialog";
 import useAdminAPI from "../../hook/useAdminAPI";
+import useNotify from "../../hook/useNotify";
 
 export default function LoginTrackingPage() {
   const api = useAdminAPI();
+  const notify = useNotify();
 
   // Filter state
   const [search, setSearch] = useState("");
@@ -48,9 +51,9 @@ export default function LoginTrackingPage() {
       const res = await api.getSessionStats(params);
       setStats(res.data);
     } catch (err) {
-      console.error("Lỗi tải thống kê:", err);
+      notify.error("Lỗi tải thống kê");
     }
-  }, [api, period, dateFrom, dateTo]);
+  }, [api, notify, period, dateFrom, dateTo]);
 
   // Load danh sách sessions
   const loadSessions = useCallback(async () => {
@@ -65,9 +68,9 @@ export default function LoginTrackingPage() {
       setSessions(res.data.sessions);
       setPagination(res.data.pagination);
     } catch (err) {
-      console.error("Lỗi tải sessions:", err);
+      notify.error("Lỗi tải sessions");
     }
-  }, [api, page, debouncedSearch, role, dateFrom, dateTo]);
+  }, [api, notify, page, debouncedSearch, role, dateFrom, dateTo]);
 
   // Load lần đầu và khi filter thay đổi
   useEffect(() => {
@@ -97,37 +100,17 @@ export default function LoginTrackingPage() {
 
   if (loading && !stats) {
     return (
-      <AdminPageCard>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: 400,
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </AdminPageCard>
+      <AdminPageWrapper>
+        <AdminPageHeader icon={<History />} title="Lịch sử đăng nhập" />
+        <AdminTableSkeleton rows={8} columns={5} />
+      </AdminPageWrapper>
     );
   }
 
   return (
-    <AdminPageCard>
+    <AdminPageWrapper>
       {/* Tiêu đề */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-        <History
-          sx={{
-            fontSize: 32,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        />
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Lịch sử đăng nhập
-        </Typography>
-      </Box>
+      <AdminPageHeader icon={<History />} title="Lịch sử đăng nhập" />
 
       {/* Bộ lọc */}
       <LoginFilterBar
@@ -163,6 +146,6 @@ export default function LoginTrackingPage() {
         onClose={handleCloseDialog}
         user={selectedUser}
       />
-    </AdminPageCard>
+    </AdminPageWrapper>
   );
 }

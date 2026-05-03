@@ -1,27 +1,41 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Box, useTheme } from "@mui/material";
-import { toast } from "sonner";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  useTheme,
+} from "@mui/material";
+import { Quiz } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
-import QuestionsHeader from "../../components/admin/questions/QuestionsHeader";
+import useNotify from "../../hook/useNotify";
+import useCascadeSelector from "../../hook/useCascadeSelector";
+
+import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
+import AdminPageHeader from "../../components/admin/shared/AdminPageHeader";
 import QuestionsTable from "../../components/admin/questions/QuestionsTable";
 import QuestionFormDialog from "../../components/admin/questions/QuestionFormDialog";
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
-import ImportFromBankModal from "../../components/admin/questions/ImportFromBankModal"; // [NEW]
+import ImportFromBankModal from "../../components/admin/questions/ImportFromBankModal";
+import { gradientButtonSx } from "../../styles/adminTokens";
 
 export default function QuestionsCRUD() {
   const api = useAdminAPI();
   const theme = useTheme();
+  const notify = useNotify();
 
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
+  /* ================= CASCADE SELECTOR ================= */
+  const cascade = useCascadeSelector(api, { pageKey: "questions", depth: 3 });
+  const {
+    courses, selectedCourse, setCourseId: handleCourseChange,
+    lessons, selectedLesson, setLessonId: handleLessonChange,
+    subLessons, selectedSubLesson, setSubLessonId: handleSubLessonChange,
+  } = cascade;
 
-  const [lessons, setLessons] = useState([]);
-  const [selectedLesson, setSelectedLesson] = useState("");
-
-  const [subLessons, setSubLessons] = useState([]);
-  const [selectedSubLesson, setSelectedSubLesson] = useState("");
-
+  /* ================= LOCAL STATE ================= */
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,57 +46,6 @@ export default function QuestionsCRUD() {
 
   const [openImport, setOpenImport] = useState(false);
 
-  const notify = useCallback((msg, severity = "success") => {
-    if (severity === "error") toast.error(msg);
-    else if (severity === "warning") toast.warning(msg);
-    else toast.success(msg);
-  }, []);
-
-  /* ================= LOAD COURSES ================= */
-  const loadCourses = useCallback(async () => {
-    try {
-      const res = await api.getCourses();
-      const list = Array.isArray(res.data) ? res.data : [];
-      setCourses(list);
-      if (!selectedCourse && list.length > 0) {
-        setSelectedCourse(list[0].courseId);
-      }
-    } catch {
-      notify("Không thể tải danh sách khóa học", "error");
-    }
-  }, [api, notify, selectedCourse]);
-
-  /* ================= LOAD LESSON ================= */
-  const loadLessons = useCallback(async () => {
-    if (!selectedCourse) return;
-    try {
-      const res = await api.getLessonsByCourse(selectedCourse);
-      setLessons(res.data);
-      // Reset khi đổi khóa học
-      setSelectedLesson("");
-      setSelectedSubLesson("");
-      setSubLessons([]);
-      setQuestions([]);
-    } catch {
-      notify("Lỗi tải bài học", "error");
-    }
-  }, [api, notify, selectedCourse]);
-
-  /* ================= LOAD SUBLESSON ================= */
-  const loadSubLessons = useCallback(async () => {
-    if (!selectedLesson || !selectedCourse) return;
-
-    try {
-      const res = await api.getSubLessons(selectedLesson, selectedCourse);
-      setSubLessons(res.data);
-      // Reset khi đổi bài học chính
-      setSelectedSubLesson("");
-      setQuestions([]);
-    } catch {
-      notify("Lỗi tải SubLesson", "error");
-    }
-  }, [selectedLesson, selectedCourse, api, notify]);
-
   /* ================= LOAD QUESTIONS ================= */
   const loadQuestions = useCallback(async () => {
     if (!selectedSubLesson || !selectedCourse) return;
@@ -92,23 +55,11 @@ export default function QuestionsCRUD() {
       const res = await api.getQuestions(selectedSubLesson, selectedCourse);
       setQuestions(res.data);
     } catch {
-      notify("Lỗi tải câu hỏi", "error");
+      notify.error("Lỗi tải câu hỏi");
     } finally {
       setLoading(false);
     }
   }, [selectedSubLesson, selectedCourse, api, notify]);
-
-  useEffect(() => {
-    loadCourses();
-  }, [loadCourses]);
-
-  useEffect(() => {
-    if (selectedCourse) loadLessons();
-  }, [loadLessons, selectedCourse]);
-
-  useEffect(() => {
-    if (selectedLesson && selectedCourse) loadSubLessons();
-  }, [loadSubLessons, selectedLesson, selectedCourse]);
 
   useEffect(() => {
     if (selectedSubLesson && selectedCourse) loadQuestions();
@@ -129,23 +80,11 @@ export default function QuestionsCRUD() {
     setOpenDialog(false);
   }, []);
 
-  const handleCourseChange = useCallback((value) => {
-    setSelectedCourse(value);
-  }, []);
-
-  const handleLessonChange = useCallback((value) => {
-    setSelectedLesson(value);
-  }, []);
-
-  const handleSubLessonChange = useCallback((value) => {
-    setSelectedSubLesson(value);
-  }, []);
-
   /* ================= SAVE ================= */
   const handleSave = useCallback(
     async (formData) => {
       if (!selectedSubLesson || !formData.question) {
-        notify("Thiếu dữ liệu bắt buộc", "warning");
+        notify.warning("Thiếu dữ liệu bắt buộc");
         return;
       }
 
@@ -161,16 +100,16 @@ export default function QuestionsCRUD() {
       try {
         if (editing) {
           await api.updateQuestion(editing.id, payload);
-          notify("Cập nhật thành công");
+          notify.success("Cập nhật thành công");
         } else {
           await api.createQuestion(payload);
-          notify("Thêm thành công");
+          notify.success("Thêm thành công");
         }
 
         setOpenDialog(false);
         loadQuestions();
       } catch {
-        notify("Lỗi lưu câu hỏi", "error");
+        notify.error("Lỗi lưu câu hỏi");
       }
     },
     [selectedSubLesson, selectedCourse, editing, api, notify, loadQuestions]
@@ -186,11 +125,11 @@ export default function QuestionsCRUD() {
 
     try {
       await api.deleteQuestion(deleteTarget.id);
-      notify("Xóa thành công");
+      notify.success("Xóa thành công");
       setDeleteTarget(null);
       loadQuestions();
     } catch {
-      notify("Lỗi xóa câu hỏi", "error");
+      notify.error("Lỗi xóa câu hỏi");
     }
   }, [deleteTarget, api, notify, loadQuestions]);
 
@@ -201,7 +140,7 @@ export default function QuestionsCRUD() {
   /* ================= IMPORT ================= */
   const handleOpenImport = useCallback(() => {
     if (!selectedSubLesson) {
-      notify("Vui lòng chọn SubLesson trước", "warning");
+      notify.warning("Vui lòng chọn SubLesson trước");
       return;
     }
     setOpenImport(true);
@@ -209,7 +148,7 @@ export default function QuestionsCRUD() {
 
   const handleImportSuccess = useCallback(
     (count) => {
-      notify(`Đã lấy ${count} câu hỏi từ ngân hàng`);
+      notify.success(`Đã lấy ${count} câu hỏi từ ngân hàng`);
       loadQuestions();
     },
     [notify, loadQuestions]
@@ -217,27 +156,79 @@ export default function QuestionsCRUD() {
 
   /* ================= RENDER UI ================= */
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "linear-gradient(135deg, #42A5F5 0%, #2196F3 50%, #1976D2 100%)",
-        p: 3,
-      }}
-    >
-      <QuestionsHeader
-        courses={courses}
-        selectedCourse={selectedCourse}
-        onCourseChange={handleCourseChange}
-        lessons={lessons}
-        selectedLesson={selectedLesson}
-        subLessons={subLessons}
-        selectedSubLesson={selectedSubLesson}
-        onLessonChange={handleLessonChange}
-        onSubLessonChange={handleSubLessonChange}
-        onAddClick={handleAddClick}
-        onImportClick={handleOpenImport}
+    <AdminPageWrapper>
+      <AdminPageHeader
+        icon={<Quiz />}
+        title="Quản lý Câu hỏi"
+        subtitle={selectedSubLesson ? `SubLesson: ${selectedSubLesson}` : "Chọn SubLesson"}
+        actions={
+          selectedSubLesson && (
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                onClick={handleOpenImport}
+                sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600 }}
+              >
+                Lấy từ Bank
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleAddClick}
+                sx={gradientButtonSx(theme)}
+              >
+                Thêm câu hỏi
+              </Button>
+            </Stack>
+          )
+        }
+        filters={
+          <Stack spacing={2}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Khóa học</InputLabel>
+              <Select
+                label="Khóa học"
+                value={selectedCourse}
+                onChange={(e) => handleCourseChange(e.target.value)}
+              >
+                {courses?.map((c) => (
+                  <MenuItem key={c.courseId} value={c.courseId}>
+                    {c.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Bài học</InputLabel>
+              <Select
+                label="Bài học"
+                value={selectedLesson}
+                onChange={(e) => handleLessonChange(e.target.value)}
+              >
+                {lessons?.map((l) => (
+                  <MenuItem key={l.lessonId} value={l.lessonId}>
+                    {l.lessonId} — {l.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {selectedLesson && (
+              <FormControl size="small" fullWidth>
+                <InputLabel>SubLesson</InputLabel>
+                <Select
+                  label="SubLesson"
+                  value={selectedSubLesson}
+                  onChange={(e) => handleSubLessonChange(e.target.value)}
+                >
+                  {subLessons?.map((s) => (
+                    <MenuItem key={s.lessonId} value={s.lessonId}>
+                      {s.lessonId} — {s.displayId}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Stack>
+        }
       />
 
       <QuestionsTable
@@ -270,6 +261,6 @@ export default function QuestionsCRUD() {
         courseId={selectedCourse}
         onSuccess={handleImportSuccess}
       />
-    </Box>
+    </AdminPageWrapper>
   );
 }

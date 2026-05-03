@@ -1,13 +1,14 @@
 // =============================================================================
 // theme.js - MUI Theme Configuration (Deep Ocean & Coral)
-// Cung c\u1ea5p light v\u00e0 dark theme cho MUI components.
-// \u0110\u1ed3ng b\u1ed9 v\u1edbi _design-tokens.scss
+// Cung cấp light và dark theme cho MUI components.
+// Đồng bộ với _design-tokens.scss
 // =============================================================================
 
 import { createTheme } from "@mui/material/styles";
 
-// --- B\u1ea3ng m\u00e0u Deep Ocean ---
-const palette = {
+// --- Bảng màu Deep Ocean ---
+// Export để components/styles có thể tham chiếu trực tiếp khi cần
+export const palette = {
   navy: {
     950: "#020617",
     900: "#0f172a",
@@ -80,6 +81,65 @@ const sharedShape = {
   borderRadius: 12,
 };
 
+// =============================================================================
+// SHARED DESIGN TOKENS (Admin)
+// Mọi gradient / shadow / background của admin TUYỆT ĐỐI dùng từ đây.
+// Không hardcode hex code rải rác trong components nữa.
+// =============================================================================
+
+// --- Gradient hợp pháp (chỉ dùng 4 gradient sau, không thêm gradient lạ) ---
+const sharedGradient = {
+  // Primary brand gradient (header, button "Thêm", title gradient text)
+  primary: `linear-gradient(135deg, ${palette.blue[600]} 0%, ${palette.blue[500]} 100%)`,
+  primaryHover: `linear-gradient(135deg, ${palette.blue[700]} 0%, ${palette.blue[600]} 100%)`,
+  // Secondary (coral) - dùng cho accent / CTA phụ
+  secondary: `linear-gradient(135deg, ${palette.coral[500]} 0%, ${palette.coral[400]} 100%)`,
+  // Danger (delete dialog) - đỏ thay vì hồng-vàng cũ để rõ ý "nguy hiểm"
+  danger: `linear-gradient(135deg, #ef4444 0%, #dc2626 100%)`,
+  // Surface gradient (background trang admin light mode)
+  adminSurfaceLight: `linear-gradient(135deg, ${palette.blue[50]} 0%, #ffffff 50%, ${palette.teal[50]} 100%)`,
+};
+
+// --- Custom shadows (boxShadow chuẩn) ---
+const sharedCustomShadows = {
+  light: {
+    card: "0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06)",
+    cardHover: "0 8px 24px -8px rgba(37, 99, 235, 0.18), 0 4px 8px -4px rgba(15, 23, 42, 0.08)",
+    headerCard: "0 8px 32px -8px rgba(37, 99, 235, 0.12)",
+    dialog: "0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1)",
+    appBar: "0 1px 0 0 rgba(15, 23, 42, 0.06)",
+  },
+  dark: {
+    card: "0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3)",
+    cardHover: "0 8px 24px -8px rgba(0, 0, 0, 0.6), 0 4px 8px -4px rgba(0, 0, 0, 0.4)",
+    headerCard: "0 8px 32px -8px rgba(0, 0, 0, 0.5)",
+    dialog: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+    appBar: "0 1px 0 0 rgba(255, 255, 255, 0.06)",
+  },
+};
+
+// --- Background admin layout ---
+const sharedAdminBg = {
+  light: {
+    page: palette.navy[50],          // #f8fafc - nền chính trang admin
+    pageGradient: `linear-gradient(135deg, ${palette.blue[50]} 0%, #ffffff 50%, ${palette.teal[50]} 100%)`,
+    sidebar: "#ffffff",
+    sidebarSelected: palette.blue[50],
+    sidebarHover: palette.navy[100],
+    appBar: "#ffffff",
+    tableHead: palette.navy[50],
+  },
+  dark: {
+    page: palette.navy[950],
+    pageGradient: `linear-gradient(135deg, ${palette.navy[950]} 0%, ${palette.navy[900]} 100%)`,
+    sidebar: palette.navy[900],
+    sidebarSelected: "rgba(59, 130, 246, 0.16)",
+    sidebarHover: "rgba(255, 255, 255, 0.04)",
+    appBar: palette.navy[900],
+    tableHead: palette.navy[800],
+  },
+};
+
 const sharedTransitions = {
   duration: {
     shortest: 150,
@@ -146,11 +206,15 @@ export const lightTheme = createTheme({
       disabled: palette.navy[400],
     },
     divider: palette.navy[200],
-    // M\u00e0u t\u00f9y ch\u1ec9nh (d\u00f9ng qua theme.palette.navy, etc.)
+    // Màu tùy chỉnh (dùng qua theme.palette.navy, etc.)
     navy: palette.navy,
     coral: palette.coral,
     teal: palette.teal,
+    // Tokens dành riêng cho admin
+    gradient: sharedGradient,
+    adminBg: sharedAdminBg.light,
   },
+  customShadows: sharedCustomShadows.light,
   typography: sharedTypography,
   shape: sharedShape,
   transitions: sharedTransitions,
@@ -168,15 +232,57 @@ export const lightTheme = createTheme({
           },
         },
         containedPrimary: {
-          background: `linear-gradient(135deg, ${palette.blue[600]} 0%, ${palette.blue[500]} 100%)`,
+          background: sharedGradient.primary,
           "&:hover": {
-            background: `linear-gradient(135deg, ${palette.blue[700]} 0%, ${palette.blue[600]} 100%)`,
+            background: sharedGradient.primaryHover,
           },
         },
         containedSecondary: {
-          background: `linear-gradient(135deg, ${palette.coral[500]} 0%, ${palette.coral[400]} 100%)`,
+          background: sharedGradient.secondary,
           "&:hover": {
             background: `linear-gradient(135deg, ${palette.coral[600]} 0%, ${palette.coral[500]} 100%)`,
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: sharedAdminBg.light.appBar,
+          color: palette.navy[900],
+          boxShadow: sharedCustomShadows.light.appBar,
+          backgroundImage: "none",
+          borderBottom: `1px solid ${palette.navy[200]}`,
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: sharedAdminBg.light.sidebar,
+          backgroundImage: "none",
+          borderRight: `1px solid ${palette.navy[200]}`,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          "& .MuiTableCell-head": {
+            backgroundColor: sharedAdminBg.light.tableHead,
+            color: palette.navy[700],
+            fontWeight: 700,
+            fontSize: "0.8125rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            borderBottom: `1px solid ${palette.navy[200]}`,
           },
         },
       },
@@ -186,10 +292,10 @@ export const lightTheme = createTheme({
         root: {
           borderRadius: 12,
           border: `1px solid ${palette.navy[200]}`,
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+          boxShadow: sharedCustomShadows.light.card,
           transition: "box-shadow 250ms ease, transform 250ms ease, border-color 250ms ease",
           "&:hover": {
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+            boxShadow: sharedCustomShadows.light.cardHover,
             borderColor: palette.navy[300],
           },
         },
@@ -235,7 +341,7 @@ export const lightTheme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: 16,
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+          boxShadow: sharedCustomShadows.light.dialog,
         },
       },
     },
@@ -301,7 +407,11 @@ export const darkTheme = createTheme({
     navy: palette.navy,
     coral: palette.coral,
     teal: palette.teal,
+    // Tokens dành riêng cho admin
+    gradient: sharedGradient,
+    adminBg: sharedAdminBg.dark,
   },
+  customShadows: sharedCustomShadows.dark,
   typography: sharedTypography,
   shape: sharedShape,
   transitions: sharedTransitions,
@@ -332,16 +442,58 @@ export const darkTheme = createTheme({
         },
       },
     },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: sharedAdminBg.dark.appBar,
+          color: palette.navy[50],
+          boxShadow: sharedCustomShadows.dark.appBar,
+          backgroundImage: "none",
+          borderBottom: `1px solid ${palette.navy[700]}`,
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: sharedAdminBg.dark.sidebar,
+          backgroundImage: "none",
+          borderRight: `1px solid ${palette.navy[700]}`,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          "& .MuiTableCell-head": {
+            backgroundColor: sharedAdminBg.dark.tableHead,
+            color: palette.navy[200],
+            fontWeight: 700,
+            fontSize: "0.8125rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            borderBottom: `1px solid ${palette.navy[700]}`,
+          },
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: 12,
           border: `1px solid ${palette.navy[700]}`,
           backgroundColor: palette.navy[800],
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3)",
+          boxShadow: sharedCustomShadows.dark.card,
           transition: "box-shadow 250ms ease, transform 250ms ease, border-color 250ms ease",
           "&:hover": {
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3)",
+            boxShadow: sharedCustomShadows.dark.cardHover,
             borderColor: palette.navy[600],
           },
         },
@@ -388,7 +540,7 @@ export const darkTheme = createTheme({
         paper: {
           borderRadius: 16,
           backgroundColor: palette.navy[900],
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+          boxShadow: sharedCustomShadows.dark.dialog,
         },
       },
     },

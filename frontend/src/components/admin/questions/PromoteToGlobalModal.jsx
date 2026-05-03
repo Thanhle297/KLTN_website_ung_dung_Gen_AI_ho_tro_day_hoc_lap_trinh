@@ -112,10 +112,7 @@ const PromoteToGlobalModal = ({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle
         sx={{
-          background:
-            theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`
-              : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          background: theme.palette.gradient.danger,
           color: "white",
           fontWeight: 700,
         }}

@@ -21,13 +21,13 @@ const CARDS = [
     key: "totalSessions",
     label: "Tổng lượt đăng nhập",
     icon: LoginIcon,
-    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "primary",
   },
   {
     key: "todayCount",
     label: "Hôm nay",
     icon: Today,
-    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    color: "danger",
   },
   {
     key: "onlineCount",
@@ -47,10 +47,16 @@ const CARDS = [
 const LoginStatsCards = ({ overview = {} }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+  const gradients = {
+    primary: theme.palette.gradient.primary,
+    danger: theme.palette.gradient.danger,
+    online: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    duration: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+  };
 
   return (
     <Grid container spacing={2} sx={{ mb: 3 }}>
-      {CARDS.map(({ key, label, icon: Icon, gradient, format }) => (
+      {CARDS.map(({ key, label, icon: Icon, color, gradient, format }) => (
         <Grid key={key} size={{ xs: 6, md: 3 }}>
           <Paper
             elevation={0}
@@ -78,7 +84,7 @@ const LoginStatsCards = ({ overview = {} }) => {
                 left: 0,
                 right: 0,
                 height: 4,
-                background: gradient,
+                background: gradient || gradients[color],
               }}
             />
 
@@ -88,7 +94,7 @@ const LoginStatsCards = ({ overview = {} }) => {
                   width: 48,
                   height: 48,
                   borderRadius: 2,
-                  background: gradient,
+                  background: gradient || gradients[color],
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

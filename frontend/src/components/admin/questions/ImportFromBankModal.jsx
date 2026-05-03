@@ -189,10 +189,7 @@ export default function ImportFromBankModal({
       <DialogTitle
         sx={{
           fontWeight: 700,
-          background:
-            theme.palette.mode === "dark"
-              ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.gradient.primary,
           color: "white",
         }}
       >
@@ -316,7 +313,7 @@ export default function ImportFromBankModal({
                             px: 1,
                             py: 0.5,
                             bgcolor: "rgba(102, 126, 234, 0.1)",
-                            color: "#667eea",
+                            color: theme.palette.primary.main,
                             borderRadius: 1,
                             fontSize: "0.8rem",
                             fontWeight: 600,
@@ -344,7 +341,7 @@ export default function ImportFromBankModal({
                               handleOpenPreview(q);
                             }}
                             sx={{
-                              color: "#667eea",
+                              color: theme.palette.primary.main,
                               backgroundColor:
                                 previewQuestion?.id === q.id
                                   ? "rgba(102, 126, 234, 0.12)"
@@ -372,7 +369,7 @@ export default function ImportFromBankModal({
           variant="contained"
           disabled={loading || selectedIds.length === 0}
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: theme.palette.gradient.primary,
             fontWeight: 700,
           }}
         >

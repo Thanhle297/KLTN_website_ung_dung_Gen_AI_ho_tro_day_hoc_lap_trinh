@@ -13,6 +13,18 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý 401: token hết hạn → redirect về login
+API.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
 export default function useAdminAPI() {
   return useMemo(
     () => ({
@@ -132,6 +144,7 @@ export default function useAdminAPI() {
         API.post("/enrollments/unenroll", { userId, courseId }),
       bulkEnrollUsers: (userIds, courseIds) =>
         API.post("/enrollments/bulk-enroll", { userIds, courseIds }),
+      bulkUpdateEnrollments: (payload) => API.post("/enrollments/bulk", payload),
       getCourseUsers: (courseId) =>
         API.get(`/enrollments/course/${courseId}/users`),
       getUserCourses: (userId) =>
@@ -143,6 +156,9 @@ export default function useAdminAPI() {
       getUserSessions: (userId, params) =>
         API.get(`/sessions/user/${userId}`, { params }),
       getOnlineUsers: () => API.get("/sessions/online"),
+
+      /* ===== ADMIN DASHBOARD STATS ===== */
+      getDashboardStats: () => API.get("/admin/stats"),
     }),
     []
   );

@@ -115,9 +115,7 @@ export default function UserCoursesDialog({
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.gradient.primary,
           color: "white",
           display: "flex",
           alignItems: "center",
@@ -166,9 +164,9 @@ export default function UserCoursesDialog({
                       checked={selectedCourses.includes(course.courseId)}
                       onChange={() => handleToggleCourse(course.courseId)}
                       sx={{
-                        color: "#667eea",
+                        color: theme.palette.primary.main,
                         "&.Mui-checked": {
-                          color: "#667eea",
+                          color: theme.palette.primary.main,
                         },
                       }}
                     />
@@ -195,7 +193,7 @@ export default function UserCoursesDialog({
                     borderRadius: 2,
                     border: "1px solid",
                     borderColor: selectedCourses.includes(course.courseId)
-                      ? "#667eea"
+                      ? theme.palette.primary.main
                       : theme.palette.divider,
                     backgroundColor: selectedCourses.includes(course.courseId)
                       ? "rgba(102, 126, 234, 0.05)"
@@ -203,7 +201,7 @@ export default function UserCoursesDialog({
                     transition: "all 0.2s ease",
                     "&:hover": {
                       backgroundColor: "rgba(102, 126, 234, 0.08)",
-                      borderColor: "#667eea",
+                      borderColor: theme.palette.primary.main,
                     },
                   }}
                 />
@@ -234,9 +232,9 @@ export default function UserCoursesDialog({
             borderRadius: 2,
             textTransform: "none",
             fontWeight: 600,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: theme.palette.gradient.primary,
             "&:hover": {
-              background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+              background: theme.palette.gradient.primaryHover,
             },
           }}
         >

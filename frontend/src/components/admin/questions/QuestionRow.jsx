@@ -203,13 +203,12 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign, selectab
           <IconButton
             onClick={() => onDelete(question)}
             sx={{
-              background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+              background: theme.palette.gradient.danger,
               color: "white",
               width: 36,
               height: 36,
               "&:hover": {
-                background:
-                  "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                background: theme.palette.gradient.danger,
               },
               transition: "all 0.2s ease",
             }}

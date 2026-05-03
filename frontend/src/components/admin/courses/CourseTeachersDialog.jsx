@@ -150,9 +150,7 @@ export default function CourseTeachersDialog({
     >
       <DialogTitle
         sx={{
-          background: theme.palette.mode === "dark"
-            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: theme.palette.gradient.primary,
           color: "white",
           fontWeight: 700,
           fontSize: "1.3rem",
@@ -187,9 +185,7 @@ export default function CourseTeachersDialog({
             {/* Thêm giáo viên */}
             <Box sx={{
               p: 2,
-              background: theme.palette.mode === "dark"
-                ? theme.palette.background.default
-                : "#f8f9fa",
+              backgroundColor: theme.palette.action.hover,
             }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Thêm giáo viên
@@ -226,12 +222,12 @@ export default function CourseTeachersDialog({
                   onClick={handleAddTeacher}
                   disabled={!selectedTeacher || saving}
                   sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: theme.palette.gradient.primary,
                     borderRadius: 2,
                     textTransform: "none",
                     whiteSpace: "nowrap",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                      background: theme.palette.gradient.primaryHover,
                     },
                   }}
                 >
@@ -281,11 +277,11 @@ export default function CourseTeachersDialog({
                           disabled={saving}
                           sx={{
                             background:
-                              "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                              theme.palette.gradient.danger,
                             color: "white",
                             "&:hover": {
                               background:
-                                "linear-gradient(135deg, #fee140 0%, #fa709a 100%)",
+                                theme.palette.gradient.danger,
                             },
                           }}
                         >
@@ -297,7 +293,7 @@ export default function CourseTeachersDialog({
                         <Avatar
                           sx={{
                             background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              theme.palette.gradient.primary,
                           }}
                         >
                           <School />
@@ -341,9 +337,7 @@ export default function CourseTeachersDialog({
 
       <DialogActions sx={{
         p: 2,
-        background: theme.palette.mode === "dark"
-          ? theme.palette.background.default
-          : "#f8f9fa",
+        backgroundColor: theme.palette.action.hover,
       }}>
         <Button
           onClick={onClose}
