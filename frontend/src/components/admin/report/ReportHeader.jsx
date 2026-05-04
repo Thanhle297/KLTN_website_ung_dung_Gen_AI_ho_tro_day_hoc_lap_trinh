@@ -23,7 +23,10 @@ import {
 const ReportHeader = ({ navigate }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const textColor = isDark ? theme.palette.text.primary : "white";
+  // Header nằm trên nền trang admin (sáng ở light mode, tối ở dark mode)
+  // → dùng text.primary để luôn tương phản với nền.
+  const textColor = theme.palette.text.primary;
+  const linkHoverColor = theme.palette.primary.main;
 
   return (
     <Box
@@ -48,6 +51,7 @@ const ReportHeader = ({ navigate }) => {
               alignItems: "center",
               color: textColor,
               cursor: "pointer",
+              "&:hover": { color: linkHoverColor },
             }}
             onClick={() => navigate("/admin/courses")}
           >
@@ -59,6 +63,7 @@ const ReportHeader = ({ navigate }) => {
               display: "flex",
               alignItems: "center",
               color: textColor,
+              fontWeight: 600,
             }}
           >
             <AssessmentIcon sx={{ mr: 0.5 }} fontSize="small" />
@@ -68,20 +73,26 @@ const ReportHeader = ({ navigate }) => {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Button
+            variant="outlined"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate("/admin/courses")}
             sx={{
               textTransform: "none",
               fontWeight: 600,
               color: textColor,
+              borderColor: isDark
+                ? "rgba(255, 255, 255, 0.2)"
+                : "rgba(0, 0, 0, 0.15)",
               backgroundColor: isDark
-                ? "rgba(255, 255, 255, 0.08)"
-                : "rgba(255, 255, 255, 0.15)",
-              backdropFilter: "blur(10px)",
+                ? "rgba(255, 255, 255, 0.04)"
+                : "rgba(0, 0, 0, 0.02)",
               "&:hover": {
                 backgroundColor: isDark
-                  ? "rgba(255, 255, 255, 0.15)"
-                  : "rgba(255, 255, 255, 0.25)",
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.06)",
+                borderColor: isDark
+                  ? "rgba(255, 255, 255, 0.35)"
+                  : "rgba(0, 0, 0, 0.3)",
               },
             }}
           >
