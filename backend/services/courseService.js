@@ -342,6 +342,40 @@ async function getProgressMap(studentIds, courseId) {
 }
 
 /**
+ * Lấy cấu trúc bài học dạng lồng (lesson -> subLessons)
+ * Sắp xếp đúng theo lesson.order rồi subLesson.order
+ * @param {string} courseId
+ * @returns {Promise<Array>} Danh sách lessons, mỗi lesson chứa mảng subLessons
+ */
+async function getCourseLessonStructure(courseId) {
+  const db = getDB();
+  const lessons = await db
+    .collection("lessons")
+    .find({ courseId })
+    .sort({ order: 1 })
+    .toArray();
+
+  return lessons.map((lesson) => {
+    const subLessons = Array.isArray(lesson.subLessons)
+      ? [...lesson.subLessons]
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((sub) => ({
+            subLessonId: sub.lessonId,
+            subLessonTitle: sub.title,
+            order: sub.order || 0,
+          }))
+      : [];
+
+    return {
+      lessonId: lesson.lessonId,
+      lessonTitle: lesson.title,
+      order: lesson.order || 0,
+      subLessons,
+    };
+  });
+}
+
+/**
  * Lấy báo cáo điểm học sinh theo khóa học
  * @param {string} courseId
  * @returns {Promise<Object>} Report data
@@ -360,8 +394,9 @@ async function getCourseReport(courseId) {
     .project({ _id: 1, username: 1, fullname: 1 })
     .toArray();
 
-  // 3. Lấy cấu trúc bài học
+  // 3. Lấy cấu trúc bài học (cả dạng phẳng cho CSV và dạng lồng cho UI)
   const structure = await getCourseStructure(courseId);
+  const lessonStructure = await getCourseLessonStructure(courseId);
 
   // 4. Lấy tiến độ
   const studentIds = students.map((s) => s._id.toString());
@@ -370,9 +405,11 @@ async function getCourseReport(courseId) {
   // 5. Xây dựng dữ liệu cho từng học sinh
   const studentsData = students.map((student) => {
     const scores = {};
+    const lessonScores = {};
     let totalProgress = 0;
     let subLessonCount = 0;
 
+    // Điểm phẳng theo subLesson (giữ tương thích CSV)
     for (const sub of structure) {
       const key = `${student._id.toString()}_${sub.subLessonId}`;
       const progressDoc = progressMap[key];
@@ -386,6 +423,29 @@ async function getCourseReport(courseId) {
       subLessonCount++;
     }
 
+    // Tổng hợp theo từng bài lớn
+    for (const lesson of lessonStructure) {
+      let completedCount = 0;
+      let progressSum = 0;
+      const totalCount = lesson.subLessons.length;
+
+      for (const sub of lesson.subLessons) {
+        const score = scores[sub.subLessonId];
+        if (score?.completed) completedCount += 1;
+        progressSum += score?.progress || 0;
+      }
+
+      const lessonProgress =
+        totalCount > 0 ? Math.round(progressSum / totalCount) : 0;
+
+      lessonScores[lesson.lessonId] = {
+        completedCount,
+        totalCount,
+        progress: lessonProgress,
+        completed: totalCount > 0 && completedCount === totalCount,
+      };
+    }
+
     const averageProgress =
       subLessonCount > 0 ? Math.round(totalProgress / subLessonCount) : 0;
 
@@ -394,6 +454,7 @@ async function getCourseReport(courseId) {
       username: student.username,
       fullname: student.fullname || student.username,
       scores,
+      lessonScores,
       averageProgress,
     };
   });
@@ -405,8 +466,10 @@ async function getCourseReport(courseId) {
     courseId,
     courseTitle: course.title,
     structure,
+    lessonStructure,
     students: studentsData,
     totalStudents: studentsData.length,
+    totalLessons: lessonStructure.length,
     totalSubLessons: structure.length,
   };
 }
@@ -426,6 +489,7 @@ module.exports = {
   addTeacher,
   removeTeacher,
   getCourseStructure,
+  getCourseLessonStructure,
   getProgressMap,
   getCourseReport,
 };

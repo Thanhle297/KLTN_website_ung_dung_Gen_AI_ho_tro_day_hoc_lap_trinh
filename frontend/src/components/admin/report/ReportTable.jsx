@@ -1,9 +1,10 @@
 // components/admin/report/ReportTable.jsx
-// Bảng điểm học sinh + chú thích cho trang Báo cáo điểm
+// Bảng điểm học sinh theo bài lớn + chú thích cho trang Báo cáo điểm
 import React from "react";
 import {
   Box,
   Chip,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -18,9 +19,21 @@ import {
 import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { adminCardSx } from "../../../styles/adminTokens";
 
-// --- Helper: hiển thị ô điểm với màu theo mức hoàn thành ---
-const renderScoreCell = (score) => {
-  if (!score || score.progress === 0) {
+// --- Helper: chọn màu theo mức progress ---
+const pickColor = (progress) => {
+  if (progress >= 80) return "success";
+  if (progress >= 50) return "warning";
+  if (progress > 0) return "error";
+  return "default";
+};
+
+// --- Helper: hiển thị ô tổng hợp theo bài lớn ---
+const renderLessonCell = (lessonScore) => {
+  const totalCount = lessonScore?.totalCount || 0;
+  const completedCount = lessonScore?.completedCount || 0;
+  const progress = lessonScore?.progress || 0;
+
+  if (totalCount === 0) {
     return (
       <Typography variant="body2" color="text.disabled">
         -
@@ -28,32 +41,50 @@ const renderScoreCell = (score) => {
     );
   }
 
-  const progress = score.progress;
-  let color = "error";
-  if (progress >= 80) color = "success";
-  else if (progress >= 50) color = "warning";
+  const color = pickColor(progress);
+  const isAllDone = completedCount === totalCount;
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-      <Typography variant="body2" fontWeight={600} color={`${color}.main`}>
-        {progress}%
-      </Typography>
-      {score.completed && (
-        <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />
-      )}
-    </Box>
+    <Stack alignItems="center" spacing={0.25}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          color={color === "default" ? "text.secondary" : `${color}.main`}
+        >
+          {completedCount}/{totalCount}
+        </Typography>
+        {isAllDone && (
+          <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />
+        )}
+      </Box>
+      <Chip
+        label={`${progress}%`}
+        size="small"
+        color={color === "default" ? undefined : color}
+        variant={progress === 0 ? "outlined" : "filled"}
+        sx={{
+          height: 18,
+          fontSize: "0.7rem",
+          fontWeight: 600,
+          minWidth: 48,
+        }}
+      />
+    </Stack>
   );
 };
 
 /**
  * @param {object}   props
- * @param {object}   props.reportData        - Dữ liệu báo cáo (structure, students…)
+ * @param {object}   props.reportData         - Dữ liệu báo cáo (lessonStructure, students…)
  * @param {Array}    props.filteredStudents   - Danh sách học sinh sau khi lọc
- * @param {Function} props.onCellClick       - Callback khi click ô điểm (mở lịch sử nộp bài)
+ * @param {Function} props.onCellClick        - Callback khi click ô bài lớn (mở dialog chi tiết)
  */
 const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+
+  const lessonStructure = reportData?.lessonStructure || [];
 
   // Style chung cho header cell cố định
   const stickyHeadSx = {
@@ -121,29 +152,37 @@ const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
                 Họ tên
               </TableCell>
 
-              {/* Cột động cho từng bài học */}
-              {reportData.structure?.map((sub) => (
+              {/* Cột động cho từng bài lớn */}
+              {lessonStructure.map((lesson) => (
                 <TableCell
-                  key={sub.subLessonId}
+                  key={lesson.lessonId}
                   align="center"
                   sx={{
                     ...stickyHeadSx,
                     fontWeight: 600,
-                    minWidth: 100,
-                    fontSize: "0.75rem",
+                    minWidth: 130,
+                    fontSize: "0.78rem",
                   }}
                 >
                   <Tooltip
-                    title={`${sub.lessonTitle} - ${sub.subLessonTitle}`}
+                    title={`${lesson.lessonTitle} (${lesson.subLessons.length} bài con)`}
                   >
                     <Box>
                       <Typography
                         variant="caption"
                         display="block"
                         noWrap
-                        sx={{ maxWidth: 100 }}
+                        fontWeight={700}
+                        sx={{ maxWidth: 140 }}
                       >
-                        {sub.subLessonTitle}
+                        {lesson.lessonTitle}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.65rem" }}
+                      >
+                        {lesson.subLessons.length} bài con
                       </Typography>
                     </Box>
                   </Tooltip>
@@ -217,27 +256,31 @@ const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
                   {student.fullname}
                 </TableCell>
 
-                {/* Điểm từng bài — click để xem lịch sử nộp bài */}
-                {reportData.structure?.map((sub) => {
-                  const score = student.scores[sub.subLessonId];
-                  const hasScore = score && score.progress > 0;
+                {/* Mỗi bài lớn — click để xem chi tiết bài con */}
+                {lessonStructure.map((lesson) => {
+                  const lessonScore = student.lessonScores?.[lesson.lessonId];
+                  const hasSubs = (lessonScore?.totalCount || 0) > 0;
                   return (
                     <TableCell
-                      key={sub.subLessonId}
+                      key={lesson.lessonId}
                       align="center"
                       onClick={
-                        hasScore
+                        hasSubs
                           ? () =>
                               onCellClick({
                                 userId: student.userId,
-                                subLessonId: sub.subLessonId,
                                 studentName: student.fullname,
-                                subLessonTitle: sub.subLessonTitle,
+                                username: student.username,
+                                lessonId: lesson.lessonId,
+                                lessonTitle: lesson.lessonTitle,
+                                subLessons: lesson.subLessons,
+                                scores: student.scores,
+                                lessonScore,
                               })
                           : undefined
                       }
                       sx={{
-                        ...(hasScore && {
+                        ...(hasSubs && {
                           cursor: "pointer",
                           transition: "background-color 0.2s",
                           "&:hover": {
@@ -247,7 +290,7 @@ const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
                         }),
                       }}
                     >
-                      {renderScoreCell(score)}
+                      {renderLessonCell(lessonScore)}
                     </TableCell>
                   );
                 })}
@@ -273,7 +316,7 @@ const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
             {filteredStudents?.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={reportData.structure?.length + 4}
+                  colSpan={lessonStructure.length + 4}
                   align="center"
                   sx={{ py: 5 }}
                 >
@@ -300,9 +343,12 @@ const ReportTable = ({ reportData, filteredStudents, onCellClick }) => {
         <Typography variant="caption" color="text.secondary">
           Chú thích:
         </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Mỗi ô hiển thị <b>số bài con đã hoàn thành / tổng số bài con</b> và % tiến độ trung bình. Nhấn vào ô để xem chi tiết.
+        </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />
-          <Typography variant="caption">Đã hoàn thành</Typography>
+          <Typography variant="caption">Hoàn thành toàn bộ bài con</Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Chip

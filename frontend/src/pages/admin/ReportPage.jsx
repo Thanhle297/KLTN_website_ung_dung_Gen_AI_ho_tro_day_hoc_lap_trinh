@@ -21,6 +21,7 @@ import AdminPageWrapper from "../../components/admin/shared/AdminPageWrapper";
 import ReportHeader from "../../components/admin/report/ReportHeader";
 import ReportSearchBar from "../../components/admin/report/ReportSearchBar";
 import ReportTable from "../../components/admin/report/ReportTable";
+import ReportLessonDetailDialog from "../../components/admin/report/ReportLessonDetailDialog";
 import SubmissionHistoryDialog from "../../components/admin/report/SubmissionHistoryDialog";
 import useReportAPI from "../../hook/useReportAPI";
 import useNotify from "../../hook/useNotify";
@@ -38,7 +39,9 @@ export default function CourseReportPage() {
   const [reportData, setReportData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
-  // State cho modal lịch sử nộp bài: { userId, subLessonId, studentName }
+  // State cho dialog chi tiết bài lớn: { userId, studentName, lessonId, lessonTitle, subLessons, scores }
+  const [lessonTarget, setLessonTarget] = useState(null);
+  // State cho modal lịch sử nộp bài: { userId, subLessonId, studentName, subLessonTitle }
   const [historyTarget, setHistoryTarget] = useState(null);
 
   // --- Tải báo cáo ---
@@ -69,8 +72,8 @@ export default function CourseReportPage() {
       const response = await reportAPI.exportScoresCSV(courseId);
 
       // Tạo tên file (loại bỏ dấu tiếng Việt)
-      const courseName = reportData?.courseName
-        ? reportData.courseName
+      const courseName = reportData?.courseTitle
+        ? reportData.courseTitle
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .replace(/đ/g, "d")
@@ -87,7 +90,7 @@ export default function CourseReportPage() {
     } finally {
       setExporting(false);
     }
-  }, [courseId, reportAPI, reportData?.courseName, notify]);
+  }, [courseId, reportAPI, reportData?.courseTitle, notify]);
 
   // --- Lọc học sinh theo từ khoá tìm kiếm ---
   const filteredStudents = useMemo(
@@ -100,7 +103,13 @@ export default function CourseReportPage() {
     [reportData?.students, searchTerm]
   );
 
-  // --- Callback đóng modal ---
+  // --- Callbacks ---
+  const handleCellClick = useCallback((target) => setLessonTarget(target), []);
+  const handleCloseLesson = useCallback(() => setLessonTarget(null), []);
+  const handleSubLessonClick = useCallback(
+    (target) => setHistoryTarget(target),
+    []
+  );
   const handleCloseHistory = useCallback(() => setHistoryTarget(null), []);
 
   return (
@@ -125,13 +134,13 @@ export default function CourseReportPage() {
                 Báo cáo điểm học sinh
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                {reportData?.courseName || `Khóa học #${courseId}`}
+                {reportData?.courseTitle || `Khóa học #${courseId}`}
               </Typography>
             </Box>
           </Box>
 
           {reportData && (
-            <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+            <Box sx={{ display: "flex", gap: 1, mt: 2, flexWrap: "wrap" }}>
               <Chip
                 label={`${reportData.totalStudents} học sinh`}
                 size="small"
@@ -142,7 +151,16 @@ export default function CourseReportPage() {
                 }}
               />
               <Chip
-                label={`${reportData.totalSubLessons} bài học`}
+                label={`${reportData.totalLessons || 0} bài lớn`}
+                size="small"
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              />
+              <Chip
+                label={`${reportData.totalSubLessons} bài con`}
                 size="small"
                 sx={{
                   backgroundColor: "rgba(255,255,255,0.2)",
@@ -225,12 +243,19 @@ export default function CourseReportPage() {
               <ReportTable
                 reportData={reportData}
                 filteredStudents={filteredStudents}
-                onCellClick={setHistoryTarget}
+                onCellClick={handleCellClick}
               />
             </>
           ) : null}
         </Box>
       </Paper>
+
+      {/* Dialog chi tiết bài lớn */}
+      <ReportLessonDetailDialog
+        target={lessonTarget}
+        onClose={handleCloseLesson}
+        onSubLessonClick={handleSubLessonClick}
+      />
 
       {/* Modal lịch sử nộp bài của học sinh */}
       <SubmissionHistoryDialog
