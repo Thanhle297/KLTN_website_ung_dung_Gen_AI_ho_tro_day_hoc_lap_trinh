@@ -93,6 +93,14 @@ const QuestionRow = React.memo(({ question, onEdit, onDelete, onAssign, selectab
             margin: "2px 0",
             paddingLeft: "4px",
           },
+          ...(isDark && {
+            "& *": {
+              color: `${theme.palette.text.primary} !important`,
+            },
+            "& a": {
+              color: `${theme.palette.primary.main} !important`,
+            },
+          }),
           "& strong": {
             fontWeight: 700,
             color: isDark ? theme.palette.text.primary : "#1a202c",

@@ -128,6 +128,21 @@
     }
   }
 
+  html[data-theme="dark"] & {
+    .question-text {
+      color: var(--text-primary);
+
+      /* Nội dung từ rich text có thể mang inline color đen từ editor. */
+      *:not(pre):not(code):not(.ql-syntax) {
+        color: inherit !important;
+      }
+
+      a {
+        color: var(--text-link) !important;
+      }
+    }
+  }
+
   /* =========================
      INPUT / OUTPUT PANEL
      ========================= */
@@ -167,6 +182,7 @@
 
       tr:nth-child(even) {
         background-color: var(--bg-secondary);
+      }
     }
   }
 }
@@ -198,6 +214,4 @@
       }
     }
   }
-}
-
 }
