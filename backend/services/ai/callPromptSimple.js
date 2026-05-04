@@ -69,20 +69,7 @@ Danh sách bài học (theo sách giáo khoa):
 - Bài 27: tham số hàm
 - Bài 28: phạm vi biến
 
-Cú pháp Python tương ứng từng bài (dùng để phát hiện vượt kiến thức):
-- Bài 16: print()
-- Bài 17: biến, phép gán =, các kiểu dữ liệu cơ bản
-- Bài 18: input(), int(), float(), str()
-- Bài 19: if, elif, else, toán tử so sánh, toán tử logic
-- Bài 20: for, range()
-- Bài 21: while, break, continue
-- Bài 22: list [], append(), len(), truy cập phần tử
-- Bài 23: sort(), index(), slicing, list comprehension, del, remove(), pop()
-- Bài 24: chuỗi "", indexing chuỗi, len() với chuỗi, duyệt chuỗi
-- Bài 25: split(), join(), find(), replace(), strip(), upper(), lower()
-- Bài 26: def, return, gọi hàm
-- Bài 27: tham số, đối số, giá trị mặc định, *args, **kwargs
-- Bài 28: biến cục bộ, biến toàn cục, global
+
 
 **TIÊU CHÍ BẮT BUỘC VỀ KIẾN THỨC VƯỢT BÀI**:
 - Nếu code học sinh sử dụng cú pháp hoặc khái niệm từ bài SAU bài đang học → PHẢI đánh result = "FAIL".
