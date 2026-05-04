@@ -11,7 +11,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: $z-modal;
+  // Cao hơn z-index mặc định của MUI Dialog để lịch sử luôn nổi lên trên dialog chi tiết.
+  z-index: 1600;
   animation: fadeIn $transition-smooth;
 }
 
