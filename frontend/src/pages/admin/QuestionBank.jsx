@@ -43,6 +43,7 @@ import ImportFromGlobalModal from "../../components/admin/questions/ImportFromGl
 import CopyFromCourseModal from "../../components/admin/questions/CopyFromCourseModal";
 import PromoteToGlobalModal from "../../components/admin/questions/PromoteToGlobalModal";
 import { gradientButtonSx } from "../../styles/adminTokens";
+import { sortCategoriesByName } from "../../utils/categorySort";
 
 export default function QuestionBank() {
   const api = useAdminAPI();
@@ -105,7 +106,7 @@ export default function QuestionBank() {
   const loadCategories = useCallback(async () => {
     try {
       const res = await categoryApi.getCategories(selectedCourseId);
-      setCategories(res.data.categories || []);
+      setCategories(sortCategoriesByName(res.data.categories || []));
     } catch {
       setCategories([]);
     }

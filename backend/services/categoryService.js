@@ -3,6 +3,22 @@
 const { getDB } = require("../config/mongodb");
 const { ObjectId } = require("mongodb");
 
+const categoryNameCollator = new Intl.Collator("vi", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+function sortCategoriesByName(categories) {
+  return categories.sort((a, b) => {
+    const nameCompare = categoryNameCollator.compare(
+      a.name || "",
+      b.name || ""
+    );
+    if (nameCompare !== 0) return nameCompare;
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+}
+
 /**
  * Lấy danh mục theo courseId
  * @param {string|null} courseId - null hoặc "null" cho global
@@ -14,11 +30,12 @@ async function getCategories(courseId) {
     ? { courseId: null }
     : { courseId };
 
-  return db
+  const categories = await db
     .collection("categories")
     .find(filter)
-    .sort({ order: 1 })
     .toArray();
+
+  return sortCategoriesByName(categories);
 }
 
 /**
@@ -28,11 +45,12 @@ async function getCategories(courseId) {
  */
 async function getCategoriesByCourse(courseId) {
   const db = getDB();
-  return db
+  const categories = await db
     .collection("categories")
     .find({ courseId })
-    .sort({ order: 1 })
     .toArray();
+
+  return sortCategoriesByName(categories);
 }
 
 /**
@@ -206,8 +224,9 @@ async function copyCategories(sourceCourseId, targetCourseId) {
   const sourceCategories = await db
     .collection("categories")
     .find({ courseId: normalizedSource })
-    .sort({ order: 1 })
     .toArray();
+
+  sortCategoriesByName(sourceCategories);
 
   if (sourceCategories.length === 0) {
     return { created: 0, skipped: 0, error: "Khóa nguồn không có danh mục nào" };

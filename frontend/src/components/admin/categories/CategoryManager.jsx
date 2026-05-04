@@ -31,6 +31,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import useCategoryAPI from "../../../hook/useCategoryAPI";
 import useAdminAPI from "../../../hook/useAdminAPI";
+import { sortCategoriesByName } from "../../../utils/categorySort";
 
 const CategoryManager = ({ open, onClose, courseId }) => {
   const theme = useTheme();
@@ -56,7 +57,7 @@ const CategoryManager = ({ open, onClose, courseId }) => {
     setLoading(true);
     try {
       const res = await categoryApi.getCategories(courseId);
-      setCategories(res.data.categories || []);
+      setCategories(sortCategoriesByName(res.data.categories || []));
     } catch (err) {
       console.error("Lỗi lấy danh mục:", err);
       setError("Không thể tải danh mục");

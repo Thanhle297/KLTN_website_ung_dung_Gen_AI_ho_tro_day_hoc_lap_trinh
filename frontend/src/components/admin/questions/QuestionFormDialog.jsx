@@ -20,6 +20,7 @@ import {
   useTheme,
 } from "@mui/material";
 import useCategoryAPI from "../../../hook/useCategoryAPI";
+import { sortCategoriesByName } from "../../../utils/categorySort";
 
 const QuestionFormDialog = ({
   open,
@@ -62,12 +63,14 @@ const QuestionFormDialog = ({
     if (!open) return;
 
     if (categoriesProp && categoriesProp.length > 0) {
-      setCategories(categoriesProp);
+      setCategories(sortCategoriesByName(categoriesProp));
     } else {
       // Tự fetch nếu không được truyền prop
       categoryApi
         .getCategories(courseId)
-        .then((res) => setCategories(res.data.categories || []))
+        .then((res) =>
+          setCategories(sortCategoriesByName(res.data.categories || []))
+        )
         .catch((err) => console.error("Lỗi lấy danh mục:", err));
     }
   }, [open, courseId, categoriesProp, categoryApi]);
@@ -132,7 +135,7 @@ const QuestionFormDialog = ({
         name: newCategoryName.trim(),
       });
       const newCat = res.data.category;
-      setCategories((prev) => [...prev, newCat]);
+      setCategories((prev) => sortCategoriesByName([...prev, newCat]));
       setForm((prev) => ({
         ...prev,
         categoryId: newCat._id,
