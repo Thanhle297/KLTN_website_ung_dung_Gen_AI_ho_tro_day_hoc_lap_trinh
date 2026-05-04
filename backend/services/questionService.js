@@ -57,6 +57,60 @@ async function findOrCreateCategory(courseId, categoryName) {
   return result.insertedId;
 }
 
+function normalizeCourseId(courseId) {
+  return !courseId || courseId === "null" ? null : courseId;
+}
+
+function isSameCourseId(left, right) {
+  const normalizedLeft = normalizeCourseId(left);
+  const normalizedRight = normalizeCourseId(right);
+  if (normalizedLeft === null || normalizedRight === null) {
+    return normalizedLeft === normalizedRight;
+  }
+  return normalizedLeft.toString() === normalizedRight.toString();
+}
+
+function toObjectId(id) {
+  return id instanceof ObjectId ? id : new ObjectId(id);
+}
+
+async function syncQuestionCategory(questionData, fallbackCourseId) {
+  const db = getDB();
+  const targetCourseId = normalizeCourseId(
+    questionData.courseId !== undefined ? questionData.courseId : fallbackCourseId
+  );
+
+  if (questionData.categoryId === "") {
+    questionData.categoryId = null;
+    questionData.category = null;
+    return;
+  }
+
+  if (questionData.categoryId) {
+    const selectedCategoryId = toObjectId(questionData.categoryId);
+    const selectedCategory = await db.collection("categories").findOne({
+      _id: selectedCategoryId,
+    });
+
+    if (selectedCategory && isSameCourseId(selectedCategory.courseId, targetCourseId)) {
+      questionData.categoryId = selectedCategoryId;
+      questionData.category = selectedCategory.name;
+      return;
+    }
+
+    const categoryName = questionData.category || selectedCategory?.name;
+    if (categoryName) {
+      questionData.categoryId = await findOrCreateCategory(targetCourseId, categoryName);
+      questionData.category = categoryName;
+      return;
+    }
+  }
+
+  if (questionData.category) {
+    questionData.categoryId = await findOrCreateCategory(targetCourseId, questionData.category);
+  }
+}
+
 /**
  * Lấy danh sách câu hỏi theo filter
  * @param {Object} queryParams - { lessonId, isBank, category, courseId, categoryId }
@@ -89,6 +143,52 @@ async function getQuestions(queryParams) {
 }
 
 /**
+ * Lấy các câu hỏi trong bài học của khóa chưa được đưa vào ngân hàng khóa học.
+ * @param {string} courseId
+ * @returns {Promise<Array>}
+ */
+async function getCourseLessonQuestionsForBank(courseId) {
+  const db = getDB();
+  const normalizedCourseId = normalizeCourseId(courseId);
+
+  if (!normalizedCourseId) return [];
+
+  const importedSources = await db
+    .collection("question")
+    .find({
+      courseId: normalizedCourseId,
+      isBank: true,
+      bankSourceQuestionId: { $exists: true },
+    })
+    .project({ bankSourceQuestionId: 1 })
+    .toArray();
+
+  const importedSourceIds = new Set(
+    importedSources
+      .map((q) => Number(q.bankSourceQuestionId))
+      .filter((id) => Number.isFinite(id))
+  );
+
+  const questions = await db
+    .collection("question")
+    .find({
+      courseId: normalizedCourseId,
+      isBank: { $ne: true },
+      lessonId: { $nin: [null, ""] },
+    })
+    .toArray();
+
+  return questions
+    .filter((q) => !importedSourceIds.has(Number(q.id)))
+    .sort((a, b) => {
+      const aOrder = a.order ?? a.id;
+      const bOrder = b.order ?? b.id;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.id - b.id;
+    });
+}
+
+/**
  * Lấy 1 câu hỏi theo id
  * @param {number} id
  * @returns {Promise<Object|null>}
@@ -108,14 +208,7 @@ async function createQuestion(data) {
   const newId = await getNextQuestionId();
   const questionData = { ...data, id: newId };
 
-  // Convert categoryId string → ObjectId + auto-sync category name
-  if (questionData.categoryId) {
-    questionData.categoryId = new ObjectId(questionData.categoryId);
-    if (!questionData.category) {
-      const cat = await db.collection("categories").findOne({ _id: questionData.categoryId });
-      if (cat) questionData.category = cat.name;
-    }
-  }
+  await syncQuestionCategory(questionData);
 
   await db.collection("question").insertOne(questionData);
   return newId;
@@ -133,12 +226,8 @@ async function updateQuestion(id, data) {
   delete updateData._id;
   delete updateData.id;
 
-  // Convert categoryId → ObjectId + sync category name
-  if (updateData.categoryId) {
-    updateData.categoryId = new ObjectId(updateData.categoryId);
-    const cat = await db.collection("categories").findOne({ _id: updateData.categoryId });
-    if (cat) updateData.category = cat.name;
-  }
+  const current = await db.collection("question").findOne({ id: Number(id) });
+  await syncQuestionCategory(updateData, current?.courseId);
 
   const result = await db
     .collection("question")
@@ -206,17 +295,123 @@ async function assignQuestions(questionIds, targetLessonId, courseId) {
   for (const q of sources) {
     const newId = await getNextQuestionId();
     const { _id, id, isBank, ...rest } = q;
-    newDocs.push({
+    const doc = {
       ...rest,
       id: newId,
       lessonId: targetLessonId,
       courseId: courseId,
       isBank: false,
-    });
+    };
+    await syncQuestionCategory(doc, courseId);
+    newDocs.push(doc);
   }
 
   if (newDocs.length) await db.collection("question").insertMany(newDocs);
   return { count: newDocs.length };
+}
+
+/**
+ * Sao chép câu hỏi đang nằm trong bài học vào ngân hàng của chính khóa học.
+ * @param {Array<number>} questionIds
+ * @param {string} targetCourseId
+ * @returns {Promise<Object>}
+ */
+async function importCourseLessonsToBank(questionIds, targetCourseId) {
+  const db = getDB();
+  const normalizedCourseId = normalizeCourseId(targetCourseId);
+  const ids = (questionIds || [])
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id));
+
+  if (!normalizedCourseId) {
+    return { error: "Thiếu khóa học đích" };
+  }
+
+  if (!ids.length) {
+    return { error: "Thiếu danh sách câu hỏi" };
+  }
+
+  const sources = await db
+    .collection("question")
+    .find({
+      id: { $in: ids },
+      courseId: normalizedCourseId,
+      isBank: { $ne: true },
+      lessonId: { $nin: [null, ""] },
+    })
+    .toArray();
+
+  const foundIds = new Set(sources.map((q) => q.id));
+  const missing = ids.filter((qId) => !foundIds.has(qId));
+  if (missing.length > 0) {
+    return {
+      error: `Không tìm thấy câu hỏi #${missing.join(", #")} trong khóa học này`,
+    };
+  }
+
+  const alreadyImported = await db
+    .collection("question")
+    .find({
+      courseId: normalizedCourseId,
+      isBank: true,
+      bankSourceQuestionId: { $in: ids },
+    })
+    .project({ bankSourceQuestionId: 1 })
+    .toArray();
+
+  const importedSourceIds = new Set(
+    alreadyImported
+      .map((q) => Number(q.bankSourceQuestionId))
+      .filter((id) => Number.isFinite(id))
+  );
+
+  const newDocs = [];
+  let skipped = 0;
+
+  for (const q of sources) {
+    if (importedSourceIds.has(Number(q.id))) {
+      skipped++;
+      continue;
+    }
+
+    const newId = await getNextQuestionId();
+    const {
+      _id,
+      id,
+      isBank,
+      order,
+      lessonId,
+      courseId,
+      categoryId,
+      category,
+      ...rest
+    } = q;
+
+    const doc = {
+      ...rest,
+      id: newId,
+      courseId: normalizedCourseId,
+      lessonId: null,
+      isBank: true,
+      categoryId,
+      category,
+      order: null,
+      bankSourceQuestionId: id,
+      importedFromLessonId: lessonId,
+      importedAt: new Date(),
+    };
+
+    await syncQuestionCategory(doc, normalizedCourseId);
+    newDocs.push(doc);
+  }
+
+  if (newDocs.length) await db.collection("question").insertMany(newDocs);
+
+  return {
+    imported: newDocs.length,
+    skipped,
+    questions: newDocs.map((q) => ({ id: q.id, category: q.category })),
+  };
 }
 
 /**
@@ -465,12 +660,14 @@ module.exports = {
   stripHtml,
   findOrCreateCategory,
   getQuestions,
+  getCourseLessonQuestionsForBank,
   getQuestionById,
   createQuestion,
   updateQuestion,
   deleteQuestion,
   reorderQuestions,
   assignQuestions,
+  importCourseLessonsToBank,
   importToCourse,
   copyBetweenCourses,
   promoteToGlobal,

@@ -25,6 +25,7 @@ import {
   Upload,
   Settings,
   AccountBalance,
+  PlaylistAdd,
 } from "@mui/icons-material";
 
 import useAdminAPI from "../../hook/useAdminAPI";
@@ -37,6 +38,7 @@ import QuestionFormDialog from "../../components/admin/questions/QuestionFormDia
 import DeleteConfirmDialog from "../../components/admin/shared/DeleteConfirmDialog";
 import DistributeModal from "../../components/admin/questions/DistributeModal";
 import CategoryManager from "../../components/admin/categories/CategoryManager";
+import ImportFromCourseLessonsModal from "../../components/admin/questions/ImportFromCourseLessonsModal";
 import ImportFromGlobalModal from "../../components/admin/questions/ImportFromGlobalModal";
 import CopyFromCourseModal from "../../components/admin/questions/CopyFromCourseModal";
 import PromoteToGlobalModal from "../../components/admin/questions/PromoteToGlobalModal";
@@ -81,6 +83,7 @@ export default function QuestionBank() {
   // === Modal state ===
   const [openDistribute, setOpenDistribute] = useState(false);
   const [openCategoryManager, setOpenCategoryManager] = useState(false);
+  const [openImportLessons, setOpenImportLessons] = useState(false);
   const [openImportGlobal, setOpenImportGlobal] = useState(false);
   const [openCopyFromCourse, setOpenCopyFromCourse] = useState(false);
   const [openPromote, setOpenPromote] = useState(false);
@@ -139,6 +142,11 @@ export default function QuestionBank() {
     loadQuestions();
     setPage(0);
   }, [loadQuestions]);
+
+  const refreshBank = useCallback(() => {
+    loadCategories();
+    loadQuestions();
+  }, [loadCategories, loadQuestions]);
 
   /* ================= COURSE CHANGE ================= */
   const handleCourseChange = useCallback((e) => {
@@ -215,13 +223,13 @@ export default function QuestionBank() {
         }
 
         setOpenDialog(false);
-        loadQuestions();
+        refreshBank();
       } catch (err) {
         console.error(err);
         notify.error("Lỗi lưu câu hỏi");
       }
     },
-    [editing, api, notify, loadQuestions, selectedCourseId]
+    [editing, api, notify, refreshBank, selectedCourseId]
   );
 
   /* ================= DELETE ================= */
@@ -362,6 +370,15 @@ export default function QuestionBank() {
       {isCourseBank && (
         <Paper sx={{ p: 1.5, borderRadius: 3, mb: 2 }}>
           <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button
+              startIcon={<PlaylistAdd />}
+              size="small"
+              variant="outlined"
+              onClick={() => setOpenImportLessons(true)}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Lấy từ bài học
+            </Button>
             <Button
               startIcon={<Download />}
               size="small"
@@ -505,12 +522,20 @@ export default function QuestionBank() {
         courseId={selectedCourseId}
       />
 
+      {/* Lấy câu hỏi từ bài học trong cùng khóa */}
+      <ImportFromCourseLessonsModal
+        open={openImportLessons}
+        onClose={() => setOpenImportLessons(false)}
+        targetCourseId={selectedCourseId}
+        onSuccess={refreshBank}
+      />
+
       {/* Import từ Global Bank */}
       <ImportFromGlobalModal
         open={openImportGlobal}
         onClose={() => setOpenImportGlobal(false)}
         targetCourseId={selectedCourseId}
-        onSuccess={loadQuestions}
+        onSuccess={refreshBank}
       />
 
       {/* Sao chép từ khóa khác */}
@@ -519,7 +544,7 @@ export default function QuestionBank() {
         onClose={() => setOpenCopyFromCourse(false)}
         targetCourseId={selectedCourseId}
         courses={courses}
-        onSuccess={loadQuestions}
+        onSuccess={refreshBank}
       />
 
       {/* Đẩy lên Global Bank */}

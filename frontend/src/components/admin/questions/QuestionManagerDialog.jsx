@@ -139,16 +139,18 @@ export default function QuestionManagerDialog({
       try {
         setSaving(true);
 
+        const payload = {
+          ...formData,
+          lessonId: subLesson.lessonId,
+          courseId: courseId,
+        };
+
         if (questionDialog.editing) {
           // Update
-          await api.updateQuestion(questionDialog.editing.id, formData);
+          await api.updateQuestion(questionDialog.editing.id, payload);
         } else {
           // Create - thêm lessonId và courseId
-          await api.createQuestion({
-            ...formData,
-            lessonId: subLesson.lessonId,
-            courseId: courseId,
-          });
+          await api.createQuestion(payload);
         }
 
         setQuestionDialog({ open: false, editing: null });
@@ -444,6 +446,7 @@ export default function QuestionManagerDialog({
         editing={questionDialog.editing}
         onClose={() => setQuestionDialog({ open: false, editing: null })}
         onSave={handleSaveQuestion}
+        courseId={courseId}
       />
 
       {/* Import From Bank Modal */}

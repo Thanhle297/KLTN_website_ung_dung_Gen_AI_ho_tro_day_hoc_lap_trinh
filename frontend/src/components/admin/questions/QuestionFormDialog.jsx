@@ -40,7 +40,7 @@ const QuestionFormDialog = ({
     testcase: [{ input: [""], expected: "" }],
     echo_input: false,
     topic: "",
-    courseId: "10",
+    courseId: courseId || "",
   });
 
   // Danh sách categories (từ prop hoặc tự fetch)
@@ -82,7 +82,7 @@ const QuestionFormDialog = ({
         testcase: editing.testcase || [{ input: [""], expected: "" }],
         echo_input: editing.echo_input ?? false,
         topic: editing.topic || "",
-        courseId: editing.courseId || "10",
+        courseId: editing.courseId || courseId || "",
       });
     } else {
       setForm({
@@ -93,12 +93,12 @@ const QuestionFormDialog = ({
         testcase: [{ input: [""], expected: "" }],
         echo_input: false,
         topic: "",
-        courseId: "10",
+        courseId: courseId || "",
       });
     }
     setShowNewCategory(false);
     setNewCategoryName("");
-  }, [editing, open]);
+  }, [editing, open, courseId]);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));

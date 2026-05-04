@@ -104,6 +104,8 @@ export default function useAdminAPI() {
             categoryId,
           },
         }),
+      getCourseLessonQuestionsForBank: (courseId) =>
+        API.get(`/questions/course/${courseId}/unbanked`),
       getQuestion: (id) => API.get(`/questions/${id}`),
       createQuestion: (data) => API.post("/questions", data),
       updateQuestion: (id, data) => API.put(`/questions/${id}`, data),
@@ -118,6 +120,11 @@ export default function useAdminAPI() {
         API.put("/questions/reorder/batch", { questionIds }),
 
       /* ===== QUESTION BANK - Import / Copy / Promote ===== */
+      importCourseLessonQuestionsToBank: (questionIds, targetCourseId) =>
+        API.post("/questions/import-from-course-lessons", {
+          questionIds,
+          targetCourseId,
+        }),
       importToCourseBank: (questionIds, targetCourseId) =>
         API.post("/questions/import-to-course", {
           questionIds,

@@ -5,12 +5,14 @@ const teacherOrAdminMiddleware = require("../middleware/teacherOrAdminMiddleware
 const { requireCourseAccess, requireAdmin } = require("../middleware/coursePermission");
 const {
   getQuestions,
+  getCourseLessonQuestionsForBank,
   getQuestionById,
   createQuestion,
   updateQuestion,
   deleteQuestion,
   reorderQuestions,
   assignQuestions,
+  importCourseLessonsToBank,
   importToCourse,
   copyBetweenCourses,
   promoteToGlobal,
@@ -47,6 +49,42 @@ router.post("/assign", authMiddleware, teacherOrAdminMiddleware, async (req, res
   } catch (err) {
     console.error("❌ Assign questions error:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+/* ------------ GET câu hỏi bài học chưa có trong ngân hàng khóa ------------ */
+router.get("/course/:courseId/unbanked", authMiddleware, requireCourseAccess, async (req, res) => {
+  try {
+    const list = await getCourseLessonQuestionsForBank(req.params.courseId);
+    res.json(list);
+  } catch (err) {
+    console.error("❌ Lỗi lấy câu hỏi chưa vào ngân hàng:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+});
+
+/* ------------ IMPORT: Câu hỏi bài học → Ngân hàng khóa ------------ */
+router.post("/import-from-course-lessons", authMiddleware, requireCourseAccess, async (req, res) => {
+  try {
+    const { questionIds, targetCourseId } = req.body;
+
+    if (!questionIds || !questionIds.length) {
+      return res.status(400).json({ message: "Thiếu danh sách câu hỏi" });
+    }
+    if (!targetCourseId) {
+      return res.status(400).json({ message: "Thiếu khóa học đích" });
+    }
+
+    const result = await importCourseLessonsToBank(questionIds, targetCourseId);
+
+    if (result.error) {
+      return res.status(400).json({ message: result.error });
+    }
+
+    res.json({ message: "Đã lấy câu hỏi vào ngân hàng khóa học", ...result });
+  } catch (err) {
+    console.error("❌ Lỗi lấy câu hỏi bài học vào ngân hàng:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 });
 

@@ -244,6 +244,7 @@ export default function QuestionsCRUD() {
         editing={editing}
         onClose={handleCloseDialog}
         onSave={handleSave}
+        courseId={selectedCourse}
       />
 
       <DeleteConfirmDialog
